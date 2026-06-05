@@ -220,6 +220,7 @@ class Batch(db.Model):
     # Workflow states: DRAFT, VALIDATED, FLAGGED_RISK, PENDING_CHECKER_REVIEW, CHECKER_REVIEWED, EXECUTED, REJECTED, CANCELLED
     checker_notes = db.Column(db.Text, nullable=True)
     checker_reviewed_at = db.Column(db.DateTime, nullable=True)
+    payroll_period = db.Column(db.Date, nullable=True)
     executed_at = db.Column(db.DateTime, nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
@@ -246,6 +247,7 @@ class Batch(db.Model):
             'status': self.status,
             'checker_notes': self.checker_notes,
             'checker_reviewed_at': self.checker_reviewed_at.isoformat() if self.checker_reviewed_at else None,
+            'payroll_period': self.payroll_period.isoformat() if self.payroll_period else None,
             'executed_at': self.executed_at.isoformat() if self.executed_at else None,
             'created_at': self.created_at.isoformat() if self.created_at else None
         }
@@ -261,8 +263,8 @@ class BatchItem(db.Model):
     corrected_phone_number = db.Column(db.String(20), nullable=True)
     employee_name = db.Column(db.String(100), nullable=False)
     department = db.Column(db.String(50), nullable=True)
-    amount = db.Column(db.Numeric(15, 2), nullable=False)
-    wallet_type = db.Column(db.String(30), nullable=False, default='SALARY')
+    basic_salary = db.Column(db.Numeric(15, 2), nullable=False)
+    gross_salary = db.Column(db.Numeric(15, 2), nullable=False)
     account_validation_status = db.Column(db.String(30), nullable=False, default='VALID')
     # VALID, INVALID_LENGTH, UNREGISTERED_ACCOUNT, INACTIVE_ACCOUNT, UNRECOGNIZED_PAYEE
     baseline_status = db.Column(db.String(30), nullable=False, default='VERIFIED')
@@ -288,8 +290,8 @@ class BatchItem(db.Model):
             'corrected_phone_number': self.corrected_phone_number,
             'employee_name': self.employee_name,
             'department': self.department,
-            'amount': float(self.amount) if self.amount is not None else 0.0,
-            'wallet_type': self.wallet_type,
+            'basic_salary': float(self.basic_salary) if self.basic_salary is not None else 0.0,
+            'gross_salary': float(self.gross_salary) if self.gross_salary is not None else 0.0,
             'account_validation_status': self.account_validation_status,
             'baseline_status': self.baseline_status,
             'anomaly_score': float(self.anomaly_score) if self.anomaly_score is not None else None,
@@ -317,9 +319,13 @@ class RiskAlert(db.Model):
     reviewer = db.relationship('User', foreign_keys=[reviewed_by])
 
     def to_dict(self):
+        item = self.batch_item
         return {
             'id': self.id,
             'batch_item_id': self.batch_item_id,
+            'batch_id': item.batch_id if item else None,
+            'employee_name': item.employee_name if item else None,
+            'anomaly_reason': self.review_notes if self.flag_type.startswith('MANUAL_') else (item.anomaly_reason if item else None),
             'flag_type': self.flag_type,
             'severity': self.severity,
             'review_status': self.review_status,
@@ -339,10 +345,10 @@ class PayrollHistory(db.Model):
     employee_name = db.Column(db.String(100), nullable=False)
     department = db.Column(db.String(50), nullable=True)
     disbursement_date = db.Column(db.DateTime, nullable=False)
-    amount = db.Column(db.Numeric(15, 2), nullable=False)
+    basic_salary = db.Column(db.Numeric(15, 2), nullable=False)
+    gross_salary = db.Column(db.Numeric(15, 2), nullable=False)
     six_month_avg_amount = db.Column(db.Numeric(15, 2), nullable=True)
     dept_avg_amount = db.Column(db.Numeric(15, 2), nullable=True)
-    wallet_type = db.Column(db.String(30), nullable=False, default='SALARY')
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     def to_dict(self):
@@ -353,7 +359,8 @@ class PayrollHistory(db.Model):
             'employee_name': self.employee_name,
             'department': self.department,
             'disbursement_date': self.disbursement_date.isoformat(),
-            'amount': float(self.amount) if self.amount is not None else 0.0,
+            'basic_salary': float(self.basic_salary) if self.basic_salary is not None else 0.0,
+            'gross_salary': float(self.gross_salary) if self.gross_salary is not None else 0.0,
             'six_month_avg_amount': float(self.six_month_avg_amount) if self.six_month_avg_amount else None,
             'dept_avg_amount': float(self.dept_avg_amount) if self.dept_avg_amount else None
         }
@@ -378,18 +385,111 @@ class LiquidityForecast(db.Model):
     company_id = db.Column(db.Integer, db.ForeignKey('companies.id', ondelete='CASCADE'), nullable=False)
     forecast_period = db.Column(db.String(30), nullable=False)  # e.g., 'SEPTEMBER_2026'
     predicted_amount = db.Column(db.Numeric(15, 2), nullable=False)
+    lower_bound = db.Column(db.Numeric(15, 2), nullable=True)
+    upper_bound = db.Column(db.Numeric(15, 2), nullable=True)
+    model_type = db.Column(db.String(50), nullable=False, default='LEGACY_RULE_BASED')
+    status = db.Column(db.String(30), nullable=False, default='READY')
+    history_months = db.Column(db.Integer, nullable=True)
+    mae = db.Column(db.Numeric(15, 2), nullable=True)
+    mape = db.Column(db.Numeric(8, 4), nullable=True)
     confidence_score = db.Column(db.Numeric(5, 2), default=0.95)
+    assumptions = db.Column(db.JSON, nullable=True)
+    source_data_through = db.Column(db.Date, nullable=True)
+    forecast_run_id = db.Column(db.Integer, db.ForeignKey('forecast_runs.id', ondelete='SET NULL'), nullable=True)
     generated_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    __table_args__ = (
+        db.UniqueConstraint('company_id', 'forecast_period', name='uk_liquidity_forecast_company_period'),
+    )
 
     def to_dict(self):
         return {
             'id': self.id,
             'company_id': self.company_id,
             'forecast_period': self.forecast_period,
+            'period': self.forecast_period,
             'predicted_amount': float(self.predicted_amount) if self.predicted_amount is not None else 0.0,
+            'lower_bound': float(self.lower_bound) if self.lower_bound is not None else None,
+            'upper_bound': float(self.upper_bound) if self.upper_bound is not None else None,
+            'model_type': self.model_type,
+            'status': self.status,
+            'history_months': self.history_months,
+            'mae': float(self.mae) if self.mae is not None else None,
+            'mape': float(self.mape) if self.mape is not None else None,
             'confidence_score': float(self.confidence_score) if self.confidence_score is not None else 0.0,
+            'assumptions': self.assumptions or [],
+            'source_data_through': self.source_data_through.isoformat() if self.source_data_through else None,
+            'forecast_run_id': self.forecast_run_id,
             'generated_at': self.generated_at.isoformat() if self.generated_at else None
         }
+
+
+class CompanyForecastSettings(db.Model):
+    __tablename__ = 'company_forecast_settings'
+
+    id = db.Column(db.Integer, primary_key=True)
+    company_id = db.Column(db.Integer, db.ForeignKey('companies.id', ondelete='CASCADE'), nullable=False, unique=True)
+    planning_baseline_amount = db.Column(db.Numeric(15, 2), nullable=False, default=5000000.00)
+    include_festival_bonus = db.Column(db.Boolean, nullable=False, default=False)
+    festival_bonus_amount = db.Column(db.Numeric(15, 2), nullable=False, default=0.00)
+    festival_bonus_months = db.Column(db.JSON, nullable=False, default=list)
+    configured_by = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='SET NULL'), nullable=True)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    def to_dict(self):
+        return {
+            'company_id': self.company_id,
+            'planning_baseline_amount': float(self.planning_baseline_amount),
+            'include_festival_bonus': self.include_festival_bonus,
+            'festival_bonus_amount': float(self.festival_bonus_amount),
+            'festival_bonus_months': self.festival_bonus_months or [],
+            'updated_at': self.updated_at.isoformat() if self.updated_at else None,
+        }
+
+
+class ForecastRun(db.Model):
+    __tablename__ = 'forecast_runs'
+
+    id = db.Column(db.Integer, primary_key=True)
+    company_id = db.Column(db.Integer, db.ForeignKey('companies.id', ondelete='CASCADE'), nullable=False)
+    model_type = db.Column(db.String(50), nullable=False)
+    status = db.Column(db.String(30), nullable=False, default='READY')
+    history_months = db.Column(db.Integer, nullable=False, default=0)
+    mae = db.Column(db.Numeric(15, 2), nullable=True)
+    mape = db.Column(db.Numeric(8, 4), nullable=True)
+    parameters = db.Column(db.JSON, nullable=True)
+    source_data_through = db.Column(db.Date, nullable=True)
+    error_message = db.Column(db.Text, nullable=True)
+    started_at = db.Column(db.DateTime, default=datetime.utcnow)
+    completed_at = db.Column(db.DateTime, nullable=True)
+
+    results = db.relationship('ForecastRunResult', backref='forecast_run', lazy=True, cascade='all, delete-orphan')
+
+
+class ForecastRunResult(db.Model):
+    __tablename__ = 'forecast_run_results'
+
+    id = db.Column(db.Integer, primary_key=True)
+    forecast_run_id = db.Column(db.Integer, db.ForeignKey('forecast_runs.id', ondelete='CASCADE'), nullable=False)
+    forecast_period = db.Column(db.String(30), nullable=False)
+    predicted_amount = db.Column(db.Numeric(15, 2), nullable=False)
+    lower_bound = db.Column(db.Numeric(15, 2), nullable=True)
+    upper_bound = db.Column(db.Numeric(15, 2), nullable=True)
+    assumptions = db.Column(db.JSON, nullable=True)
+    source_data_through = db.Column(db.Date, nullable=True)
+
+
+class ForecastAlert(db.Model):
+    __tablename__ = 'forecast_alerts'
+
+    id = db.Column(db.Integer, primary_key=True)
+    company_id = db.Column(db.Integer, db.ForeignKey('companies.id', ondelete='CASCADE'), nullable=False)
+    forecast_run_id = db.Column(db.Integer, db.ForeignKey('forecast_runs.id', ondelete='SET NULL'), nullable=True)
+    alert_type = db.Column(db.String(50), nullable=False)
+    severity = db.Column(db.String(20), nullable=False, default='MEDIUM')
+    review_status = db.Column(db.String(30), nullable=False, default='PENDING_REVIEW')
+    details = db.Column(db.JSON, nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
 
 class AuditLog(db.Model):

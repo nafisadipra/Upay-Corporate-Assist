@@ -515,7 +515,11 @@ def delete_company_bank_account(company_id, account_id):
 @admin_bp.route('/users', methods=['GET'])
 @require_admin
 def get_users():
-    users = User.query.order_by(User.created_at.desc()).all()
+    company_id = request.args.get('company_id', type=int)
+    query = User.query
+    if company_id:
+        query = query.filter_by(company_id=company_id)
+    users = query.order_by(User.created_at.desc()).all()
     return jsonify({'users': [user.to_dict() for user in users]}), 200
 
 
