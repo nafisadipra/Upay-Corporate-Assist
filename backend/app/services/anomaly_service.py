@@ -57,12 +57,12 @@ def evaluate_batch_items_anomalies(company_id, batch_items):
             ).all()
             
             if dept_history:
-                dept_avg = float(np.mean([float(h.amount) for h in dept_history]))
+                dept_avg = float(np.mean([float(h.gross_salary) for h in dept_history]))
             else:
                 dept_avg = 38000.0  # Default department baseline fallback BDT
 
             # Check deviation against department average (e.g. > 50% variance)
-            payout_amount = float(item.amount)
+            payout_amount = float(item.gross_salary)
             variance_ratio = payout_amount / dept_avg if dept_avg > 0 else 1.0
 
             if variance_ratio > 1.5 or variance_ratio < 0.3:
@@ -83,10 +83,10 @@ def evaluate_batch_items_anomalies(company_id, batch_items):
         else:
             # Established Employee (>= 3 cycles): Individual 6-month historical baseline
             item.baseline_status = 'VERIFIED'
-            amounts = [float(h.amount) for h in employee_history[:6]]
+            amounts = [float(h.gross_salary) for h in employee_history[:6]]
             indiv_avg = float(np.mean(amounts))
 
-            payout_amount = float(item.amount)
+            payout_amount = float(item.gross_salary)
             variance_ratio = payout_amount / indiv_avg if indiv_avg > 0 else 1.0
 
             if variance_ratio > 1.8 or variance_ratio < 0.2:
@@ -109,7 +109,10 @@ def evaluate_batch_items_anomalies(company_id, batch_items):
 
 def create_risk_alert(batch_item_id, flag_type, severity, notes):
     """Helper to record or update a RiskAlert entry for a batch item."""
-    existing = RiskAlert.query.filter_by(batch_item_id=batch_item_id).first()
+    existing = RiskAlert.query.filter(
+        RiskAlert.batch_item_id == batch_item_id,
+        ~RiskAlert.flag_type.like('MANUAL_%'),
+    ).first()
     if not existing:
         alert = RiskAlert(
             batch_item_id=batch_item_id,
