@@ -10,7 +10,7 @@ from app.models import Batch, BatchItem, Company, AuditLog, RiskAlert
 from app.services.excel_parser import parse_payroll_file
 from app.services.validation_service import validate_payee_row
 from app.services.anomaly_service import evaluate_batch_items_anomalies
-from app.services.otp_service import record_checker_review, execute_batch_disbursement
+from app.services.disbursement_service import record_checker_review, execute_batch_disbursement
 from app.utils.auth import require_auth
 
 batches_bp = Blueprint('batches', __name__, url_prefix='/api/batches')
