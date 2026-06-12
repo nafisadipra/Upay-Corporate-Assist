@@ -2,14 +2,16 @@
 
 import React, { useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
-import { Building2, LogOut, UserCheck, UserCog, ShieldCheck, LayoutGrid, FileSpreadsheet, ShieldAlert, LineChart, FileText, Users, CalendarDays, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Building2, LogOut, UserCheck, UserCog, ShieldCheck, LayoutGrid, FileSpreadsheet, ShieldAlert, LineChart, FileText, Users, CalendarDays, ChevronLeft, ChevronRight, Bell, X, CheckCircle2 } from 'lucide-react';
 
-export type DashboardTab = 'overview' | 'upload' | 'registration' | 'checker' | 'analytics' | 'audit';
+export type DashboardTab = 'overview' | 'upload' | 'review' | 'registration' | 'checker' | 'analytics' | 'audit' | 'archive';
 
 interface HeaderProps {
   activeTab: DashboardTab;
   onTabChange: (tab: DashboardTab) => void;
   riskAlertCount: number;
+  fixedIssueCount?: number;
+  financeSignOffReady?: boolean;
   selectedPeriod?: string;
   onPeriodChange?: (period: string) => void;
 }
@@ -73,23 +75,27 @@ function SidebarPayrollCalendar({ selectedPeriod, onPeriodChange }: { selectedPe
   );
 }
 
-export const Header: React.FC<HeaderProps> = ({ activeTab, onTabChange, riskAlertCount, selectedPeriod, onPeriodChange }) => {
+export const Header: React.FC<HeaderProps> = ({ activeTab, onTabChange, riskAlertCount, fixedIssueCount = 0, financeSignOffReady = false, selectedPeriod, onPeriodChange }) => {
   const { user, logout } = useAuth();
+  const [notificationsOpen, setNotificationsOpen] = useState(false);
   if (!user) return null;
+  const notificationCount = riskAlertCount + fixedIssueCount + (financeSignOffReady ? 1 : 0);
 
   const roleLabel = user.role === 'MAKER' ? 'HR Officer' : user.role === 'CHECKER' ? 'Finance Director' : 'System Admin';
   const roleIcon = user.role === 'MAKER' ? <UserCog className="h-3.5 w-3.5" /> : user.role === 'CHECKER' ? <UserCheck className="h-3.5 w-3.5" /> : <ShieldCheck className="h-3.5 w-3.5" />;
-  const navItems: Array<{ id: DashboardTab; label: string; icon: React.ReactNode; available: boolean; badge?: number }> = user.role === 'CHECKER'
+  const navItems: Array<{ id: DashboardTab; label: string; icon: React.ReactNode; available: boolean }> = user.role === 'CHECKER'
     ? [
         { id: 'overview', label: 'Dashboard', icon: <LayoutGrid className="h-4 w-4" />, available: true },
-        { id: 'checker', label: 'Review queue', icon: <ShieldAlert className="h-4 w-4" />, available: true, badge: riskAlertCount },
+        { id: 'checker', label: 'Review queue', icon: <ShieldAlert className="h-4 w-4" />, available: true },
         { id: 'audit', label: 'Approval history', icon: <FileText className="h-4 w-4" />, available: true },
       ]
     : [
         { id: 'overview', label: 'Overview', icon: <LayoutGrid className="h-4 w-4" />, available: true },
-        { id: 'upload', label: 'Bulk upload', icon: <FileSpreadsheet className="h-4 w-4" />, available: true },
+        { id: 'upload', label: 'Payroll Processing', icon: <FileSpreadsheet className="h-4 w-4" />, available: true },
+        { id: 'review', label: 'Review', icon: <ShieldAlert className="h-4 w-4" />, available: true },
         { id: 'registration', label: 'Employees', icon: <Users className="h-4 w-4" />, available: true },
         { id: 'analytics', label: 'Liquidity forecast', icon: <LineChart className="h-4 w-4" />, available: true },
+        { id: 'archive', label: 'Payroll archive', icon: <FileText className="h-4 w-4" />, available: true },
         { id: 'audit', label: 'Audit trail', icon: <FileText className="h-4 w-4" />, available: true },
       ];
 
@@ -97,21 +103,43 @@ export const Header: React.FC<HeaderProps> = ({ activeTab, onTabChange, riskAler
     <>
       <header className="sticky top-0 z-40 flex h-[66px] items-center justify-between border-b border-[#dce7dd] bg-white px-4 lg:hidden">
         <div className="flex items-center gap-2.5"><div className="grid h-9 w-9 place-items-center rounded-lg bg-emerald-700 text-white"><Building2 className="h-4 w-4" /></div><div><p className="font-outfit text-base font-extrabold tracking-tight text-[#173328]">upay</p><p className="text-[9px] font-bold text-emerald-700">CORPORATE ASSIST</p></div></div>
-        <button onClick={logout} className="rounded-lg border border-[#dce7dd] p-2 text-slate-600 hover:bg-red-50 hover:text-red-700" title="Sign out"><LogOut className="h-4 w-4" /></button>
+        <div className="flex items-center gap-2"><button type="button" onClick={() => setNotificationsOpen(true)} className="relative rounded-lg border border-[#dce7dd] p-2 text-slate-600 hover:bg-orange-50 hover:text-[#ef8354]" aria-label="Open notifications"><Bell className="h-4 w-4" />{notificationCount > 0 && <span className="absolute -right-1 -top-1 h-2.5 w-2.5 rounded-full border-2 border-white bg-red-500" />}</button><button onClick={logout} className="rounded-lg border border-[#dce7dd] p-2 text-slate-600 hover:bg-red-50 hover:text-red-700" title="Sign out"><LogOut className="h-4 w-4" /></button></div>
       </header>
 
       <aside className="fixed inset-y-0 left-0 z-40 hidden w-[272px] flex-col border-r border-[#2d3142] bg-[#2d3142] p-4 text-white lg:flex">
-        <div className="flex items-center gap-3 px-2 pt-1"><div className="grid h-10 w-10 place-items-center rounded-xl bg-[#ef8354] text-white"><Building2 className="h-5 w-5" /></div><div><p className="font-outfit text-xl font-extrabold tracking-tight">upay</p><p className="text-[9px] font-bold tracking-[.16em] text-[#bfc0c0]">CORPORATE ASSIST</p></div></div>
+        <div className="flex items-center gap-3 px-2 pt-1"><div className="grid h-10 w-10 place-items-center rounded-xl bg-[#ef8354] text-white"><Building2 className="h-5 w-5" /></div><div><p className="font-outfit text-xl font-extrabold tracking-tight">upay</p><p className="text-[9px] font-bold tracking-[.16em] text-[#bfc0c0]">CORPORATE ASSIST</p></div><button type="button" onClick={() => setNotificationsOpen(true)} className="relative ml-auto grid h-9 w-9 place-items-center rounded-lg border border-[#4f5d75] text-[#bfc0c0] transition hover:border-[#ef8354] hover:text-white" aria-label="Open notifications"><Bell className="h-4 w-4" />{notificationCount > 0 && <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-[#f55e5a] ring-2 ring-[#2d3142]" />}</button></div>
         
         {selectedPeriod !== undefined && onPeriodChange && (
           <SidebarPayrollCalendar selectedPeriod={selectedPeriod} onPeriodChange={onPeriodChange} />
         )}
 
         {/* Central Wallet Box Removed */}
-        <nav className="mt-6 space-y-1" aria-label="Corporate assist sections"><p className="px-3 pb-2 text-[10px] font-bold uppercase tracking-[.15em] text-[#bfc0c0]">Workspace</p>{navItems.filter((item) => item.available).map((item) => (<button key={item.id} onClick={() => onTabChange(item.id)} className={`flex w-full items-center gap-3 rounded-lg px-3 py-3 text-left text-xs font-bold transition-colors ${activeTab === item.id ? 'bg-[#ef8354] text-white' : 'text-[#bfc0c0] hover:bg-[#4f5d75] hover:text-white'}`}>{item.icon}<span className="flex-1">{item.label}</span>{item.badge ? <span className="rounded-md bg-white px-1.5 py-0.5 text-[10px] text-[#ef8354]">{item.badge}</span> : null}</button>))}</nav>
+        <nav className="mt-6 space-y-1" aria-label="Corporate assist sections"><p className="px-3 pb-2 text-[10px] font-bold uppercase tracking-[.15em] text-[#bfc0c0]">Workspace</p>{navItems.filter((item) => item.available).map((item) => { const itemCount = item.id === 'review' ? riskAlertCount : item.id === 'checker' ? notificationCount : 0; return <button key={item.id} onClick={() => onTabChange(item.id)} className={`flex w-full items-center gap-3 rounded-lg px-3 py-3 text-left text-xs font-bold transition-colors ${activeTab === item.id ? 'bg-[#ef8354] text-white' : 'text-[#bfc0c0] hover:bg-[#4f5d75] hover:text-white'}`}>{item.icon}<span className="flex-1">{item.label}</span>{itemCount > 0 && <span className="grid h-5 min-w-5 place-items-center rounded-full bg-red-500 px-1 text-[9px] text-white">{itemCount}</span>}</button>; })}</nav>
 
         <div className="mt-auto border-t border-[#4f5d75] pt-4"><div className="flex items-center gap-2.5 px-2 pb-4"><div className="grid h-8 w-8 place-items-center rounded-lg bg-[#4f5d75] text-[10px] font-bold text-white">{user.full_name.split(' ').map((name) => name[0]).join('')}</div><div className="min-w-0"><p className="truncate text-xs font-bold text-white">{user.full_name}</p><p className="mt-0.5 flex items-center gap-1 text-[10px] text-[#bfc0c0]">{roleIcon}{roleLabel}</p></div></div><button onClick={logout} className="flex w-full items-center gap-2 rounded-lg px-3 py-2.5 text-xs font-bold text-[#bfc0c0] transition-colors hover:bg-red-950/30 hover:text-white"><LogOut className="h-4 w-4" /> Sign out</button></div>
       </aside>
+
+      {notificationsOpen && (
+        <div className="fixed inset-0 z-[70] flex items-center justify-center bg-slate-950/40 p-4 backdrop-blur-sm" onMouseDown={(event) => { if (event.currentTarget === event.target) setNotificationsOpen(false); }}>
+          <section role="dialog" aria-modal="true" aria-label="Notifications" className="w-full max-w-md rounded-3xl border border-slate-200 bg-white p-6 shadow-2xl">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-4"><div><h2 className="font-outfit text-lg font-extrabold text-[#2d3142]">Notifications</h2><p className="mt-0.5 text-xs text-slate-500">Payroll workflow updates for the selected month.</p></div><button type="button" onClick={() => setNotificationsOpen(false)} className="rounded-xl p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-700"><X className="h-5 w-5" /></button></div>
+            {notificationCount > 0 ? <div className="mt-4 space-y-3">
+              {financeSignOffReady && <button type="button" onClick={() => { onTabChange('upload'); setNotificationsOpen(false); }} className="flex w-full items-start gap-3 rounded-2xl border border-emerald-200 bg-emerald-50/60 p-4 text-left transition hover:bg-emerald-50">
+                <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-white text-emerald-600 shadow-sm"><CheckCircle2 className="h-5 w-5" /></span>
+                <span><strong className="block text-sm font-extrabold text-[#2d3142]">Finance signed off the payroll batch</strong><span className="mt-1 block text-xs leading-relaxed text-slate-600">The batch is approved and ready for HR’s final review and disbursement.</span></span>
+              </button>}
+              {fixedIssueCount > 0 && <button type="button" onClick={() => { onTabChange('checker'); setNotificationsOpen(false); }} className="flex w-full items-start gap-3 rounded-2xl border border-emerald-200 bg-emerald-50/60 p-4 text-left transition hover:bg-emerald-50">
+                <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-white text-emerald-600 shadow-sm"><CheckCircle2 className="h-5 w-5" /></span>
+                <span><strong className="block text-sm font-extrabold text-[#2d3142]">HR fixed returned payroll {fixedIssueCount === 1 ? 'issue' : 'issues'}</strong><span className="mt-1 block text-xs leading-relaxed text-slate-600">{fixedIssueCount} {fixedIssueCount === 1 ? 'issue was' : 'issues were'} corrected by HR. Open the review queue to inspect the updated payroll.</span></span>
+              </button>}
+              {riskAlertCount > 0 && <button type="button" onClick={() => { onTabChange(user.role === 'CHECKER' ? 'checker' : 'review'); setNotificationsOpen(false); }} className="flex w-full items-start gap-3 rounded-2xl border border-orange-200 bg-orange-50/60 p-4 text-left transition hover:bg-orange-50">
+                <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-white text-[#ef8354] shadow-sm"><Bell className="h-5 w-5" /></span>
+                <span><strong className="block text-sm font-extrabold text-[#2d3142]">{user.role === 'CHECKER' ? 'Payroll alerts need review' : 'Finance returned payroll issues'}</strong><span className="mt-1 block text-xs leading-relaxed text-slate-600">{user.role === 'CHECKER' ? `${riskAlertCount} open ${riskAlertCount === 1 ? 'alert requires' : 'alerts require'} your attention.` : `${riskAlertCount} ${riskAlertCount === 1 ? 'issue was' : 'issues were'} sent back for HR correction.`}</span></span>
+              </button>}
+            </div> : <div className="py-10 text-center"><span className="mx-auto grid h-12 w-12 place-items-center rounded-full bg-emerald-50 text-emerald-600"><ShieldCheck className="h-5 w-5" /></span><p className="mt-3 text-sm font-bold text-slate-700">You’re all caught up</p><p className="mt-1 text-xs text-slate-400">No open payroll notifications.</p></div>}
+          </section>
+        </div>
+      )}
     </>
   );
 };

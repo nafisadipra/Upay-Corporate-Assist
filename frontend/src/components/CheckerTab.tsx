@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { RiskAlert, Batch, BatchItem } from '@/types';
-import { Check, UserCheck, AlertTriangle, CheckCircle2, Bell, ShieldCheck, Shield, FileSpreadsheet } from 'lucide-react';
+import { Check, UserCheck, AlertTriangle, CheckCircle2, Bell, ShieldCheck, FileSpreadsheet, Flag, X, Download, LoaderCircle } from 'lucide-react';
 
 interface CheckerTabProps {
   alerts: RiskAlert[];
@@ -10,6 +10,8 @@ interface CheckerTabProps {
   items: BatchItem[];
   onReviewAlert: (alertId: number, action: 'APPROVED' | 'OVERRIDDEN' | 'REJECTED', notes: string) => void;
   onApproveBatch: (notes: string) => void;
+  onRaiseIssue: (itemId: number, issueType: string, notes: string) => Promise<void>;
+  onDownloadBatch: () => Promise<void>;
 }
 
 export const CheckerTab: React.FC<CheckerTabProps> = ({
@@ -18,23 +20,84 @@ export const CheckerTab: React.FC<CheckerTabProps> = ({
   items,
   onReviewAlert,
   onApproveBatch,
+  onRaiseIssue,
+  onDownloadBatch,
 }) => {
   const [selectedNotes, setSelectedNotes] = useState<{ [key: number]: string }>({});
   const [batchNotes, setBatchNotes] = useState('All payroll items and flagged anomalies reviewed & approved for disbursement.');
+  const [flaggedItem, setFlaggedItem] = useState<BatchItem | null>(null);
+  const [issueType, setIssueType] = useState('INCORRECT_SALARY');
+  const [issueNotes, setIssueNotes] = useState('');
+  const [isReturning, setIsReturning] = useState(false);
+  const [activeAlertView, setActiveAlertView] = useState<'ai' | 'manual' | 'resolved' | null>(null);
+  const [isDownloading, setIsDownloading] = useState(false);
 
   const handleNotesChange = (alertId: number, text: string) => {
     setSelectedNotes((prev) => ({ ...prev, [alertId]: text }));
   };
 
-  const openAlerts = alerts.filter((a) => a.review_status === 'PENDING_REVIEW');
+  const openAiAlerts = alerts.filter((alert) => alert.review_status === 'PENDING_REVIEW' && !alert.flag_type.startsWith('MANUAL_'));
+  const manualAlerts = alerts.filter((alert) => alert.review_status === 'PENDING_REVIEW' && alert.flag_type.startsWith('MANUAL_'));
   const reviewedAlerts = alerts.filter((a) => a.review_status !== 'PENDING_REVIEW');
+  const alertSections = [
+    {
+      key: 'ai',
+      title: 'AI Risk Shield Alerts',
+      description: 'System-detected payroll patterns that require Finance review.',
+      empty: 'No AI alerts. The uploaded payroll rows are within the available baseline.',
+      alerts: openAiAlerts,
+      accent: 'indigo',
+    },
+    {
+      key: 'manual',
+      title: 'Finance-raised issues',
+      description: 'Issues identified manually by Finance and returned to HR for correction.',
+      empty: 'No manual issues have been raised for this payroll.',
+      alerts: manualAlerts,
+      accent: 'orange',
+    },
+    {
+      key: 'resolved',
+      title: 'Resolved alerts',
+      description: 'AI and Finance-raised findings already signed off by Finance.',
+      empty: 'No alerts have been resolved for this payroll yet.',
+      alerts: reviewedAlerts,
+      accent: 'emerald',
+    },
+  ];
+  const activeSection = alertSections.find((section) => section.key === activeAlertView);
   const isReviewed = currentBatch?.status === 'CHECKER_REVIEWED';
   const isExecuted = currentBatch?.status === 'EXECUTED';
+  const sortedItems = [...items].sort((left, right) => left.employee_name.localeCompare(right.employee_name, undefined, { numeric: true, sensitivity: 'base' }));
+
+  const submitManualIssue = async (event: React.FormEvent) => {
+    event.preventDefault();
+    if (!flaggedItem || !issueNotes.trim() || isReturning) return;
+    setIsReturning(true);
+    try {
+      await onRaiseIssue(flaggedItem.id, issueType, issueNotes.trim());
+      setFlaggedItem(null);
+      setIssueNotes('');
+      setIssueType('INCORRECT_SALARY');
+    } finally {
+      setIsReturning(false);
+    }
+  };
 
   const formatAmount = (amount: number) => `BDT ${new Intl.NumberFormat('en-BD', {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   }).format(amount)}`;
+
+  const downloadSelectedBatch = async () => {
+    if (!currentBatch || isDownloading) return;
+    setIsDownloading(true);
+    try {
+      await onDownloadBatch();
+    } finally {
+      setIsDownloading(false);
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -66,20 +129,42 @@ export const CheckerTab: React.FC<CheckerTabProps> = ({
         </div>
 
         {/* Governance Metrics */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-6 text-xs relative z-10">
-          <div className="bg-red-50/50 p-4 rounded-xl border border-red-100 flex items-center justify-between">
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 pt-6 text-xs relative z-10">
+          <button type="button" disabled={!currentBatch || isDownloading} onClick={() => void downloadSelectedBatch()} className="bg-indigo-50/50 p-4 rounded-xl border border-indigo-100 flex items-center justify-between text-left transition hover:-translate-y-0.5 hover:shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-200 disabled:cursor-not-allowed disabled:opacity-60">
+            <div className="min-w-0 pr-3">
+              <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-500">Selected batch</span>
+              <div className="mt-1 truncate font-outfit text-sm font-extrabold text-[#2d3142]" title={currentBatch?.file_name}>
+                {currentBatch?.file_name || 'No batch selected'}
+              </div>
+            </div>
+            <div className="w-10 h-10 shrink-0 rounded-full bg-indigo-100/80 text-indigo-600 flex items-center justify-center">
+              {isDownloading ? <LoaderCircle className="w-5 h-5 animate-spin" /> : <Download className="w-5 h-5" />}
+            </div>
+          </button>
+
+          <button type="button" onClick={() => setActiveAlertView('ai')} className="bg-red-50/50 p-4 rounded-xl border border-red-100 flex items-center justify-between text-left transition hover:-translate-y-0.5 hover:shadow-sm focus:outline-none focus:ring-2 focus:ring-red-200">
             <div>
               <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-500">Open AI Risk Alerts</span>
               <div className="mt-1 font-outfit text-lg font-extrabold text-red-600 flex items-center gap-1.5">
-                {openAlerts.length} <span className="text-sm font-medium">Alerts</span>
+                {openAiAlerts.length} <span className="text-sm font-medium">Alerts</span>
               </div>
             </div>
             <div className="w-10 h-10 rounded-full bg-red-100/80 text-red-500 flex items-center justify-center">
                <Bell className="w-5 h-5" />
             </div>
-          </div>
+          </button>
+
+          <button type="button" onClick={() => setActiveAlertView('manual')} className="bg-orange-50/60 p-4 rounded-xl border border-orange-200 flex items-center justify-between text-left transition hover:-translate-y-0.5 hover:shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-200">
+            <div>
+              <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-500">Finance-raised issues</span>
+              <div className="mt-1 font-outfit text-lg font-extrabold text-[#d56538] flex items-center gap-1.5">
+                {manualAlerts.length} <span className="text-sm font-medium">Issues</span>
+              </div>
+            </div>
+            <div className="w-10 h-10 rounded-full bg-orange-100 text-[#ef8354] flex items-center justify-center"><Flag className="w-5 h-5" /></div>
+          </button>
           
-          <div className="bg-emerald-50/50 p-4 rounded-xl border border-emerald-100 flex items-center justify-between">
+          <button type="button" onClick={() => setActiveAlertView('resolved')} className="bg-emerald-50/50 p-4 rounded-xl border border-emerald-100 flex items-center justify-between text-left transition hover:-translate-y-0.5 hover:shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-200">
             <div>
               <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-500">Signed-off Alerts</span>
               <div className="mt-1 font-outfit text-lg font-extrabold text-emerald-700 flex items-center gap-1.5">
@@ -89,22 +174,11 @@ export const CheckerTab: React.FC<CheckerTabProps> = ({
             <div className="w-10 h-10 rounded-full bg-emerald-100/80 text-emerald-600 flex items-center justify-center">
                <ShieldCheck className="w-5 h-5" />
             </div>
-          </div>
+          </button>
           
-          <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 flex items-center justify-between">
-            <div>
-              <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-500">Maker-Checker Policy</span>
-              <div className="mt-1 font-outfit text-sm font-bold text-[#2d3142]">
-                Dual Control Sign-off
-              </div>
-            </div>
-            <div className="w-10 h-10 rounded-full bg-slate-200/50 text-slate-500 flex items-center justify-center">
-               <Shield className="w-5 h-5" />
-            </div>
-          </div>
         </div>
 
-        {!isReviewed && !isExecuted && currentBatch && (
+        {currentBatch?.status === 'PENDING_CHECKER_REVIEW' && (
           <div className="mt-6 pt-4 border-t border-slate-100 flex flex-col sm:flex-row gap-4 items-center relative z-10 bg-slate-50/50 p-3 rounded-xl border-dashed">
             <div className="flex items-center gap-2 flex-1 pl-2">
               <div className="w-6 h-6 rounded-full bg-[#059669] text-white flex items-center justify-center shrink-0">
@@ -168,11 +242,13 @@ export const CheckerTab: React.FC<CheckerTabProps> = ({
                   <th className="px-4 py-3 text-right">Gross salary</th>
                   <th className="px-4 py-3">Validation</th>
                   <th className="px-4 py-3">Risk review</th>
+                  <th className="px-4 py-3 text-right">Action</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
-                {items.map((item, index) => {
+                {sortedItems.map((item, index) => {
                   const hasRisk = item.is_anomaly || item.account_validation_status !== 'VALID';
+                  const hasOpenManualIssue = manualAlerts.some((alert) => alert.batch_item_id === item.id);
                   return (
                     <tr key={item.id} className={hasRisk ? 'bg-amber-50/30' : 'hover:bg-slate-50/60'}>
                       <td className="px-5 py-3.5 font-mono text-[11px] text-slate-400">{index + 1}</td>
@@ -197,6 +273,24 @@ export const CheckerTab: React.FC<CheckerTabProps> = ({
                           {hasRisk ? 'Needs review' : 'Within baseline'}
                         </span>
                       </td>
+                      <td className="px-4 py-3.5 text-right">
+                        {hasOpenManualIssue ? (
+                          <span className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-slate-100 px-3 py-2 text-[10px] font-extrabold text-slate-500">
+                            <Flag className="h-3.5 w-3.5" />
+                            On Review
+                          </span>
+                        ) : (
+                          <button
+                            type="button"
+                            disabled={!['PENDING_CHECKER_REVIEW', 'RETURNED_TO_HR'].includes(currentBatch.status)}
+                            onClick={() => setFlaggedItem(item)}
+                            className="inline-flex items-center gap-1.5 rounded-lg border border-orange-200 bg-white px-3 py-2 text-[10px] font-extrabold text-[#d56538] shadow-sm transition hover:bg-orange-50 disabled:cursor-not-allowed disabled:opacity-40"
+                          >
+                            <Flag className="h-3.5 w-3.5" />
+                            Raise issue
+                          </button>
+                        )}
+                      </td>
                     </tr>
                   );
                 })}
@@ -206,22 +300,21 @@ export const CheckerTab: React.FC<CheckerTabProps> = ({
         )}
       </div>
 
-      {/* Risk Alerts Review List */}
-      <div className="card-flat bg-white border border-slate-100 p-6 rounded-2xl shadow-sm mt-6">
+      {activeSection && (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/45 p-4 backdrop-blur-sm" onMouseDown={(event) => { if (event.currentTarget === event.target) setActiveAlertView(null); }}>
+      <div className={`card-flat max-h-[80vh] w-full max-w-5xl overflow-auto bg-white p-6 rounded-3xl shadow-2xl border ${activeSection.accent === 'orange' ? 'border-orange-200' : activeSection.accent === 'emerald' ? 'border-emerald-200' : 'border-slate-200'}`}>
         <div className="flex items-center justify-between pb-4 mb-2">
           <div>
-            <h3 className="font-extrabold text-[#2d3142] text-base font-outfit">AI Risk Shield Alerts Audit</h3>
-            <p className="text-xs text-slate-500 mt-0.5">Scikit-Learn Isolation Forest anomalies requiring Finance Director sign-off</p>
+            <h3 className="font-extrabold text-[#2d3142] text-lg font-outfit">{activeSection.title}</h3>
+            <p className="text-xs text-slate-500 mt-0.5">{activeSection.description}</p>
           </div>
-          <span className="text-[10px] font-bold uppercase tracking-wider text-indigo-800 bg-indigo-50 px-2.5 py-1 rounded-lg border border-indigo-100">
-            {alerts.length} Total Alerts
-          </span>
+          <div className="flex items-center gap-3"><span className={`text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-lg border ${activeSection.accent === 'orange' ? 'border-orange-200 bg-orange-50 text-orange-700' : activeSection.accent === 'emerald' ? 'border-emerald-200 bg-emerald-50 text-emerald-700' : 'border-indigo-100 bg-indigo-50 text-indigo-800'}`}>{activeSection.alerts.length} {activeSection.key === 'manual' ? 'Manual issues' : activeSection.key === 'resolved' ? 'Resolved' : 'AI alerts'}</span><button type="button" onClick={() => setActiveAlertView(null)} className="rounded-xl p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-700"><X className="h-5 w-5" /></button></div>
         </div>
 
         <div className="w-full">
-          {alerts.length === 0 ? (
+          {activeSection.alerts.length === 0 ? (
             <div className="py-10 text-center text-slate-400 text-xs">
-              No risk alerts flagged. All uploaded payout items fall within normal baseline parameters.
+              {activeSection.empty}
             </div>
           ) : (
             <div className="overflow-x-auto">
@@ -235,16 +328,16 @@ export const CheckerTab: React.FC<CheckerTabProps> = ({
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
-                  {alerts.map((alert) => (
+                  {activeSection.alerts.map((alert) => (
                     <tr key={alert.id} className="hover:bg-slate-50/50 transition-colors group">
                       <td className="py-4 px-2">
                         <div className="flex items-start gap-3">
-                          <div className="w-10 h-10 rounded-xl bg-red-50 text-red-500 flex items-center justify-center shrink-0">
-                            <Bell className="w-5 h-5" />
+                          <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${activeSection.key === 'manual' ? 'bg-orange-50 text-[#ef8354]' : activeSection.key === 'resolved' ? 'bg-emerald-50 text-emerald-600' : 'bg-red-50 text-red-500'}`}>
+                            {activeSection.key === 'manual' ? <Flag className="w-5 h-5" /> : activeSection.key === 'resolved' ? <ShieldCheck className="w-5 h-5" /> : <Bell className="w-5 h-5" />}
                           </div>
                           <div>
                             <p className="font-outfit text-[11px] font-extrabold text-[#2d3142] uppercase tracking-wide">
-                              {alert.flag_type}
+                              {alert.flag_type.replace('MANUAL_', '').replaceAll('_', ' ')}
                             </p>
                             <p className="text-[10px] text-slate-400 font-mono mt-0.5">
                               Alert #{alert.id}
@@ -266,13 +359,13 @@ export const CheckerTab: React.FC<CheckerTabProps> = ({
                           />
                         ) : (
                           <div className="text-[10px] font-bold text-emerald-700 bg-emerald-50 inline-block px-2.5 py-1 rounded border border-emerald-200">
-                            ✓ Reviewed by {alert.reviewer_name || 'Checker'}
+                            ✓ {alert.review_status === 'RESOLVED_BY_HR' ? `Resolved by ${alert.reviewer_name || 'HR'}` : `Reviewed by ${alert.reviewer_name || 'Finance'}`}
                           </div>
                         )}
                       </td>
                       <td className="py-4 px-2">
                         <div className="flex items-center justify-center gap-2">
-                          {alert.review_status === 'PENDING_REVIEW' ? (
+                          {alert.review_status === 'PENDING_REVIEW' && currentBatch?.status === 'PENDING_CHECKER_REVIEW' ? (
                             <>
                               <button
                                 onClick={() => onReviewAlert(alert.id, 'APPROVED', selectedNotes[alert.id] || 'Approved by Finance Director')}
@@ -311,6 +404,39 @@ export const CheckerTab: React.FC<CheckerTabProps> = ({
           )}
         </div>
       </div>
+      </div>
+      )}
+
+      {flaggedItem && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/45 p-4 backdrop-blur-sm">
+          <form onSubmit={submitManualIssue} className="w-full max-w-md rounded-3xl border border-slate-200 bg-white p-6 shadow-2xl">
+            <div className="flex items-start justify-between border-b border-slate-100 pb-4">
+              <div className="flex gap-3">
+                <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-orange-50 text-[#ef8354]"><Flag className="h-5 w-5" /></span>
+                <div><h3 className="font-outfit text-base font-extrabold text-slate-900">Return row to HR</h3><p className="mt-1 text-xs text-slate-500">{flaggedItem.employee_name} · {formatAmount(flaggedItem.gross_salary)}</p></div>
+              </div>
+              <button type="button" onClick={() => setFlaggedItem(null)} className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-700"><X className="h-4 w-4" /></button>
+            </div>
+            <label className="mt-5 block text-xs font-extrabold text-slate-700">Issue type
+              <select value={issueType} onChange={(event) => setIssueType(event.target.value)} className="mt-2 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-3 text-xs font-semibold text-slate-800 focus:border-[#ef8354] focus:outline-none">
+                <option value="INCORRECT_SALARY">Incorrect salary</option>
+                <option value="WRONG_EMPLOYEE">Wrong employee</option>
+                <option value="INCORRECT_PHONE">Incorrect phone number</option>
+                <option value="DUPLICATE_PAYMENT">Possible duplicate payment</option>
+                <option value="OTHER">Other payroll issue</option>
+              </select>
+            </label>
+            <label className="mt-4 block text-xs font-extrabold text-slate-700">Instructions for HR
+              <textarea required minLength={3} rows={4} value={issueNotes} onChange={(event) => setIssueNotes(event.target.value)} placeholder="Explain what looks wrong and what HR should verify…" className="mt-2 w-full resize-none rounded-xl border border-slate-200 bg-slate-50 px-3 py-3 text-xs leading-relaxed text-slate-800 focus:border-[#ef8354] focus:outline-none" />
+            </label>
+            <p className="mt-3 text-[11px] leading-relaxed text-slate-500">Returning this row pauses Finance approval. HR will see your note, correct the payroll row, and resubmit the batch.</p>
+            <div className="mt-5 flex gap-3">
+              <button type="button" onClick={() => setFlaggedItem(null)} className="flex-1 rounded-xl bg-slate-100 px-4 py-3 text-xs font-extrabold text-slate-700 hover:bg-slate-200">Cancel</button>
+              <button type="submit" disabled={!issueNotes.trim() || isReturning} className="flex-1 rounded-xl bg-[#ef8354] px-4 py-3 text-xs font-extrabold text-white shadow-sm hover:bg-[#d67045] disabled:cursor-not-allowed disabled:opacity-50">{isReturning ? 'Returning…' : 'Return to HR'}</button>
+            </div>
+          </form>
+        </div>
+      )}
 
     </div>
   );

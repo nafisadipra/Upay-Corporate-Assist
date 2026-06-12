@@ -56,7 +56,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
   };
 
   return (
-    <div className="space-y-6">
+    <div className="flex flex-col gap-6">
       
       {/* Asymmetric Top Grid: Company Profile & Quick Actions */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -137,7 +137,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
 
       </div>
 
-      <div className="card-flat p-6">
+      <div className="order-3 card-flat p-6">
         <div className="pb-4 mb-4 border-b border-slate-100">
           <h3 className="font-extrabold text-slate-900 text-base font-outfit">HR Wallet Management</h3>
           <p className="text-xs text-slate-500 mt-0.5">Create a corporate wallet or update the balance of an existing wallet. Every change is audited.</p>
@@ -163,7 +163,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
       </div>
 
       {/* Central Wallets Grid */}
-      <div className="card-flat p-6">
+      <div className="order-2 card-flat p-6">
         <div className="flex items-center justify-between pb-4 mb-4 border-b border-slate-100">
           <div>
             <h3 className="font-extrabold text-slate-900 text-base font-outfit">Corporate Central Wallets</h3>
@@ -202,7 +202,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
       </div>
 
       {/* Recent Disbursement Batches History */}
-      <div className="card-flat p-6">
+      <div className="order-4 card-flat p-6">
         <div className="flex items-center justify-between pb-4 mb-4 border-b border-slate-100">
           <div>
             <h3 className="font-extrabold text-slate-900 text-base font-outfit">Recent Disbursement Batches</h3>
