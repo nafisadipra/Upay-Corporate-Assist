@@ -7,13 +7,13 @@ import { DashboardTab, Header } from '@/components/Header';
 import { CheckerTab } from '@/components/CheckerTab';
 import { AuditTab } from '@/components/AuditTab';
 import { LoginForm } from '@/components/LoginForm';
-import { Batch, AuditLog, RiskAlert } from '@/types';
+import { Batch, BatchItem, AuditLog, RiskAlert } from '@/types';
 import * as api from '@/lib/api';
-import { History, ShieldAlert, BarChart3, Shield, MoreHorizontal, Calendar, ChevronDown, FileText, CheckCircle2, PlayCircle, XCircle, Hourglass, Clock, Bell } from 'lucide-react';
+import { History, ShieldAlert, BarChart3, Shield, MoreHorizontal, FileText, CheckCircle2, PlayCircle, XCircle, Hourglass } from 'lucide-react';
 
 type ChartItem = { label: string; value: number; color: string };
 
-const REVIEW_STATUSES = ['FLAGGED_RISK', 'PENDING_CHECKER_REVIEW', 'PENDING_CHECKER_APPROVAL'];
+const REVIEW_STATUSES = ['FLAGGED_RISK', 'PENDING_CHECKER_REVIEW', 'PENDING_CHECKER_APPROVAL', 'RETURNED_TO_HR'];
 
 function formatAmount(amount: number) {
   return amount >= 1_000_000 ? `BDT ${(amount / 1_000_000).toFixed(1)}M` : `BDT ${amount.toLocaleString()}`;
@@ -222,7 +222,10 @@ function LineTrend({ items }: { items: ChartItem[] }) {
   );
 }
 
-function renderDashboard(batches: Batch[], alerts: RiskAlert[]) {
+function renderDashboard(batches: Batch[], alerts: RiskAlert[], selectedPeriod: string, disbursementHistory: Array<{ period: string; amount: number }>) {
+  const periodLabel = selectedPeriod
+    ? new Intl.DateTimeFormat('en-US', { month: 'long', year: 'numeric' }).format(new Date(`${selectedPeriod}-01T00:00:00`))
+    : 'Selected month';
   const statusGroups = [
     { label: 'Pending', statuses: REVIEW_STATUSES, color: '#f97316' },
     { label: 'Approved', statuses: ['CHECKER_REVIEWED', 'APPROVED'], color: '#059669' },
@@ -246,18 +249,20 @@ function renderDashboard(batches: Batch[], alerts: RiskAlert[]) {
     { label: 'Critical', value: alerts.filter((alert) => alert.severity === 'CRITICAL').length, color: '#be123c' },
   ];
   
-  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-  const monthlyTotals: Record<string, number> = {};
-  months.forEach(m => monthlyTotals[m] = 0);
-  batches.forEach((batch) => {
-    const m = new Date(batch.created_at).toLocaleDateString('en-US', { month: 'short' });
-    if (monthlyTotals[m] !== undefined) {
-      monthlyTotals[m] += batch.total_amount;
-    }
+  const selectedDate = selectedPeriod ? new Date(`${selectedPeriod}-01T00:00:00`) : new Date();
+  const chartYear = selectedDate.getFullYear();
+  const selectedMonth = selectedDate.getMonth();
+  const recentPayouts = Array.from({ length: selectedMonth + 1 }, (_, month) => {
+    const period = `${chartYear}-${String(month + 1).padStart(2, '0')}`;
+    const executedTotal = disbursementHistory.find((item) => item.period === period)?.amount || 0;
+    return {
+      label: new Date(chartYear, month, 1).toLocaleDateString('en-US', { month: 'short' }),
+      value: executedTotal,
+      color: '#f97316',
+    };
   });
-  const recentPayouts = months.map((m) => ({ label: m, value: monthlyTotals[m], color: '#f97316' }));
   
-  const recentActivity = [...batches].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()).slice(0, 1);
+  const recentActivity = [...batches].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()).slice(0, 5);
 
   return (
     <div className="space-y-6">
@@ -270,7 +275,7 @@ function renderDashboard(batches: Batch[], alerts: RiskAlert[]) {
               </div>
               <div>
                 <h2 className="font-outfit text-base font-extrabold text-slate-900">Batch approval flow</h2>
-                <p className="mt-0.5 text-xs text-slate-500">Where payroll batches currently sit in the disbursement pipeline.</p>
+                <p className="mt-0.5 text-xs text-slate-500">Where {periodLabel} payroll batches sit in the disbursement pipeline.</p>
               </div>
             </div>
             <button className="text-slate-400 hover:text-slate-600"><MoreHorizontal className="h-5 w-5" /></button>
@@ -286,7 +291,7 @@ function renderDashboard(batches: Batch[], alerts: RiskAlert[]) {
               </div>
               <div>
                 <h2 className="font-outfit text-base font-extrabold text-slate-900">Risk posture</h2>
-                <p className="mt-0.5 text-xs text-slate-500">Outcome of flagged payroll flaws.</p>
+                <p className="mt-0.5 text-xs text-slate-500">Outcome of payroll flaws flagged in {periodLabel}.</p>
               </div>
             </div>
             <button className="text-slate-400 hover:text-slate-600"><MoreHorizontal className="h-5 w-5" /></button>
@@ -304,7 +309,7 @@ function renderDashboard(batches: Batch[], alerts: RiskAlert[]) {
               </div>
               <div>
                 <h2 className="font-outfit text-base font-extrabold text-slate-900">Disbursement value</h2>
-                <p className="mt-0.5 text-xs text-slate-500">Payroll value held at each control stage.</p>
+                <p className="mt-0.5 text-xs text-slate-500">{periodLabel} payroll value held at each control stage.</p>
               </div>
             </div>
             <button className="text-slate-400 hover:text-slate-600"><MoreHorizontal className="h-5 w-5" /></button>
@@ -320,7 +325,7 @@ function renderDashboard(batches: Batch[], alerts: RiskAlert[]) {
               </div>
               <div>
                 <h2 className="font-outfit text-base font-extrabold text-slate-900">Severity mix</h2>
-                <p className="mt-0.5 text-xs text-slate-500">Risk findings by review severity.</p>
+                <p className="mt-0.5 text-xs text-slate-500">{periodLabel} risk findings by review severity.</p>
               </div>
             </div>
             <button className="text-slate-400 hover:text-slate-600"><MoreHorizontal className="h-5 w-5" /></button>
@@ -333,14 +338,10 @@ function renderDashboard(batches: Batch[], alerts: RiskAlert[]) {
         <article className="rounded-[20px] border border-slate-100 bg-white p-6 shadow-sm">
           <div className="flex items-start justify-between">
             <div>
-              <h2 className="font-outfit text-base font-extrabold text-slate-900">Recent disbursement volume</h2>
-              <p className="mt-0.5 text-xs text-slate-500">Submitted payroll value across recent batches.</p>
+              <h2 className="font-outfit text-base font-extrabold text-slate-900">Recorded disbursement volume</h2>
+              <p className="mt-0.5 text-xs text-slate-500">Payroll value from January through {periodLabel}.</p>
             </div>
-            <button className="flex items-center gap-2 rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-600 hover:bg-slate-50">
-              <Calendar className="h-4 w-4" />
-              Last 7 days
-              <ChevronDown className="h-4 w-4" />
-            </button>
+            <span className="rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-600">{chartYear}</span>
           </div>
           {recentPayouts.length ? <LineTrend items={recentPayouts} /> : <div className="grid h-40 place-items-center text-xs text-slate-400">No disbursement data is available yet.</div>}
         </article>
@@ -384,45 +385,60 @@ function CheckerWorkspace() {
   const [activeTab, setActiveTab] = useState<DashboardTab>('overview');
   const [batches, setBatches] = useState<Batch[]>([]);
   const [currentBatch, setCurrentBatch] = useState<Batch | null>(null);
+  const [batchItems, setBatchItems] = useState<BatchItem[]>([]);
   const [alerts, setAlerts] = useState<RiskAlert[]>([]);
   const [auditLogs, setAuditLogs] = useState<AuditLog[]>([]);
+  const [disbursementHistory, setDisbursementHistory] = useState<Array<{ period: string; amount: number }>>([]);
   const [message, setMessage] = useState('');
+  const [selectedPeriod, setSelectedPeriod] = useState('');
 
   const loadData = useCallback(async () => {
     if (!user?.company_id) return;
 
     try {
       setMessage('');
-      const [batchData, alertData] = await Promise.all([
+      const [batchData, historyData] = await Promise.all([
         api.fetchBatches(user.company_id),
-        api.fetchRiskAlerts(),
+        api.fetchDisbursementHistory(user.company_id),
       ]);
+      setDisbursementHistory(historyData.historical_series || []);
       const companyBatches = batchData.batches || [];
-      const reviewBatch = companyBatches.find((batch: Batch) =>
-        ['FLAGGED_RISK', 'PENDING_CHECKER_REVIEW', 'PENDING_CHECKER_APPROVAL'].includes(batch.status),
+      const preferredBatch = companyBatches.find((batch: Batch) =>
+        REVIEW_STATUSES.includes(batch.status),
       ) || companyBatches[0] || null;
+      const activePeriod = selectedPeriod || preferredBatch?.payroll_period?.slice(0, 7) || '';
+      const reviewBatch = companyBatches.find((batch: Batch) => batch.payroll_period?.slice(0, 7) === activePeriod) || null;
 
       setBatches(companyBatches);
       setCurrentBatch(reviewBatch);
-      setAlerts(alertData.risk_alerts || []);
+      if (!selectedPeriod && activePeriod) setSelectedPeriod(activePeriod);
 
       if (reviewBatch) {
-        const logData = await api.fetchAuditLogs(reviewBatch.id);
+        const [logData, itemData, alertData] = await Promise.all([
+          api.fetchAuditLogs(reviewBatch.id),
+          api.fetchBatchItems(reviewBatch.id),
+          api.fetchRiskAlerts(reviewBatch.id),
+        ]);
         setAuditLogs(logData.audit_logs || []);
+        setBatchItems(itemData.items || []);
+        setAlerts(alertData.risk_alerts || []);
       } else {
         setAuditLogs([]);
+        setBatchItems([]);
+        setAlerts([]);
       }
     } catch (err) {
       setMessage(err instanceof Error ? err.message : 'Unable to load checker review data.');
     }
-  }, [user]);
+  }, [selectedPeriod, user]);
 
   useEffect(() => {
-    if (user) {
-      void (async () => {
-        await loadData();
-      })();
-    }
+    if (user?.role !== 'CHECKER') return;
+    void (async () => {
+      await loadData();
+    })();
+    const refreshTimer = window.setInterval(() => void loadData(), 15_000);
+    return () => window.clearInterval(refreshTimer);
   }, [loadData, user]);
 
   useEffect(() => {
@@ -462,55 +478,49 @@ function CheckerWorkspace() {
     }
   };
 
+  const handleRaiseIssue = async (itemId: number, issueType: string, notes: string) => {
+    try {
+      await api.createManualRiskAlert(itemId, issueType, notes);
+      await loadData();
+      setMessage('Issue sent to HR. This payroll is locked until HR corrects and resubmits it.');
+    } catch (err) {
+      setMessage(err instanceof Error ? err.message : 'Failed to return the issue to HR.');
+      throw err;
+    }
+  };
+
+  const filteredBatches = batches.filter((batch) => batch.payroll_period?.slice(0, 7) === selectedPeriod);
   const pendingAlertCount = alerts.filter((alert) => alert.review_status === 'PENDING_REVIEW').length;
-  const pendingBatchCount = batches.filter((batch) => ['FLAGGED_RISK', 'PENDING_CHECKER_REVIEW', 'PENDING_CHECKER_APPROVAL'].includes(batch.status)).length;
+  const fixedIssueCount = currentBatch && ['FLAGGED_RISK', 'PENDING_CHECKER_REVIEW'].includes(currentBatch.status)
+    ? alerts.filter((alert) => alert.flag_type.startsWith('MANUAL_') && alert.review_status === 'RESOLVED_BY_HR').length
+    : 0;
 
   return (
     <div className="app-shell text-slate-900 font-sans antialiased flex flex-col justify-between">
       <div className="lg:pl-[272px]">
-        <Header activeTab={activeTab} onTabChange={setActiveTab} riskAlertCount={pendingAlertCount} />
+        <Header activeTab={activeTab} onTabChange={setActiveTab} riskAlertCount={pendingAlertCount} fixedIssueCount={fixedIssueCount} selectedPeriod={selectedPeriod} onPeriodChange={setSelectedPeriod} />
         <main className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto space-y-6">
           {message && <div className="rounded-xl border border-red-200 bg-red-50 p-3 text-xs font-semibold text-red-900">{message}</div>}
 
-          {activeTab === 'overview' && renderDashboard(batches, alerts)}
+          {activeTab === 'overview' && renderDashboard(filteredBatches, alerts, selectedPeriod, disbursementHistory)}
 
           {activeTab === 'checker' && (
-            <>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-                <div className="card-flat bg-white border border-slate-100 rounded-2xl p-5 flex items-center space-x-5 shadow-sm">
-                  <div className="w-12 h-12 rounded-full bg-[#ef8354]/10 text-[#ef8354] flex items-center justify-center shrink-0">
-                    <Clock className="w-6 h-6" />
-                  </div>
-                  <div>
-                    <p className="text-[10px] font-extrabold uppercase tracking-wider text-slate-500">Pending batches</p>
-                    <p className="mt-1 font-outfit text-2xl font-extrabold text-[#2d3142]">{pendingBatchCount}</p>
-                  </div>
-                </div>
-                
-                <div className="card-flat bg-white border border-slate-100 rounded-2xl p-5 flex items-center space-x-5 shadow-sm">
-                  <div className="w-12 h-12 rounded-full bg-red-50 text-red-500 flex items-center justify-center shrink-0">
-                    <Bell className="w-6 h-6" />
-                  </div>
-                  <div>
-                    <p className="text-[10px] font-extrabold uppercase tracking-wider text-slate-500">Open risk alerts</p>
-                    <p className="mt-1 font-outfit text-2xl font-extrabold text-[#2d3142]">{pendingAlertCount}</p>
-                  </div>
-                </div>
-
-                <div className="card-flat bg-white border border-slate-100 rounded-2xl p-5 flex items-center space-x-5 shadow-sm">
-                  <div className="w-12 h-12 rounded-full bg-indigo-50 text-indigo-500 flex items-center justify-center shrink-0">
-                    <FileText className="w-6 h-6" />
-                  </div>
-                  <div className="min-w-0">
-                    <p className="text-[10px] font-extrabold uppercase tracking-wider text-slate-500">Selected batch</p>
-                    <p className="mt-1 truncate font-outfit text-base font-extrabold text-[#2d3142]">
-                      {currentBatch?.file_name || 'No batch awaiting review'}
-                    </p>
-                  </div>
-                </div>
-              </div>
-              <CheckerTab alerts={alerts} currentBatch={currentBatch} onReviewAlert={handleReviewAlert} onApproveBatch={handleApproveBatch} />
-            </>
+            <CheckerTab
+              alerts={alerts}
+              currentBatch={currentBatch}
+              items={batchItems}
+              onReviewAlert={handleReviewAlert}
+              onApproveBatch={handleApproveBatch}
+              onRaiseIssue={handleRaiseIssue}
+              onDownloadBatch={async () => {
+                if (!currentBatch) return;
+                try {
+                  await api.downloadBatchWorkbook(currentBatch.id, currentBatch.file_name);
+                } catch (err) {
+                  setMessage(err instanceof Error ? err.message : 'Failed to download the selected payroll batch.');
+                }
+              }}
+            />
           )}
 
           {activeTab === 'audit' && <AuditTab logs={auditLogs} />}

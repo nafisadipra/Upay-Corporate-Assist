@@ -3,19 +3,22 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { AuthProvider, useAuth } from '@/context/AuthContext';
-import { Company, CentralWallet, Batch, BatchItem, RiskAlert, LiquidityForecast, AuditLog } from '@/types';
+import { Company, CentralWallet, Batch, BatchItem, RiskAlert, ForecastResponse, AuditLog } from '@/types';
 import * as api from '@/lib/api';
 import { Header } from '@/components/Header';
 import { OverviewTab } from '@/components/OverviewTab';
 import { UploadTab } from '@/components/UploadTab';
 import { AnalyticsTab } from '@/components/AnalyticsTab';
 import { AuditTab } from '@/components/AuditTab';
-import { TypoModal } from '@/components/TypoModal';
+import { PayrollItemCorrection, TypoModal } from '@/components/TypoModal';
 import { LoginForm } from '@/components/LoginForm';
 import { EmployeeRegistrationTab } from '@/components/EmployeeRegistrationTab';
+import { DisbursementConfirmModal } from '@/components/DisbursementConfirmModal';
+import { PayrollArchiveTab } from '@/components/PayrollArchiveTab';
+import { ReviewTab } from '@/components/ReviewTab';
 import { Vault, Send, AlertTriangle, Clock } from 'lucide-react';
 
-export type WorkspaceTab = 'overview' | 'upload' | 'registration' | 'checker' | 'analytics' | 'audit';
+export type WorkspaceTab = 'overview' | 'upload' | 'review' | 'registration' | 'checker' | 'analytics' | 'audit' | 'archive';
 
 type WorkspaceProps = {
   initialTab?: WorkspaceTab;
@@ -33,12 +36,16 @@ function DashboardContent({ initialTab = 'overview' }: WorkspaceProps) {
   const [currentBatch, setCurrentBatch] = useState<Batch | null>(null);
   const [items, setItems] = useState<BatchItem[]>([]);
   const [riskAlerts, setRiskAlerts] = useState<RiskAlert[]>([]);
-  const [forecasts, setForecasts] = useState<LiquidityForecast[]>([]);
+  const [forecast, setForecast] = useState<ForecastResponse | null>(null);
+  const [isForecastRefreshing, setIsForecastRefreshing] = useState(false);
   const [auditLogs, setAuditLogs] = useState<AuditLog[]>([]);
+  const [selectedPeriod, setSelectedPeriod] = useState('');
 
   // Modal States
   const [isTypoModalOpen, setIsTypoModalOpen] = useState(false);
   const [selectedItemForEdit, setSelectedItemForEdit] = useState<BatchItem | null>(null);
+  const [isDisbursementModalOpen, setIsDisbursementModalOpen] = useState(false);
+  const [isExecutingDisbursement, setIsExecutingDisbursement] = useState(false);
 
   const loadData = useCallback(async () => {
     try {
@@ -50,8 +57,12 @@ function DashboardContent({ initialTab = 'overview' }: WorkspaceProps) {
       const batchData = await api.fetchBatches(compId);
       setBatches(batchData.batches || []);
       
-      const activeB = batchData.batches && batchData.batches.length > 0 ? batchData.batches[0] : null;
+      const availableBatches: Batch[] = batchData.batches || [];
+      const defaultBatch = availableBatches[0] || null;
+      const activePeriod = selectedPeriod || defaultBatch?.payroll_period?.slice(0, 7) || '';
+      const activeB = availableBatches.find((batch) => batch.payroll_period?.slice(0, 7) === activePeriod) || null;
       setCurrentBatch(activeB);
+      if (!selectedPeriod && activePeriod) setSelectedPeriod(activePeriod);
 
       if (activeB) {
         const itemsData = await api.fetchBatchItems(activeB.id);
@@ -59,13 +70,20 @@ function DashboardContent({ initialTab = 'overview' }: WorkspaceProps) {
 
         const logsData = await api.fetchAuditLogs(activeB.id);
         setAuditLogs(logsData.audit_logs || []);
+      } else {
+        setItems([]);
+        setAuditLogs([]);
       }
 
-      const alertsData = await api.fetchRiskAlerts();
-      setRiskAlerts(alertsData.risk_alerts || []);
+      if (activeB) {
+        const alertsData = await api.fetchRiskAlerts(activeB.id);
+        setRiskAlerts(alertsData.risk_alerts || []);
+      } else {
+        setRiskAlerts([]);
+      }
 
       const forecastData = await api.fetchLiquidityForecast(compId);
-      setForecasts(forecastData.liquidity_forecasts || []);
+      setForecast(forecastData as ForecastResponse);
 
     } catch (err: unknown) {
       if (err instanceof Error && err.message === 'Your session is no longer valid. Please sign in again.') {
@@ -73,14 +91,15 @@ function DashboardContent({ initialTab = 'overview' }: WorkspaceProps) {
       }
       console.error('API Load Error:', err);
     }
-  }, [user]);
+  }, [selectedPeriod, user]);
 
   useEffect(() => {
-    if (user) {
-      void (async () => {
-        await loadData();
-      })();
-    }
+    if (user?.role !== 'MAKER') return;
+    void (async () => {
+      await loadData();
+    })();
+    const refreshTimer = window.setInterval(() => void loadData(), 15_000);
+    return () => window.clearInterval(refreshTimer);
   }, [user, loadData]);
 
   useEffect(() => {
@@ -108,9 +127,10 @@ function DashboardContent({ initialTab = 'overview' }: WorkspaceProps) {
   }
 
   // Upload Spreadsheet Handler (MAKER Scope)
-  const handleFileUpload = async (file: File) => {
+  const handleFileUpload = async (file: File, payrollPeriod: string) => {
     try {
-      const res = await api.uploadPayrollFile(file, user.company_id || 1, user.id);
+      const res = await api.uploadPayrollFile(file, user.company_id || 1, user.id, payrollPeriod);
+      setSelectedPeriod(payrollPeriod);
       setCurrentBatch(res.batch);
       setItems(res.items);
       loadData();
@@ -119,24 +139,14 @@ function DashboardContent({ initialTab = 'overview' }: WorkspaceProps) {
     }
   };
 
-  const handleLoadSample = async () => {
-    try {
-      const res = await api.fetchBatchItems(1);
-      setItems(res.items);
-      loadData();
-    } catch {
-      loadData();
-    }
-  };
-
   const handleEditTypoClick = (item: BatchItem) => {
     setSelectedItemForEdit(item);
     setIsTypoModalOpen(true);
   };
 
-  const handleSaveTypoCorrection = async (itemId: number, correctedPhone: string) => {
+  const handleSaveTypoCorrection = async (itemId: number, correction: PayrollItemCorrection) => {
     try {
-      await api.correctItemPhone(itemId, correctedPhone);
+      await api.correctPayrollItem(itemId, correction);
       setIsTypoModalOpen(false);
       loadData();
     } catch (err: unknown) {
@@ -156,12 +166,20 @@ function DashboardContent({ initialTab = 'overview' }: WorkspaceProps) {
 
   const handleExecuteDisbursal = async () => {
     if (!currentBatch) return;
-    if (!confirm(`Execute final disbursement of BDT ${currentBatch.total_amount.toLocaleString()} from central wallet?`)) return;
+    setIsDisbursementModalOpen(true);
+  };
+
+  const confirmExecuteDisbursal = async () => {
+    if (!currentBatch || isExecutingDisbursement) return;
+    setIsExecutingDisbursement(true);
     try {
       await api.executeBatch(currentBatch.id);
-      loadData();
+      setIsDisbursementModalOpen(false);
+      await loadData();
     } catch (err: unknown) {
       alert(err instanceof Error ? err.message : 'Failed to execute disbursement');
+    } finally {
+      setIsExecutingDisbursement(false);
     }
   };
 
@@ -171,6 +189,19 @@ function DashboardContent({ initialTab = 'overview' }: WorkspaceProps) {
     await loadData();
   };
 
+  const handleRefreshForecast = async () => {
+    if (!user?.company_id) return;
+    setIsForecastRefreshing(true);
+    try {
+      const refreshedForecast = await api.refreshLiquidityForecast(user.company_id);
+      setForecast(refreshedForecast as ForecastResponse);
+    } catch (err: unknown) {
+      alert(err instanceof Error ? err.message : 'Unable to refresh your company forecast');
+    } finally {
+      setIsForecastRefreshing(false);
+    }
+  };
+
   const handleUpdateWalletBalance = async (walletId: number, balance: number) => {
     if (!user?.company_id) throw new Error('A company assignment is required to update a wallet.');
     await api.updateCompanyWallet(user.company_id, walletId, { balance });
@@ -178,12 +209,13 @@ function DashboardContent({ initialTab = 'overview' }: WorkspaceProps) {
   };
 
   const walletBal = company?.central_wallet_balance || 0;
-  const totalDisbursed = batches
-    .filter((b) => b.status === 'APPROVED' || b.status === 'EXECUTED')
+  const filteredBatches = batches.filter((batch) => batch.payroll_period?.slice(0, 7) === selectedPeriod);
+  const totalDisbursed = filteredBatches
+    .filter((b) => b.status === 'EXECUTED')
     .reduce((acc, b) => acc + b.total_amount, 0);
 
   const flaggedCount = items.filter((i) => i.is_anomaly || i.account_validation_status !== 'VALID').length;
-  const pendingApprovalAmount = batches
+  const pendingApprovalAmount = filteredBatches
     .filter((b) => b.status === 'FLAGGED_RISK' || b.status === 'PENDING_CHECKER_REVIEW' || b.status === 'CHECKER_REVIEWED')
     .reduce((acc, b) => acc + b.total_amount, 0);
 
@@ -195,7 +227,10 @@ function DashboardContent({ initialTab = 'overview' }: WorkspaceProps) {
         <Header
           activeTab={activeTab}
           onTabChange={setActiveTab}
-          riskAlertCount={riskAlerts.filter((a) => a.review_status === 'PENDING_REVIEW').length}
+          riskAlertCount={riskAlerts.filter((alert) => alert.review_status === 'PENDING_REVIEW' && alert.flag_type.startsWith('MANUAL_')).length}
+          financeSignOffReady={currentBatch?.status === 'CHECKER_REVIEWED'}
+          selectedPeriod={selectedPeriod}
+          onPeriodChange={setSelectedPeriod}
         />
 
         <main className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto space-y-6">
@@ -282,7 +317,7 @@ function DashboardContent({ initialTab = 'overview' }: WorkspaceProps) {
             <OverviewTab
               company={company}
               wallets={wallets}
-              batches={batches}
+              batches={filteredBatches}
               onUploadClick={() => setActiveTab('upload')}
               onRefreshClick={loadData}
               onCreateWallet={handleCreateWallet}
@@ -294,19 +329,32 @@ function DashboardContent({ initialTab = 'overview' }: WorkspaceProps) {
             <UploadTab
               currentBatch={currentBatch}
               items={items}
+              hasFinanceReviews={riskAlerts.some((alert) => alert.flag_type.startsWith('MANUAL_'))}
               onFileUpload={handleFileUpload}
               onEditTypo={handleEditTypoClick}
               onSubmitBatch={handleSubmitBatch}
-              onLoadSample={handleLoadSample}
               onExecuteDisbursal={handleExecuteDisbursal}
+              payrollPeriod={selectedPeriod}
             />
           )}
 
           {activeTab === 'registration' && <EmployeeRegistrationTab />}
 
-          {activeTab === 'analytics' && (
-            <AnalyticsTab forecasts={forecasts} />
+          {activeTab === 'review' && (
+            <ReviewTab
+              currentBatch={currentBatch}
+              items={items}
+              alerts={riskAlerts}
+              onEditItem={handleEditTypoClick}
+              onSubmitBatch={handleSubmitBatch}
+            />
           )}
+
+          {activeTab === 'analytics' && (
+            <AnalyticsTab forecast={forecast} onRefresh={handleRefreshForecast} refreshing={isForecastRefreshing} />
+          )}
+
+          {activeTab === 'archive' && <PayrollArchiveTab batches={batches} onDownload={(batch) => api.downloadPayrollArchive(batch.id, `payroll-archive-${batch.payroll_period?.slice(0, 7) || batch.id}.xlsx`)} />}
 
           {activeTab === 'audit' && (
             <AuditTab logs={auditLogs} />
@@ -321,6 +369,14 @@ function DashboardContent({ initialTab = 'overview' }: WorkspaceProps) {
         item={selectedItemForEdit}
         onClose={() => setIsTypoModalOpen(false)}
         onSave={handleSaveTypoCorrection}
+      />
+
+      <DisbursementConfirmModal
+        isOpen={isDisbursementModalOpen}
+        amount={currentBatch?.total_amount || 0}
+        isSubmitting={isExecutingDisbursement}
+        onCancel={() => setIsDisbursementModalOpen(false)}
+        onConfirm={confirmExecuteDisbursal}
       />
 
     </div>
