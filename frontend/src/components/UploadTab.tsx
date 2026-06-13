@@ -7,6 +7,7 @@ import { FileSpreadsheet, CloudUpload, Edit3, Send, CheckCircle2, XCircle, Alert
 interface UploadTabProps {
   currentBatch: Batch | null;
   items: BatchItem[];
+  hasFinanceReviews: boolean;
   onFileUpload: (file: File, payrollPeriod: string) => void;
   onEditTypo: (item: BatchItem) => void;
   onSubmitBatch: () => void;
@@ -17,6 +18,7 @@ interface UploadTabProps {
 export const UploadTab: React.FC<UploadTabProps> = ({
   currentBatch,
   items,
+  hasFinanceReviews,
   onFileUpload,
   onEditTypo,
   onSubmitBatch,
@@ -42,11 +44,11 @@ export const UploadTab: React.FC<UploadTabProps> = ({
 
   const isReviewed = currentBatch?.status === 'CHECKER_REVIEWED';
   const isExecuted = currentBatch?.status === 'EXECUTED';
-  const canSubmitToFinance = !currentBatch || ['DRAFT', 'VALIDATED', 'FLAGGED_RISK'].includes(currentBatch.status);
+  const canSubmitToFinance = !currentBatch || ['DRAFT', 'VALIDATED', 'FLAGGED_RISK', 'RETURNED_TO_HR'].includes(currentBatch.status);
+  const sortedItems = [...items].sort((left, right) => left.employee_name.localeCompare(right.employee_name, undefined, { numeric: true, sensitivity: 'base' }));
 
   return (
     <div className="space-y-6">
-      
       {/* Ready for Disbursal Notification if Checker has approved */}
       {isReviewed && (
         <div className="p-5 rounded-2xl bg-emerald-50 border border-emerald-300 text-emerald-950 flex flex-col sm:flex-row sm:items-center justify-between gap-4 animate-in fade-in">
@@ -158,7 +160,7 @@ export const UploadTab: React.FC<UploadTabProps> = ({
             </div>
           </div>
 
-          {canSubmitToFinance && (
+          {canSubmitToFinance && !hasFinanceReviews && (
             <button
               onClick={onSubmitBatch}
               disabled={!currentBatch || items.length === 0 || isReviewed || isExecuted}
@@ -245,7 +247,7 @@ export const UploadTab: React.FC<UploadTabProps> = ({
                   </td>
                 </tr>
               ) : (
-                items.map((item, idx) => (
+                sortedItems.map((item, idx) => (
                   <tr key={item.id} className="hover:bg-slate-50/50 transition-colors group">
                     <td className="py-4 px-2 font-mono text-[#bfc0c0]">{idx + 1}</td>
                     <td className="py-4 px-2 font-bold text-[#2d3142] font-outfit">{item.employee_name}</td>
@@ -317,7 +319,7 @@ export const UploadTab: React.FC<UploadTabProps> = ({
                         className="bg-[#ffffff] hover:bg-slate-50 text-[#4f5d75] border border-slate-200 px-3 py-1 rounded-lg font-bold text-[11px] inline-flex items-center space-x-1.5 transition-all shadow-sm whitespace-nowrap"
                       >
                         <Edit3 className="w-3 h-3" />
-                        <span>Fix Typo</span>
+                        <span>Edit row</span>
                       </button>
                     </td>
 

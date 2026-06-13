@@ -2,13 +2,21 @@
 
 import React, { useState } from 'react';
 import { BatchItem } from '@/types';
-import { Edit3, CheckCircle2, Phone, X } from 'lucide-react';
+import { Edit3, CheckCircle2, X } from 'lucide-react';
+
+export interface PayrollItemCorrection {
+  corrected_phone_number: string;
+  employee_name: string;
+  department: string;
+  basic_salary: number;
+  gross_salary: number;
+}
 
 interface TypoModalProps {
   isOpen: boolean;
   item: BatchItem | null;
   onClose: () => void;
-  onSave: (itemId: number, correctedPhone: string) => void;
+  onSave: (itemId: number, correction: PayrollItemCorrection) => void;
 }
 
 function TypoForm({
@@ -18,32 +26,23 @@ function TypoForm({
 }: {
   item: BatchItem;
   onClose: () => void;
-  onSave: (itemId: number, correctedPhone: string) => void;
+  onSave: (itemId: number, correction: PayrollItemCorrection) => void;
 }) {
   const [phone, setPhone] = useState(item.corrected_phone_number || item.raw_phone_number);
+  const [name, setName] = useState(item.employee_name);
+  const [department, setDepartment] = useState(item.department || '');
+  const [basicSalary, setBasicSalary] = useState(String(item.basic_salary));
+  const [grossSalary, setGrossSalary] = useState(String(item.gross_salary));
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSave(item.id, phone);
+    onSave(item.id, { corrected_phone_number: phone, employee_name: name, department, basic_salary: Number(basicSalary), gross_salary: Number(grossSalary) });
   };
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4 text-xs">
-      <div>
-        <label className="block text-slate-700 font-bold mb-1.5 font-space">Corrected Upay Phone Number</label>
-        <div className="relative">
-          <Phone className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" />
-          <input
-            type="text"
-            required
-            value={phone}
-            onChange={(e) => setPhone(e.target.value)}
-            placeholder="01711112233"
-            className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 focus:border-emerald-500 focus:outline-none rounded-xl text-slate-900 font-mono text-sm"
-          />
-        </div>
-        <p className="text-[11px] text-slate-500 mt-1">Re-runs core account DB lookup instantly upon saving.</p>
-      </div>
+      <div className="grid grid-cols-2 gap-3"><label className="col-span-2 block font-bold text-slate-700">Employee name<input required value={name} onChange={(e) => setName(e.target.value)} className="mt-1.5 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 font-medium text-slate-900" /></label><label className="block font-bold text-slate-700">Phone number<input required value={phone} onChange={(e) => setPhone(e.target.value)} className="mt-1.5 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 font-mono text-slate-900" /></label><label className="block font-bold text-slate-700">Department<input value={department} onChange={(e) => setDepartment(e.target.value)} className="mt-1.5 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-slate-900" /></label><label className="block font-bold text-slate-700">Basic salary<input required min="0" step="0.01" type="number" value={basicSalary} onChange={(e) => setBasicSalary(e.target.value)} className="mt-1.5 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 font-mono text-slate-900" /></label><label className="block font-bold text-slate-700">Gross salary<input required min={Number(basicSalary) || 0} step="0.01" type="number" value={grossSalary} onChange={(e) => setGrossSalary(e.target.value)} className="mt-1.5 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 font-mono text-slate-900" /></label></div>
+      <p className="text-[11px] text-slate-500">Saving re-runs account and payroll-risk validation.</p>
 
       <div className="flex items-center space-x-3 pt-2">
         <button
@@ -82,7 +81,7 @@ export const TypoModal: React.FC<TypoModalProps> = ({
             <div className="w-8 h-8 bg-emerald-100 text-emerald-800 rounded-xl flex items-center justify-center font-bold">
               <Edit3 className="w-4 h-4" />
             </div>
-            <h3 className="text-base font-bold text-slate-900 font-space">Fix Phone Typo Inline</h3>
+            <h3 className="text-base font-bold text-slate-900 font-space">Correct payroll row</h3>
           </div>
           <button onClick={onClose} className="p-1.5 text-slate-400 hover:text-slate-600 rounded-xl">
             <X className="w-4 h-4" />

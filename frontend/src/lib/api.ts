@@ -93,13 +93,22 @@ export async function uploadEmployeeRegistrationFile(file: File) {
   return handleResponse(res, 'Failed to submit employee registrations');
 }
 
-export async function correctItemPhone(itemId: number, correctedPhone: string) {
+export async function correctPayrollItem(itemId: number, payload: { corrected_phone_number: string; employee_name: string; department: string; basic_salary: number; gross_salary: number }) {
   const res = await fetch(`${API_BASE_URL}/batches/items/${itemId}/correct`, {
     method: 'PUT',
     headers: getAuthHeaders(),
-    body: JSON.stringify({ corrected_phone_number: correctedPhone }),
+    body: JSON.stringify(payload),
   });
   return handleResponse(res, 'Failed to update phone number');
+}
+
+export async function createManualRiskAlert(batchItemId: number, issueType: string, notes: string) {
+  const res = await fetch(`${API_BASE_URL}/risk-alerts/manual`, {
+    method: 'POST',
+    headers: getAuthHeaders(),
+    body: JSON.stringify({ batch_item_id: batchItemId, issue_type: issueType, notes }),
+  });
+  return handleResponse(res, 'Failed to return the payroll issue to HR');
 }
 
 export async function submitBatch(batchId: number) {
@@ -169,4 +178,30 @@ export async function fetchAuditLogs(batchId: number = 1) {
     headers: getAuthHeaders(),
   });
   return handleResponse(res, 'Failed to fetch audit logs');
+}
+
+export async function downloadPayrollArchive(batchId: number, fileName: string) {
+  const res = await fetch(`${API_BASE_URL}/batches/${batchId}/archive`, { headers: getAuthHeaders() });
+  if (!res.ok) return handleResponse(res, 'Failed to download payroll archive');
+  const url = URL.createObjectURL(await res.blob());
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = fileName;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(url);
+}
+
+export async function downloadBatchWorkbook(batchId: number, fileName: string) {
+  const res = await fetch(`${API_BASE_URL}/batches/${batchId}/workbook`, { headers: getAuthHeaders() });
+  if (!res.ok) return handleResponse(res, 'Failed to download the selected payroll batch');
+  const url = URL.createObjectURL(await res.blob());
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = fileName;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(url);
 }
