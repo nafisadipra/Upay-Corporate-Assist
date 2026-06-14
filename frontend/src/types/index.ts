@@ -52,7 +52,7 @@ export interface Batch {
   invalid_records: number;
   flagged_anomalies: number;
   total_amount: number;
-  status: 'DRAFT' | 'VALIDATED' | 'FLAGGED_RISK' | 'PENDING_CHECKER_REVIEW' | 'PENDING_CHECKER_APPROVAL' | 'CHECKER_REVIEWED' | 'APPROVED' | 'REJECTED' | 'EXECUTED' | 'CANCELLED';
+  status: 'DRAFT' | 'VALIDATED' | 'FLAGGED_RISK' | 'PENDING_CHECKER_REVIEW' | 'PENDING_CHECKER_APPROVAL' | 'RETURNED_TO_HR' | 'CHECKER_REVIEWED' | 'APPROVED' | 'REJECTED' | 'EXECUTED' | 'CANCELLED';
   checker_notes?: string | null;
   checker_reviewed_at?: string | null;
   payroll_period?: string | null;
@@ -85,9 +85,9 @@ export interface RiskAlert {
   batch_id?: number | null;
   employee_name?: string | null;
   anomaly_reason?: string | null;
-  flag_type: 'UNUSUAL_VARIANCE' | 'ROSTER_MISMATCH' | 'ACCOUNT_INACTIVE' | 'UNREGISTERED_PHONE';
+  flag_type: 'UNUSUAL_VARIANCE' | 'ROSTER_MISMATCH' | 'ACCOUNT_INACTIVE' | 'UNREGISTERED_PHONE' | 'MANUAL_INCORRECT_SALARY' | 'MANUAL_WRONG_EMPLOYEE' | 'MANUAL_INCORRECT_PHONE' | 'MANUAL_DUPLICATE_PAYMENT' | 'MANUAL_OTHER';
   severity: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
-  review_status: 'PENDING_REVIEW' | 'APPROVED_BY_CHECKER' | 'OVERRIDDEN_BY_CHECKER' | 'REJECTED_BY_CHECKER';
+  review_status: 'PENDING_REVIEW' | 'RESOLVED_BY_HR' | 'APPROVED_BY_CHECKER' | 'OVERRIDDEN_BY_CHECKER' | 'REJECTED_BY_CHECKER';
   reviewed_by?: number | null;
   reviewer_name?: string | null;
   review_notes?: string | null;
