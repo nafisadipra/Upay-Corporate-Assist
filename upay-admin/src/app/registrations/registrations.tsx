@@ -103,7 +103,6 @@ export default function Registrations() {
   };
 
   return <div className="registration-workspace">
-    <header className="registration-header"><div><span className="registration-eyebrow">Corporate access desk</span><h2>Employee registration</h2><p>Review employee accounts and inspect each company&apos;s registered users.</p></div></header>
     <section className="registration-control-card">
       <div className="registration-company-control"><div className="registration-control-icon"><Building2 size={20} /></div><label htmlFor="registration-company"><span>Company</span><select id="registration-company" value={companyId} onChange={(event) => { setCompanyId(event.target.value); setMessage(''); }}><option value="">Select a company to continue</option>{companies.map((company) => <option key={company.id} value={company.id}>{company.company_name}</option>)}</select></label></div>
       {selectedCompany && <div className="registration-company-meta"><span>Selected company</span><strong>{selectedCompany.company_name}</strong></div>}

@@ -42,11 +42,8 @@ button {
 
 /* Employee registrations: company-first approval desk */
 .registration-workspace { max-width: 1320px; margin: 0 auto; padding: 8px 0 36px; }
-.registration-header { margin-bottom: 22px; }
-.registration-eyebrow, .registration-table-heading > div > span { color: var(--upay-blue); font-size: 11px; font-weight: 800; letter-spacing: .11em; text-transform: uppercase; }
-.registration-header h2 { margin-top: 5px; color: var(--upay-heading); font-family: 'Outfit', sans-serif; font-size: 30px; font-weight: 800; letter-spacing: -.045em; }
-.registration-header p { margin-top: 6px; color: var(--upay-muted); font-size: 14px; }
-.registration-control-card { min-height: 100px; display: flex; align-items: center; justify-content: space-between; gap: 24px; padding: 18px 22px; background: #fff; border: 1px solid var(--upay-border); border-left: 4px solid var(--upay-yellow); border-radius: 16px; box-shadow: 0 4px 18px rgba(15,23,42,.035); }
+.registration-table-heading > div > span { color: var(--upay-blue); font-size: 11px; font-weight: 800; letter-spacing: .11em; text-transform: uppercase; }
+.registration-control-card { min-height: 100px; display: flex; align-items: center; justify-content: space-between; gap: 24px; padding: 18px 22px; background: #fff; border: 1px solid var(--upay-border); border-radius: 16px; box-shadow: 0 4px 18px rgba(15,23,42,.035); }
 .registration-company-control { display: flex; align-items: center; gap: 13px; flex: 1; }
 .registration-control-icon { display: grid; width: 42px; height: 42px; place-items: center; color: var(--upay-blue); background: var(--upay-blue-light); border-radius: 12px; }
 .registration-company-control label { display: grid; gap: 5px; width: min(100%, 460px); color: var(--upay-slate); font-size: 11px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
@@ -72,7 +69,7 @@ button {
 .registration-number { color: var(--upay-heading) !important; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12px !important; }.registration-approve-button, .registration-bulk-approve-button { display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-width: 100px; padding: 8px 12px; color: #fff; background: var(--upay-blue); border-radius: 8px; font-size: 12px; font-weight: 800; box-shadow: 0 2px 5px rgba(0,71,186,.18); }.registration-bulk-approve-button { min-width: 136px; }.registration-approve-button:hover:not(:disabled), .registration-bulk-approve-button:hover:not(:disabled) { background: var(--upay-blue-dark); }.registration-approve-button:disabled, .registration-bulk-approve-button:disabled { opacity: .55; cursor: not-allowed; box-shadow: none; }.registration-selection-cell { width: 50px; padding-right: 6px !important; text-align: center; }.registration-selection-cell input { width: 16px; height: 16px; accent-color: var(--upay-blue); cursor: pointer; }.registration-selection-cell input:disabled { cursor: not-allowed; }.registration-table tbody tr.selected { background: #f5f9ff; }
 .registration-role, .registration-status { width: fit-content; margin-top: 0 !important; padding: 4px 8px; border-radius: 6px; font-size: 10.5px !important; font-weight: 800 !important; letter-spacing: .04em; }.registration-role { color: #3730a3 !important; background: #eef2ff; }.registration-status.active { color: #166534 !important; background: #dcfce7; }.registration-status.inactive, .registration-status.suspended { color: #991b1b !important; background: #fee2e2; }.registration-table-empty { padding: 52px !important; color: var(--upay-muted) !important; text-align: center; }
 .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
-@media (max-width: 700px) { .registration-control-card { align-items: flex-start; flex-direction: column; }.registration-company-control label { width: 100%; }.registration-company-meta { width: 100%; padding: 14px 0 0; border-top: 1px solid var(--upay-border); border-left: 0; }.registration-header h2 { font-size: 26px; }.registration-table-heading { align-items: flex-start; flex-direction: column; }.registration-heading-actions { width: 100%; justify-content: space-between; } }
+@media (max-width: 700px) { .registration-control-card { align-items: flex-start; flex-direction: column; }.registration-company-control label { width: 100%; }.registration-company-meta { width: 100%; padding: 14px 0 0; border-top: 1px solid var(--upay-border); border-left: 0; }.registration-table-heading { align-items: flex-start; flex-direction: column; }.registration-heading-actions { width: 100%; justify-content: space-between; } }
 
 /* =========================================================
    1. Admin Layout Grid & Canvas
@@ -120,8 +117,38 @@ button {
 }
 
 .admin-canvas.sidebar-collapsed .sidebar-brand {
+  flex-direction: column;
   justify-content: center;
+  gap: 10px;
   padding-left: 0;
+}
+
+.sidebar-top-collapse {
+  display: grid;
+  width: 34px;
+  height: 34px;
+  margin-left: auto;
+  place-items: center;
+  color: var(--upay-slate);
+  background: #F8FAFC;
+  border: 1px solid var(--upay-border);
+  border-radius: 9px;
+  transition: background 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+}
+
+.admin-canvas.sidebar-collapsed .sidebar-top-collapse {
+  order: -1;
+  margin-left: 0;
+}
+
+.sidebar-top-collapse:hover {
+  color: var(--upay-ink);
+  background: #F1F5F9;
+  border-color: #CBD5E1;
+}
+
+.sidebar-top-collapse:active {
+  transform: translateY(1px);
 }
 
 .brand-logo-box {
@@ -208,18 +235,11 @@ button {
   padding: 10px 14px;
   border-radius: 16px;
   border: 1px solid var(--upay-border);
-  cursor: pointer;
-  transition: all 0.2s ease;
 }
 
 .admin-canvas.sidebar-collapsed .user-profile-widget {
   justify-content: center;
   padding: 8px;
-}
-
-.user-profile-widget:hover {
-  background: #F8FAFC;
-  border-color: #CBD5E1;
 }
 
 .user-avatar {
@@ -258,103 +278,89 @@ button {
   color: var(--upay-muted);
 }
 
-.user-arrow {
-  color: var(--upay-faint);
-  display: flex;
-  align-items: center;
-}
-
-.sidebar-collapse-btn {
+.sidebar-signout-btn {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 8px 10px;
+  padding: 10px 13px;
   border-radius: 12px;
-  color: var(--upay-muted);
+  color: #B42318;
+  background: #FFF7F6;
+  border: 1px solid #FEE4E2;
   font-size: 13px;
-  font-weight: 600;
+  font-weight: 700;
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
-.admin-canvas.sidebar-collapsed .sidebar-collapse-btn {
+.admin-canvas.sidebar-collapsed .sidebar-signout-btn {
   justify-content: center;
 }
 
-.sidebar-collapse-btn:hover {
-  background: #F1F5F9;
-  color: var(--upay-ink);
+.sidebar-signout-btn:hover {
+  color: #912018;
+  background: #FEECE9;
+  border-color: #FECDCA;
 }
 
-.collapse-icon-circle {
-  width: 26px;
-  height: 26px;
-  border-radius: 50%;
-  background: #F1F5F9;
-  border: 1px solid var(--upay-border);
-  display: grid;
-  place-items: center;
-  color: var(--upay-slate);
+.sidebar-signout-btn:active {
+  transform: translateY(1px);
 }
 
 /* =========================================================
    3. Workspace Top Bar
    ========================================================= */
 .admin-workspace {
-  padding: 24px 36px 36px 36px;
+  padding: 20px 32px 36px;
   overflow-y: auto;
 }
 
 .workspace-header-bar {
   display: flex;
+  width: 100%;
+  flex-shrink: 0;
   justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 24px;
+  align-items: center;
+  gap: 24px;
+  max-width: 1440px;
+  margin: 0 auto 20px;
+  padding: 16px 18px 16px 20px;
+  background: #ffffff;
+  border: 1px solid var(--upay-border);
+  border-radius: 16px;
+  box-shadow: 0 3px 14px rgba(15, 23, 42, 0.035);
 }
 
 .header-title-container {
   display: flex;
   flex-direction: column;
+  min-width: 0;
+}
+
+.header-eyebrow {
+  color: var(--upay-blue);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  line-height: 1.2;
+  text-transform: uppercase;
 }
 
 .header-main-title {
-  font-size: 24px;
+  margin-top: 3px;
+  font-family: 'Outfit', sans-serif;
+  font-size: 25px;
   font-weight: 800;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.035em;
+  line-height: 1.15;
   color: var(--upay-ink);
 }
 
-.header-yellow-line {
-  width: 44px;
-  height: 3.5px;
-  background: var(--upay-yellow);
-  border-radius: 2px;
-  margin-top: 5px;
-}
-
-.header-actions {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.icon-badge-btn {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background: #ffffff;
-  border: 1px solid var(--upay-border);
-  color: var(--upay-slate);
-  display: grid;
-  place-items: center;
-  position: relative;
-  transition: all 0.2s ease;
-}
-
-.icon-badge-btn:hover {
-  background: #F8FAFC;
-  color: var(--upay-ink);
-  border-color: #CBD5E1;
+.header-page-description {
+  margin-top: 3px;
+  color: var(--upay-muted);
+  font-size: 12.5px;
+  line-height: 1.45;
 }
 
 .notification-yellow-dot {
@@ -466,11 +472,11 @@ button {
 }
 
 .stat-card-blue {
-  border-bottom: 4px solid var(--upay-blue);
+  border-bottom: 1px solid var(--upay-border);
 }
 
 .stat-card-yellow {
-  border-bottom: 4px solid var(--upay-yellow);
+  border-bottom: 1px solid var(--upay-border);
 }
 
 .stat-icon-wrap {
@@ -656,11 +662,11 @@ button {
 }
 
 .border-edge-blue {
-  border-right: 4px solid var(--upay-blue) !important;
+  border-right: 1px solid var(--upay-border) !important;
 }
 
 .border-edge-yellow {
-  border-right: 4px solid var(--upay-yellow) !important;
+  border-right: 1px solid var(--upay-border) !important;
 }
 
 .company-item-icon-wrap {
@@ -908,7 +914,7 @@ button {
 }
 
 .border-yellow-edge {
-  border-right: 4px solid var(--upay-yellow);
+  border-right: 1px solid var(--upay-border);
 }
 
 .stat-card-circle-icon {
@@ -1120,7 +1126,6 @@ button {
 .company-list-card-item {
   background: #ffffff;
   border: 1px solid var(--upay-border);
-  border-left: 4px solid var(--upay-blue);
   border-radius: 16px;
   padding: 22px 28px;
   display: flex;
@@ -1135,7 +1140,14 @@ button {
 }
 
 .company-card-button { width: 100%; text-align: left; cursor: pointer; font: inherit; color: inherit; }
-.company-card-button:hover { border-left-color: var(--upay-yellow); transform: translateY(-1px); }
+.company-card-button:hover { transform: translateY(-1px); }
+
+@media (max-width: 720px) {
+  .admin-workspace { padding: 16px 18px 28px; }
+  .workspace-header-bar { align-items: flex-start; padding: 15px 16px; }
+  .header-main-title { font-size: 22px; }
+  .header-page-description { max-width: 38ch; }
+}
 .company-card-button:focus-visible { outline: 3px solid rgba(0, 71, 186, .18); outline-offset: 2px; }
 .company-card-right { display: flex; flex-direction: column; align-items: flex-end; gap: 5px; }
 .company-fund-action { display: inline-flex; align-items: center; gap: 5px; color: var(--upay-blue); font-size: 12px; font-weight: 800; }
@@ -1459,6 +1471,30 @@ button {
 /* =========================================================
    9. Operations Activity View
    ========================================================= */
+.admin-workspace.activity-workspace {
+  display: flex;
+  height: 100dvh;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.activity-workspace .page-content-wrapper,
+.activity-root-view {
+  min-height: 0;
+  flex: 1;
+}
+
+.activity-workspace .page-content-wrapper {
+  overflow: hidden;
+}
+
+.activity-root-view {
+  display: flex;
+  height: 100%;
+  flex-direction: column;
+  overflow: hidden;
+}
+
 .activity-top-banner-card {
   background: #FFFDF0;
   border: 1px solid #FEF3C7;
@@ -1540,12 +1576,15 @@ button {
 }
 
 .activity-main-list-card {
+  display: flex;
+  min-height: 0;
+  flex: 1;
+  flex-direction: column;
   background: #ffffff;
   border: 1px solid var(--upay-border);
   border-radius: 20px;
   padding: 28px 32px;
   box-shadow: 0 2px 12px rgba(15, 23, 42, 0.02);
-  min-height: 280px;
 }
 
 .activity-card-header {
@@ -1571,8 +1610,19 @@ button {
 
 .activity-rows-container {
   display: flex;
+  min-height: 0;
+  flex: 1;
   flex-direction: column;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+  padding-right: 8px;
 }
+
+.activity-rows-container::-webkit-scrollbar { width: 8px; }
+.activity-rows-container::-webkit-scrollbar-track { background: transparent; }
+.activity-rows-container::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 99px; }
+.activity-rows-container::-webkit-scrollbar-thumb:hover { background: #94A3B8; }
 
 .activity-row-item {
   display: flex;
@@ -1638,10 +1688,6 @@ button {
   display: flex;
   align-items: center;
   gap: 20px;
-}
-
-.activity-item-chevron {
-  color: var(--upay-faint);
 }
 
 /* Activity Empty State */

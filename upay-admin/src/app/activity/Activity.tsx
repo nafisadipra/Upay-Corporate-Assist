@@ -6,8 +6,6 @@ import { AuditLog } from '@/types';
 import { Spinner, MessageBar, MessageBarBody } from '@fluentui/react-components';
 import { 
   Monitor, 
-  ShieldCheck, 
-  ChevronRight, 
   Users, 
   AlertTriangle, 
   Building2, 
@@ -104,31 +102,7 @@ export default function Activity() {
           </MessageBar>
         </div>
       )}
-
-      {/* 1. Top Operations Activity Banner */}
-      <div className="activity-top-banner-card">
-        <div className="banner-left-wrap">
-          <div className="banner-icon-box">
-            <Monitor size={26} color="#0047BA" />
-          </div>
-          <div className="banner-text-details">
-            <span className="banner-sublabel">Operations activity</span>
-            <h2 className="banner-title">Recent control-room actions</h2>
-            <p className="banner-subtext">
-              {logs.length > 0 
-                ? `${logs.length} ${logs.length === 1 ? 'action' : 'actions'} recorded in database.` 
-                : 'No activity recorded.'}
-            </p>
-          </div>
-        </div>
-
-        <div className="banner-right-wrap">
-          <div className="banner-yellow-divider" />
-          <div className="banner-shield-box">
-            <ShieldCheck size={38} color="#D97706" strokeWidth={1.75} />
-          </div>
-        </div>
-      </div>
+      
 
       {/* 2. Filter Dropdown Pill */}
       <div className="activity-filter-row">
@@ -171,7 +145,6 @@ export default function Activity() {
                       <CheckCircle2 size={15} />
                       <span>Completed</span>
                     </div>
-                    <ChevronRight size={18} className="activity-item-chevron" />
                   </div>
                 </div>
               ))
