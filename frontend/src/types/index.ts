@@ -110,6 +110,13 @@ export interface LiquidityForecast {
   assumptions: string[];
 }
 
+export interface ForecastSettings {
+  planning_baseline_amount: number;
+  include_festival_bonus: boolean;
+  festival_bonus_amount: number;
+  festival_bonus_months: number[];
+}
+
 export interface ForecastResponse {
   company_id: number;
   generated_at: string | null;
@@ -118,7 +125,7 @@ export interface ForecastResponse {
   forecasts: LiquidityForecast[];
   liquidity_forecasts: LiquidityForecast[];
   historical_series: Array<{ period: string; amount: number }>;
-  settings: { planning_baseline_amount: number; include_festival_bonus: boolean; festival_bonus_amount: number; festival_bonus_months: number[] } | null;
+  settings: ForecastSettings | null;
 }
 
 export interface AuditLog {
