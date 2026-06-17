@@ -166,6 +166,20 @@ export async function refreshLiquidityForecast(companyId: number) {
   return handleResponse(res, 'Failed to refresh liquidity forecast');
 }
 
+export async function updateForecastSettings(companyId: number, settings: {
+  planning_baseline_amount: number;
+  include_festival_bonus: boolean;
+  festival_bonus_amount: number;
+  festival_bonus_months: number[];
+}) {
+  const res = await fetch(`${API_BASE_URL}/analytics/liquidity-forecast/${companyId}/settings`, {
+    method: 'PUT',
+    headers: getAuthHeaders(),
+    body: JSON.stringify(settings),
+  });
+  return handleResponse(res, 'Failed to save forecast settings');
+}
+
 export async function fetchDisbursementHistory(companyId: number) {
   const res = await fetch(`${API_BASE_URL}/analytics/disbursement-history/${companyId}`, {
     headers: getAuthHeaders(),
