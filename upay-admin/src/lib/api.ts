@@ -1,4 +1,4 @@
-import { AuditLog, Company, Employee, BankAccount, LiquidityForecast, Overview, RiskAlert, User } from '@/types';
+import { AuditLog, Company, Employee, BankAccount, ForecastResponse, Overview, RiskAlert, User } from '@/types';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:5000/api';
 
@@ -35,8 +35,10 @@ export const getActivity = (token: string) => request<{ audit_logs: AuditLog[]; 
 export const getAdminAuditLogs = (token: string, companyId?: number) =>
   request<{ audit_logs: AuditLog[] }>(`/admin/audit-logs${companyId ? `?company_id=${companyId}` : ''}`, token);
 
-export const getLiquidityForecast = (token: string, companyId: number) =>
-  request<{ liquidity_forecasts: LiquidityForecast[] }>(`/analytics/liquidity-forecast/${companyId}`, token);
+export const getLiquidityForecast = (token: string, companyId: number, includeFestivalBonuses?: boolean) =>
+  request<ForecastResponse>(`/analytics/liquidity-forecast/${companyId}${includeFestivalBonuses === undefined ? '' : `?include_festival_bonus=${includeFestivalBonuses}`}`, token);
+export const refreshLiquidityForecast = (token: string, companyId: number) =>
+  request<ForecastResponse>(`/analytics/liquidity-forecast/${companyId}/refresh`, token, { method: 'POST' });
 
 // 2. Company Onboarding & Status
 export const getCompanies = (token: string) => request<{ companies: Company[] }>('/admin/companies', token);
@@ -102,13 +104,24 @@ export const removeCompanyEmployee = (token: string, companyId: number, employee
     method: 'DELETE',
   });
 
-export const getPendingEmployeeRegistrations = (token: string) =>
-  request<{ registrations: Array<Record<string, unknown>> }>('/employee-registrations', token);
+export const getEmployeeRegistrations = (token: string, companyId?: number, status = 'PENDING_ADMIN_APPROVAL') => {
+  const params = new URLSearchParams({ status });
+  if (companyId) params.set('company_id', String(companyId));
+  return request<{ registrations: Array<Record<string, unknown>> }>(`/employee-registrations?${params.toString()}`, token);
+};
+export const getPendingEmployeeRegistrations = (token: string, companyId?: number) =>
+  getEmployeeRegistrations(token, companyId);
 export const approveEmployeeRegistration = (token: string, registrationId: number) =>
   request<{ message: string }>(`/employee-registrations/${registrationId}/approve`, token, { method: 'POST' });
+export const bulkApproveEmployeeRegistrations = (token: string, registrationIds: number[]) =>
+  request<{ message: string; approved_count: number }>('/employee-registrations/bulk-approve', token, {
+    method: 'POST',
+    body: JSON.stringify({ registration_ids: registrationIds }),
+  });
 
 // 6. Identity & Users
-export const getUsers = (token: string) => request<{ users: User[] }>('/admin/users', token);
+export const getUsers = (token: string, companyId?: number) =>
+  request<{ users: User[] }>(`/admin/users${companyId ? `?company_id=${companyId}` : ''}`, token);
 export const createUser = (token: string, payload: Record<string, unknown>) => request<{ user: User }>('/admin/users', token, {
   method: 'POST',
   body: JSON.stringify(payload),

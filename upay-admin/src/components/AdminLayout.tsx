@@ -10,7 +10,7 @@ import {
   Clock, 
   UserPlus,
   Landmark, 
-  User as UserIcon,
+  LogOut,
   ChevronRight,
   ChevronLeft
 } from 'lucide-react';
@@ -73,6 +73,29 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
     ? admin.full_name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase() 
     : 'CA';
 
+  const pageMeta: Record<string, { title: string; description: string }> = {
+    '/dashboard': {
+      title: 'Portfolio Liquidity',
+      description: 'Monitor corporate wallets, payroll demand, and funding coverage.',
+    },
+    '/companies': {
+      title: 'Corporate Directory',
+      description: 'Manage connected companies and their payroll funding position.',
+    },
+    '/activity': {
+      title: 'Operations Activity',
+      description: 'Review recent administrative and payroll activity.',
+    },
+    '/registrations': {
+      title: 'Employee Registrations',
+      description: 'Review and approve employee registration requests.',
+    },
+  };
+  const currentPage = pageMeta[pathname] ?? {
+    title: 'Admin Workspace',
+    description: 'Manage corporate payroll operations from one place.',
+  };
+
   return (
     <FluentProvider theme={webLightTheme}>
       <AuthContext.Provider value={{ token, admin, signOut }}>
@@ -89,6 +112,14 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
                   <span className="brand-subtitle">CORPORATE</span>
                 </div>
               )}
+              <button
+                className="sidebar-top-collapse"
+                aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+                title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+                onClick={() => setCollapsed(!collapsed)}
+              >
+                {collapsed ? <ChevronRight size={18} /> : <ChevronLeft size={18} />}
+              </button>
             </div>
             
             <nav className="sidebar-nav">
@@ -122,55 +153,38 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
             </nav>
 
             <div className="sidebar-footer">
-              <div className="user-profile-widget" onClick={signOut} title="Click to Sign Out">
+              <div className="user-profile-widget" aria-label="Signed-in administrator">
                 <div className="user-avatar">{initials}</div>
                 {!collapsed && (
-                  <>
-                    <div className="user-details">
-                      <strong className="user-name">{admin?.full_name || 'Signed-in user'}</strong>
-                      <span className="user-role">{admin?.role || 'Role unavailable'}</span>
-                    </div>
-                    <div className="user-arrow">
-                      <ChevronRight size={16} />
-                    </div>
-                  </>
+                  <div className="user-details">
+                    <strong className="user-name">{admin?.full_name || 'Signed-in user'}</strong>
+                    <span className="user-role">{admin?.role || 'Role unavailable'}</span>
+                  </div>
                 )}
               </div>
 
-              {/* Sidebar Collapse Toggle */}
+              {/* Explicit sign-out action */}
               <button 
-                className="sidebar-collapse-btn" 
-                onClick={() => setCollapsed(!collapsed)}
-                title={collapsed ? "Expand Sidebar" : "Collapse Sidebar"}
+                className="sidebar-signout-btn" 
+                onClick={signOut}
+                title="Sign out"
               >
-                <div className="collapse-icon-circle">
-                  {collapsed ? <ChevronRight size={14} /> : <ChevronLeft size={14} />}
-                </div>
-                {!collapsed && <span>Collapse</span>}
+                <LogOut size={17} aria-hidden="true" />
+                {!collapsed && <span>Sign out</span>}
               </button>
             </div>
           </aside>
           
           {/* Main Workspace Area */}
-          <main className="admin-workspace">
+          <main className={`admin-workspace ${pathname === '/activity' ? 'activity-workspace' : ''}`}>
             {/* Top Bar Header */}
-            <div className="workspace-header-bar">
+            <header className="workspace-header-bar">
               <div className="header-title-container">
-                <h1 className="header-main-title">
-                  {pathname === '/dashboard' && 'Portfolio Liquidity'}
-                  {pathname === '/companies' && 'Corporate Directory'}
-                  {pathname === '/activity' && 'Operations Activity'}
-                  {pathname === '/registrations' && 'Employee Registrations'}
-                </h1>
-                <div className="header-yellow-line" />
+                <span className="header-eyebrow">Administration</span>
+                <h1 className="header-main-title">{currentPage.title}</h1>
+                <p className="header-page-description">{currentPage.description}</p>
               </div>
-              
-              <div className="header-actions">
-                <button className="icon-badge-btn" aria-label="User Profile" title="Profile" onClick={signOut}>
-                  <UserIcon size={20} />
-                </button>
-              </div>
-            </div>
+            </header>
 
             {/* Page Content */}
             <div className="page-content-wrapper">
