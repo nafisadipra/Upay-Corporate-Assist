@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { AuthProvider, useAuth } from '@/context/AuthContext';
-import { Company, CentralWallet, Batch, BatchItem, RiskAlert, ForecastResponse, AuditLog } from '@/types';
+import { Company, CentralWallet, Batch, BatchItem, RiskAlert, ForecastResponse, ForecastSettings, AuditLog } from '@/types';
 import * as api from '@/lib/api';
 import { Header } from '@/components/Header';
 import { OverviewTab } from '@/components/OverviewTab';
@@ -202,6 +202,13 @@ function DashboardContent({ initialTab = 'overview' }: WorkspaceProps) {
     }
   };
 
+  const handleSaveForecastSettings = async (settings: ForecastSettings) => {
+    if (!user?.company_id) throw new Error('A company assignment is required to update forecast settings.');
+    await api.updateForecastSettings(user.company_id, settings);
+    const updatedForecast = await api.fetchLiquidityForecast(user.company_id);
+    setForecast(updatedForecast as ForecastResponse);
+  };
+
   const handleUpdateWalletBalance = async (walletId: number, balance: number) => {
     if (!user?.company_id) throw new Error('A company assignment is required to update a wallet.');
     await api.updateCompanyWallet(user.company_id, walletId, { balance });
@@ -351,7 +358,7 @@ function DashboardContent({ initialTab = 'overview' }: WorkspaceProps) {
           )}
 
           {activeTab === 'analytics' && (
-            <AnalyticsTab forecast={forecast} onRefresh={handleRefreshForecast} refreshing={isForecastRefreshing} />
+            <AnalyticsTab forecast={forecast} onRefresh={handleRefreshForecast} refreshing={isForecastRefreshing} onSaveSettings={handleSaveForecastSettings} />
           )}
 
           {activeTab === 'archive' && <PayrollArchiveTab batches={batches} onDownload={(batch) => api.downloadPayrollArchive(batch.id, `payroll-archive-${batch.payroll_period?.slice(0, 7) || batch.id}.xlsx`)} />}
