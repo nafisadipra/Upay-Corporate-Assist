@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import {
   Bar,
   BarChart,
@@ -21,16 +21,19 @@ import {
   CircleAlert,
   Info,
   LineChart,
+  Gift,
   RefreshCw,
+  Save,
   Sparkles,
   Wallet,
 } from 'lucide-react';
-import { ForecastResponse } from '@/types';
+import { ForecastResponse, ForecastSettings } from '@/types';
 
 interface AnalyticsTabProps {
   forecast: ForecastResponse | null;
   onRefresh: () => Promise<void>;
   refreshing: boolean;
+  onSaveSettings: (settings: ForecastSettings) => Promise<void>;
 }
 
 type TrendPoint = {
@@ -91,7 +94,46 @@ const LiquidityGauge = ({ value, label }: { value: number | null; label: string 
   );
 };
 
-export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({ forecast, onRefresh, refreshing }) => {
+const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({ forecast, onRefresh, refreshing, onSaveSettings }) => {
+  const [baselineAmount, setBaselineAmount] = useState(() => String(forecast?.settings?.planning_baseline_amount ?? 5000000));
+  const [bonusAmount, setBonusAmount] = useState(() => String(forecast?.settings?.festival_bonus_amount ?? 0));
+  const [bonusMonths, setBonusMonths] = useState<number[]>(() => forecast?.settings?.festival_bonus_months ?? []);
+  const [includeBonus, setIncludeBonus] = useState(() => forecast?.settings?.include_festival_bonus ?? false);
+  const [savingSettings, setSavingSettings] = useState(false);
+  const [settingsMessage, setSettingsMessage] = useState('');
+  const [settingsError, setSettingsError] = useState('');
+
+  const toggleBonusMonth = (month: number) => {
+    setSettingsMessage('');
+    setBonusMonths((current) => current.includes(month) ? current.filter((item) => item !== month) : [...current, month].sort((a, b) => a - b));
+  };
+
+  const saveSettings = async (event: React.FormEvent) => {
+    event.preventDefault();
+    setSettingsError('');
+    setSettingsMessage('');
+    const baseline = Number(baselineAmount);
+    const bonus = Number(bonusAmount);
+    if (!Number.isFinite(baseline) || baseline < 0 || !Number.isFinite(bonus) || bonus < 0) {
+      setSettingsError('Enter valid amounts that are zero or greater.');
+      return;
+    }
+    if (includeBonus && bonus > 0 && bonusMonths.length === 0) {
+      setSettingsError('Choose at least one festival month.');
+      return;
+    }
+    setSavingSettings(true);
+    try {
+      await onSaveSettings({ planning_baseline_amount: baseline, include_festival_bonus: includeBonus, festival_bonus_amount: bonus, festival_bonus_months: bonusMonths });
+      setSettingsMessage('Planning settings saved. Forecast amounts now include your current choices.');
+    } catch (error) {
+      setSettingsError(error instanceof Error ? error.message : 'Unable to save forecast settings.');
+    } finally {
+      setSavingSettings(false);
+    }
+  };
   const forecasts = forecast?.forecasts || [];
   const nextCycle = forecasts[0] || null;
   const history = forecast?.historical_series || [];
@@ -123,6 +165,47 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({ forecast, onRefresh,
           <div className="max-w-3xl"><div className="flex items-center gap-2 text-[#ff5b24]"><Sparkles className="h-5 w-5" /><span className="text-sm font-extrabold uppercase tracking-wide text-[#1e2539]">Predictive treasury intelligence</span></div><p className="mt-3 text-sm leading-6 text-[#596985]">{modelName} uses this company&apos;s completed payroll cycles to estimate upcoming central-wallet funding requirements and highlight potential shortfalls.</p></div>
           <div className="min-w-[238px] rounded-lg border border-[#e0e5ed] bg-[#fbfcfe] px-5 py-3.5"><div className="flex items-start justify-between gap-3"><div><p className="text-xs font-semibold text-[#596985]">Projected {nextCycle ? formatPeriod(nextCycle.period) : 'payout'}</p><p className="mt-1 font-mono text-xl font-extrabold text-[#ff5b24]">{nextCycle ? formatBDT(nextCycle.predicted_amount) : 'Not available'}</p></div><button type="button" onClick={() => { void onRefresh(); }} disabled={refreshing} className="inline-flex items-center gap-1 rounded-md border border-[#f3c8ba] bg-white px-2 py-1.5 text-[10px] font-extrabold text-[#d84b20] transition-colors hover:bg-orange-50 disabled:cursor-not-allowed disabled:opacity-60" title="Refresh your company forecast"><RefreshCw className={`h-3.5 w-3.5 ${refreshing ? 'animate-spin' : ''}`} />{refreshing ? 'Refreshing' : 'Refresh'}</button></div><div className="mt-2 flex items-center justify-between text-xs"><span className="text-[#596985]">Forecast confidence</span><b className="text-[#2d3142]">{confidencePercent === null ? 'Building history' : `${confidencePercent.toFixed(0)}%`}</b></div><div className="mt-2 h-1.5 overflow-hidden rounded-full bg-[#e4e8ef]"><div className="h-full rounded-full bg-[#ff5b24]" style={{ width: `${confidencePercent ?? 0}%` }} /></div></div>
         </div>
+      </section>
+
+      <section className="overflow-hidden rounded-xl border border-[#e5e9f1] bg-white shadow-[0_8px_20px_-20px_rgba(45,49,66,.7)]">
+        <div className="flex flex-col gap-3 border-b border-[#edf0f4] px-6 py-5 sm:flex-row sm:items-start sm:justify-between">
+          <div className="flex items-center gap-3">
+            <span className="grid h-9 w-9 place-items-center rounded-lg bg-orange-50 text-[#ff5b24]"><Gift className="h-4 w-4" /></span>
+            <div><h3 className="font-outfit text-base font-extrabold text-[#1d2437]">Payroll planning settings</h3><p className="mt-0.5 text-xs text-[#68758e]">Set the fallback amount and months that need extra festival funding.</p></div>
+          </div>
+          <span className={`w-fit rounded-md border px-2.5 py-1 text-[10px] font-extrabold uppercase tracking-wide ${includeBonus ? 'border-orange-200 bg-orange-50 text-[#d84b20]' : 'border-slate-200 bg-slate-50 text-slate-500'}`}>{includeBonus ? 'Festival adjustment on' : 'Festival adjustment off'}</span>
+        </div>
+
+        <form onSubmit={saveSettings} className="grid gap-6 px-6 py-5 xl:grid-cols-[minmax(0,.72fr)_minmax(0,.72fr)_minmax(25rem,1.5fr)]">
+          <label className="block">
+            <span className="text-[11px] font-extrabold uppercase tracking-wide text-[#53627e]">Planning baseline</span>
+            <span className="relative mt-2 block"><span className="pointer-events-none absolute inset-y-0 left-3 flex items-center font-mono text-xs font-bold text-[#7b879c]">BDT</span><input type="number" min="0" step="0.01" value={baselineAmount} onChange={(event) => { setBaselineAmount(event.target.value); setSettingsMessage(''); }} className="h-11 w-full rounded-lg border border-[#dfe5ed] bg-[#fbfcfe] pl-12 pr-3 font-mono text-sm font-bold text-[#263049] outline-none transition focus:border-[#ff8a63] focus:bg-white focus:ring-4 focus:ring-orange-100" /></span>
+            <span className="mt-1.5 block text-[10px] leading-4 text-[#7b879c]">Used when fewer than three completed payroll months are available.</span>
+          </label>
+
+          <div>
+            <label className="block">
+              <span className="text-[11px] font-extrabold uppercase tracking-wide text-[#53627e]">Festival bonus amount</span>
+              <span className="relative mt-2 block"><span className="pointer-events-none absolute inset-y-0 left-3 flex items-center font-mono text-xs font-bold text-[#7b879c]">BDT</span><input type="number" min="0" step="0.01" value={bonusAmount} onChange={(event) => { setBonusAmount(event.target.value); setSettingsMessage(''); }} disabled={!includeBonus} className="h-11 w-full rounded-lg border border-[#dfe5ed] bg-[#fbfcfe] pl-12 pr-3 font-mono text-sm font-bold text-[#263049] outline-none transition focus:border-[#ff8a63] focus:bg-white focus:ring-4 focus:ring-orange-100 disabled:cursor-not-allowed disabled:opacity-45" /></span>
+            </label>
+            <label className="mt-2 flex cursor-pointer items-center gap-2 text-xs font-bold text-[#53627e]"><input type="checkbox" checked={includeBonus} onChange={(event) => { setIncludeBonus(event.target.checked); setSettingsMessage(''); }} className="h-4 w-4 accent-[#ff5b24]" />Include festival bonus in forecasts</label>
+          </div>
+
+          <fieldset disabled={!includeBonus}>
+            <legend className="text-[11px] font-extrabold uppercase tracking-wide text-[#53627e]">Festival months</legend>
+            <div className="mt-2 grid grid-cols-6 gap-1.5 sm:grid-cols-12 xl:grid-cols-6">
+              {MONTHS.map((label, index) => {
+                const month = index + 1;
+                const selected = bonusMonths.includes(month);
+                return <button key={label} type="button" aria-pressed={selected} onClick={() => toggleBonusMonth(month)} className={`h-9 rounded-md border text-[10px] font-extrabold transition ${selected ? 'border-[#ff5b24] bg-[#ff5b24] text-white shadow-sm' : 'border-[#dfe5ed] bg-[#fbfcfe] text-[#60708b] hover:border-orange-200 hover:bg-orange-50'} disabled:cursor-not-allowed disabled:opacity-40`}>{label}</button>;
+              })}
+            </div>
+            <div className="mt-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div aria-live="polite">{settingsError ? <p className="text-xs font-bold text-red-600">{settingsError}</p> : settingsMessage ? <p className="text-xs font-bold text-emerald-700">{settingsMessage}</p> : <p className="text-[10px] text-[#7b879c]">The amount is added once to each selected month.</p>}</div>
+              <button type="submit" disabled={savingSettings} className="inline-flex h-10 shrink-0 items-center justify-center gap-2 rounded-lg bg-[#2d3142] px-4 text-xs font-extrabold text-white transition hover:bg-[#202537] disabled:cursor-not-allowed disabled:opacity-60"><Save className="h-3.5 w-3.5" />{savingSettings ? 'Saving...' : 'Save planning settings'}</button>
+            </div>
+          </fieldset>
+        </form>
       </section>
 
       {!nextCycle ? <>
