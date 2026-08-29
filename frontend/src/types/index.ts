@@ -4,6 +4,7 @@ export interface Company {
   corporate_account_number: string;
   central_wallet_balance: number;
   status: string;
+  wallets?: CentralWallet[];
 }
 
 export interface CentralWallet {
@@ -26,6 +27,18 @@ export interface User {
   status: string;
 }
 
+export interface Employee {
+  id: number;
+  company_id: number;
+  employee_code?: string | null;
+  phone_number: string;
+  employee_name: string;
+  department?: string | null;
+  designation?: string | null;
+  status: string;
+  completed_cycles: number;
+}
+
 export interface Batch {
   id: number;
   company_id: number;
@@ -39,7 +52,10 @@ export interface Batch {
   invalid_records: number;
   flagged_anomalies: number;
   total_amount: number;
-  status: 'DRAFT' | 'VALIDATED' | 'FLAGGED_RISK' | 'PENDING_CHECKER_APPROVAL' | 'APPROVED' | 'REJECTED' | 'EXECUTED' | 'CANCELLED';
+  status: 'DRAFT' | 'VALIDATED' | 'FLAGGED_RISK' | 'PENDING_CHECKER_REVIEW' | 'PENDING_CHECKER_APPROVAL' | 'CHECKER_REVIEWED' | 'APPROVED' | 'REJECTED' | 'EXECUTED' | 'CANCELLED';
+  checker_notes?: string | null;
+  checker_reviewed_at?: string | null;
+  executed_at?: string | null;
   created_at: string;
 }
 
@@ -88,6 +104,6 @@ export interface AuditLog {
   user_id?: number;
   performed_by: string;
   action: string;
-  details: Record<string, any>;
+  details: Record<string, unknown>;
   created_at: string;
 }

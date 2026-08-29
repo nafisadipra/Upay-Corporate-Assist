@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState } from 'react';
 import { useAuth } from '@/components/AdminLayout';
 import * as api from '@/lib/api';
 import { Company, LiquidityForecast } from '@/types';
@@ -13,17 +13,6 @@ import {
 } from 'lucide-react';
 
 type CompanyForecast = { company: Company; forecasts: LiquidityForecast[] };
-
-const formatMoneyBDT = (amount: number) => {
-  return `BDT ${new Intl.NumberFormat('en-BD', { maximumFractionDigits: 0 }).format(amount)}`;
-};
-
-const formatCompactBDT = (amount: number) => {
-  if (amount >= 1_000_000) {
-    return `${(amount / 1_000_000).toFixed(1)}M BDT`;
-  }
-  return `${new Intl.NumberFormat('en-BD', { maximumFractionDigits: 0 }).format(amount)} BDT`;
-};
 
 function ForecastComboChart() {
   // 9 historical months + 3 prediction months
@@ -286,6 +275,7 @@ export default function Forecast() {
         <h2 className="forecast-page-heading">
           Predictive Capital Forecasting: Monthly Payout Trends.
         </h2>
+        <span className="sr-only">{forecasts.length} company forecasts loaded</span>
         
         <div className="forecast-filters-bar">
           <div className="filter-dropdown-pill">

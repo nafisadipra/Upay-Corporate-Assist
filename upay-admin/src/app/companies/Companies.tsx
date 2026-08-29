@@ -1,8 +1,8 @@
 'use client';
-import { FormEvent, useEffect, useState, useMemo } from 'react';
+import { FormEvent, useCallback, useEffect, useState, useMemo } from 'react';
 import { useAuth } from '@/components/AdminLayout';
 import * as api from '@/lib/api';
-import { Company, Overview } from '@/types';
+import { Overview } from '@/types';
 import { Spinner, MessageBar, MessageBarBody } from '@fluentui/react-components';
 import { useRouter } from 'next/navigation';
 import { 
@@ -205,7 +205,7 @@ export default function Companies() {
   const [message, setMessage] = useState('');
   const [modalOpen, setModalOpen] = useState(false);
 
-  const load = async () => {
+  const load = useCallback(async () => {
     if (!token) return;
     setLoading(true);
     try {
@@ -216,11 +216,13 @@ export default function Companies() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [token]);
 
   useEffect(() => {
-    load();
-  }, [token]);
+    void (async () => {
+      await load();
+    })();
+  }, [load]);
 
   // Fallback companies matching screenshot precisely
   const companiesList = useMemo(() => {
