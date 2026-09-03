@@ -55,6 +55,7 @@ export interface Batch {
   status: 'DRAFT' | 'VALIDATED' | 'FLAGGED_RISK' | 'PENDING_CHECKER_REVIEW' | 'PENDING_CHECKER_APPROVAL' | 'CHECKER_REVIEWED' | 'APPROVED' | 'REJECTED' | 'EXECUTED' | 'CANCELLED';
   checker_notes?: string | null;
   checker_reviewed_at?: string | null;
+  payroll_period?: string | null;
   executed_at?: string | null;
   created_at: string;
 }
@@ -68,8 +69,8 @@ export interface BatchItem {
   corrected_phone_number?: string | null;
   employee_name: string;
   department: string;
-  amount: number;
-  wallet_type: string;
+  basic_salary: number;
+  gross_salary: number;
   account_validation_status: 'VALID' | 'INVALID_LENGTH' | 'UNREGISTERED_ACCOUNT' | 'INACTIVE_ACCOUNT' | 'UNRECOGNIZED_PAYEE';
   baseline_status: 'VERIFIED' | 'BASELINE_PENDING';
   anomaly_score?: number | null;
@@ -81,6 +82,9 @@ export interface BatchItem {
 export interface RiskAlert {
   id: number;
   batch_item_id: number;
+  batch_id?: number | null;
+  employee_name?: string | null;
+  anomaly_reason?: string | null;
   flag_type: 'UNUSUAL_VARIANCE' | 'ROSTER_MISMATCH' | 'ACCOUNT_INACTIVE' | 'UNREGISTERED_PHONE';
   severity: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
   review_status: 'PENDING_REVIEW' | 'APPROVED_BY_CHECKER' | 'OVERRIDDEN_BY_CHECKER' | 'REJECTED_BY_CHECKER';
@@ -95,7 +99,26 @@ export interface LiquidityForecast {
   predicted_amount: number;
   current_balance: number;
   topup_required: number;
-  confidence_score: number;
+  confidence_score: number | null;
+  lower_bound: number | null;
+  upper_bound: number | null;
+  model_type: string;
+  status: string;
+  history_months: number | null;
+  mae: number | null;
+  mape: number | null;
+  assumptions: string[];
+}
+
+export interface ForecastResponse {
+  company_id: number;
+  generated_at: string | null;
+  source_data_through: string | null;
+  model: { type: string; status: string; history_months: number; mae: number | null; mape: number | null; confidence_level: number | null };
+  forecasts: LiquidityForecast[];
+  liquidity_forecasts: LiquidityForecast[];
+  historical_series: Array<{ period: string; amount: number }>;
+  settings: { planning_baseline_amount: number; include_festival_bonus: boolean; festival_bonus_amount: number; festival_bonus_months: number[] } | null;
 }
 
 export interface AuditLog {

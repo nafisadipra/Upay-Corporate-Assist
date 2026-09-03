@@ -7,7 +7,6 @@ import { Spinner, MessageBar, MessageBarBody } from '@fluentui/react-components'
 import { 
   Monitor, 
   ShieldCheck, 
-  ChevronDown, 
   ChevronRight, 
   Users, 
   AlertTriangle, 
@@ -134,8 +133,7 @@ export default function Activity() {
       {/* 2. Filter Dropdown Pill */}
       <div className="activity-filter-row">
         <div className="filter-dropdown-pill">
-          <span className="dropdown-pill-text">Last 12 Months</span>
-          <ChevronDown size={14} color="#64748B" />
+          <span className="dropdown-pill-text">All recorded activity</span>
         </div>
       </div>
 

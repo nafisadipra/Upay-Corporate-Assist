@@ -24,7 +24,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
   onUpdateWalletBalance,
 }) => {
   const [walletName, setWalletName] = useState('');
-  const [openingBalance, setOpeningBalance] = useState('0');
+  const [openingBalance, setOpeningBalance] = useState('');
   const [selectedWalletId, setSelectedWalletId] = useState('');
   const [updatedBalance, setUpdatedBalance] = useState('');
   const [walletMessage, setWalletMessage] = useState('');
@@ -35,7 +35,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
     try {
       await onCreateWallet(walletName, Number(openingBalance));
       setWalletName('');
-      setOpeningBalance('0');
+      setOpeningBalance('');
       setWalletMessage('Wallet created successfully.');
     } catch (error) {
       setWalletMessage(error instanceof Error ? error.message : 'Unable to create wallet.');
@@ -71,11 +71,11 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
               </div>
               <div>
                 <h2 className="text-xl font-extrabold text-[#2d3142] font-outfit tracking-tight">
-                  {company?.company_name || 'Leading FMCG Conglomerate (PRAN-RFL Alignment)'}
+                  {company?.company_name || 'Company data unavailable'}
                 </h2>
                 <div className="flex items-center space-x-3 text-xs text-slate-500 mt-2">
                   <span className="font-semibold text-[#4f5d75] bg-slate-100 px-2.5 py-0.5 rounded-lg border border-slate-200">
-                    Account: {company?.corporate_account_number || 'UPAY-CORP-FMCG-1001'}
+                    Account: {company?.corporate_account_number || 'Not available'}
                   </span>
                   <div className="flex items-center space-x-1">
                     <span className="w-1.5 h-1.5 rounded-full bg-[#ef8354]"></span>
@@ -97,7 +97,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 pt-5 text-xs">
             <div>
               <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400">Account Status</span>
-              <div className="font-bold text-slate-900 mt-1 font-space">{company?.status || 'ACTIVE'}</div>
+              <div className="font-bold text-slate-900 mt-1 font-space">{company?.status || 'Unavailable'}</div>
             </div>
             <div>
               <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400">Total Central Wallets</span>
@@ -147,7 +147,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
           <form onSubmit={createWallet} className="flex flex-col gap-3 rounded-xl bg-slate-50 p-4">
             <p className="text-xs font-bold text-slate-800">Create corporate wallet</p>
             <input required value={walletName} onChange={(event) => setWalletName(event.target.value)} placeholder="Wallet name" className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm" />
-            <input required min="0" step="0.01" type="number" value={openingBalance} onChange={(event) => setOpeningBalance(event.target.value)} placeholder="Opening balance" className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm" />
+            <input required min="0" step="0.01" type="number" value={openingBalance} onChange={(event) => setOpeningBalance(event.target.value)} placeholder="Balance" className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm" />
             <button className="rounded-lg bg-[#2d3142] px-3 py-2 text-xs font-bold text-white">Create wallet</button>
           </form>
           <form onSubmit={updateWalletBalance} className="flex flex-col gap-3 rounded-xl bg-slate-50 p-4">

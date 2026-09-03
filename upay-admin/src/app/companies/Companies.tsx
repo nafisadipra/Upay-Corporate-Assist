@@ -2,17 +2,15 @@
 import { FormEvent, useCallback, useEffect, useState, useMemo } from 'react';
 import { useAuth } from '@/components/AdminLayout';
 import * as api from '@/lib/api';
-import { Overview } from '@/types';
+import { Company, Overview } from '@/types';
 import { Spinner, MessageBar, MessageBarBody } from '@fluentui/react-components';
-import { useRouter } from 'next/navigation';
 import { 
   Building2, 
   Landmark, 
   Plus, 
-  ChevronRight, 
-  ChevronDown, 
   X, 
-  Info 
+  Wallet,
+  ArrowRight
 } from 'lucide-react';
 
 const formatMoneyBDT = (amount: number) => {
@@ -29,10 +27,6 @@ interface OnboardModalProps {
 function OnboardModal({ isOpen, onClose, token, onCreated }: OnboardModalProps) {
   const [name, setName] = useState('');
   const [account, setAccount] = useState('');
-  const [wallet, setWallet] = useState('Main Disbursement Wallet');
-  const [openingBalance, setOpeningBalance] = useState('0.00');
-  const [walletNameInput, setWalletNameInput] = useState('');
-  const [openingFloatInput, setOpeningFloatInput] = useState('');
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
 
@@ -46,15 +40,11 @@ function OnboardModal({ isOpen, onClose, token, onCreated }: OnboardModalProps) 
       await api.createCompany(token, {
         company_name: name,
         corporate_account_number: account,
-        wallet_name: walletNameInput || wallet,
-        opening_balance: Number(openingFloatInput || openingBalance || 0),
       });
       await onCreated();
       onClose();
       setName('');
       setAccount('');
-      setWalletNameInput('');
-      setOpeningFloatInput('');
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : 'Unable to onboard company.');
     } finally {
@@ -118,60 +108,7 @@ function OnboardModal({ isOpen, onClose, token, onCreated }: OnboardModalProps) 
             </div>
           </div>
 
-          {/* Row 2: Wallet Name & Opening Float */}
-          <div className="form-two-col-row">
-            <div className="modal-field-item">
-              <label className="modal-label">
-                <span>Wallet name</span>
-                <Info size={14} color="#94A3B8" className="info-icon" />
-              </label>
-              <input 
-                type="text"
-                className="modal-input"
-                placeholder="Enter wallet name"
-                value={walletNameInput}
-                onChange={(e) => setWalletNameInput(e.target.value)}
-              />
-            </div>
-            <div className="modal-field-item">
-              <label className="modal-label">Opening float (BDT)</label>
-              <input 
-                type="text"
-                className="modal-input"
-                placeholder="Enter opening float"
-                value={openingFloatInput}
-                onChange={(e) => setOpeningFloatInput(e.target.value)}
-              />
-            </div>
-          </div>
-
-          {/* Row 3: Primary disbursement wallet dropdown */}
-          <div className="modal-field-item full-width">
-            <label className="modal-label">Primary disbursement wallet</label>
-            <div className="select-with-chevron-wrap">
-              <select 
-                className="modal-select-input"
-                value={wallet}
-                onChange={(e) => setWallet(e.target.value)}
-              >
-                <option value="Main Disbursement Wallet">Main Disbursement Wall</option>
-                <option value="Operational Wallet">Operational Wallet</option>
-                <option value="Executive Payroll Wallet">Executive Payroll Wallet</option>
-              </select>
-              <ChevronDown size={16} className="select-chevron" />
-            </div>
-          </div>
-
-          {/* Row 4: Opening Float numeric display */}
-          <div className="modal-field-item full-width">
-            <label className="modal-label">Opening float (BDT)</label>
-            <input 
-              type="text"
-              className="modal-input"
-              value={openingBalance}
-              onChange={(e) => setOpeningBalance(e.target.value)}
-            />
-          </div>
+          <div className="wallet-auto-note"><Wallet size={18} /><div><strong>Main wallet created automatically</strong><span>The company can allocate this balance across its own accounts after funding.</span></div></div>
 
           {/* Bottom Action Buttons */}
           <div className="modal-bottom-actions">
@@ -197,13 +134,63 @@ function OnboardModal({ isOpen, onClose, token, onCreated }: OnboardModalProps) 
   );
 }
 
+interface FundWalletModalProps {
+  company: Company | null;
+  token: string;
+  onClose: () => void;
+  onFunded: () => Promise<void>;
+}
+
+function FundWalletModal({ company, token, onClose, onFunded }: FundWalletModalProps) {
+  const [amount, setAmount] = useState('');
+  const [reference, setReference] = useState('');
+  const [error, setError] = useState('');
+  const [saving, setSaving] = useState(false);
+  if (!company) return null;
+  const companyId = company.id;
+
+  async function submit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const numericAmount = Number(amount);
+    if (!Number.isFinite(numericAmount) || numericAmount <= 0) {
+      setError('Enter an amount greater than zero.');
+      return;
+    }
+    setSaving(true);
+    setError('');
+    try {
+      await api.topupCompanyWallet(token, companyId, { amount: numericAmount, reference_note: reference || undefined });
+      await onFunded();
+      onClose();
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : 'Unable to add funds to the main wallet.');
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return <div className="modal-backdrop-overlay" onClick={() => !saving && onClose()}>
+    <div className="onboard-modal-card" onClick={(event) => event.stopPropagation()}>
+      <button className="modal-close-btn" onClick={onClose} disabled={saving} aria-label="Close"><X size={18} /></button>
+      <div className="modal-header-group"><div className="modal-icon-circle"><Wallet size={24} color="#D97706" /></div><div className="modal-title-wrap"><h3 className="modal-main-title">Fund main wallet</h3><p className="modal-subtitle">Add disbursement funds for {company.company_name}.</p></div></div>
+      <form onSubmit={submit} className="modal-form-body">
+        {error && <div className="modal-error-bar">{error}</div>}
+        <div className="wallet-balance-summary"><span>Current main-wallet balance</span><strong>{formatMoneyBDT(company.wallet_balance)}</strong></div>
+        <div className="modal-field-item full-width"><label className="modal-label" htmlFor="topup-amount">Amount to add (BDT)</label><input id="topup-amount" type="number" min="0.01" step="0.01" required autoFocus className="modal-input" placeholder="Enter funding amount" value={amount} onChange={(event) => setAmount(event.target.value)} /></div>
+        <div className="modal-field-item full-width"><label className="modal-label" htmlFor="topup-reference">Reference note <span className="optional-label">Optional</span></label><input id="topup-reference" className="modal-input" placeholder="Bank transfer or funding reference" value={reference} onChange={(event) => setReference(event.target.value)} /></div>
+        <div className="modal-bottom-actions"><button type="button" className="modal-btn-cancel" onClick={onClose} disabled={saving}>Cancel</button><button type="submit" className="modal-btn-submit" disabled={saving}>{saving ? 'Adding funds…' : 'Add to main wallet'}</button></div>
+      </form>
+    </div>
+  </div>;
+}
+
 export default function Companies() {
   const { token } = useAuth();
-  const router = useRouter();
   const [overview, setOverview] = useState<Overview | null>(null);
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState('');
   const [modalOpen, setModalOpen] = useState(false);
+  const [fundingCompany, setFundingCompany] = useState<Company | null>(null);
 
   const load = useCallback(async () => {
     if (!token) return;
@@ -224,34 +211,7 @@ export default function Companies() {
     })();
   }, [load]);
 
-  // Fallback companies matching screenshot precisely
-  const companiesList = useMemo(() => {
-    if (overview?.companies && overview.companies.length > 0) {
-      return overview.companies;
-    }
-    return [
-      {
-        id: 1,
-        company_name: 'Leading FMCG Conglomerate (PRAN-RFL Alignment)',
-        wallet_balance: 5_000_000,
-        batches_count: 1,
-        users_count: 2,
-        employees_count: 5,
-        corporate_account_number: 'CORP-PRAN-001',
-        status: 'ACTIVE' as const,
-      },
-      {
-        id: 2,
-        company_name: 'Investment Management Firm (UCB Alignment)',
-        wallet_balance: 12_000_000,
-        batches_count: 0,
-        users_count: 2,
-        employees_count: 0,
-        corporate_account_number: 'CORP-UCB-002',
-        status: 'ACTIVE' as const,
-      }
-    ];
-  }, [overview]);
+  const companiesList = useMemo(() => overview?.companies || [], [overview]);
 
   return (
     <div className="companies-root-view">
@@ -292,8 +252,8 @@ export default function Companies() {
         </div>
       ) : (
         <div className="companies-cards-list">
-          {companiesList.map((company) => (
-            <div key={company.id} className="company-list-card-item">
+          {companiesList.length === 0 ? <div className="loading-state-box">No companies are registered in the database.</div> : companiesList.map((company) => (
+            <button key={company.id} type="button" className="company-list-card-item company-card-button" onClick={() => setFundingCompany(company)} aria-label={`Add funds to ${company.company_name} main wallet`}>
               <div className="company-card-left">
                 <div className="company-badge-icon-box">
                   <Building2 size={24} color="#D97706" />
@@ -305,7 +265,7 @@ export default function Companies() {
                   </span>
                   <h3 className="company-item-name">{company.company_name}</h3>
                   <p className="company-item-meta">
-                    {company.employees_count ?? 5} employees · {company.users_count ?? 2} users · {company.batches_count ?? 1} batches
+                    {company.employees_count ?? 0} employees · {company.users_count ?? 0} users · {company.batches_count ?? 0} batches
                   </p>
                 </div>
               </div>
@@ -314,27 +274,16 @@ export default function Companies() {
                 <strong className="company-item-balance">
                   {formatMoneyBDT(company.wallet_balance)}
                 </strong>
-                <button 
-                  className="btn-view-forecast" 
-                  onClick={() => router.push('/forecast')}
-                >
-                  <span>View forecast</span>
-                  <ChevronRight size={15} />
-                </button>
+                <span className="company-fund-action">Add funds <ArrowRight size={15} /></span>
               </div>
-            </div>
+            </button>
           ))}
         </div>
       )}
 
       {/* Onboard Company Modal */}
       {token && (
-        <OnboardModal 
-          isOpen={modalOpen} 
-          onClose={() => setModalOpen(false)} 
-          token={token} 
-          onCreated={load} 
-        />
+        <><OnboardModal isOpen={modalOpen} onClose={() => setModalOpen(false)} token={token} onCreated={load} /><FundWalletModal company={fundingCompany} token={token} onClose={() => setFundingCompany(null)} onFunded={load} /></>
       )}
     </div>
   );

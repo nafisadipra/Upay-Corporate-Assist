@@ -6,12 +6,10 @@ import { FluentProvider, webLightTheme } from '@fluentui/react-components';
 import Link from 'next/link';
 import { 
   LayoutGrid, 
-  TrendingUp, 
   Building2, 
   Clock, 
   UserPlus,
   Landmark, 
-  Bell, 
   User as UserIcon,
   ChevronRight,
   ChevronLeft
@@ -28,28 +26,38 @@ const AuthContext = createContext<AuthContextType>({ token: null, admin: null, s
 export const useAuth = () => useContext(AuthContext);
 
 export default function AdminLayout({ children }: { children: ReactNode }) {
+  // Start from the same empty state on the server and client, then restore the
+  // browser-only session after hydration. Reading localStorage during render
+  // made the client render a FluentProvider where the server rendered nothing.
   const [token, setToken] = useState<string | null>(null);
   const [admin, setAdmin] = useState<User | null>(null);
-  const [isLoaded, setIsLoaded] = useState(false);
+  const [sessionLoaded, setSessionLoaded] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
   const router = useRouter();
   const pathname = usePathname();
 
   useEffect(() => {
-    const savedToken = localStorage.getItem('upay_admin_token');
-    const savedUser = localStorage.getItem('upay_admin_user');
-    if (savedToken && savedUser) {
+    void (async () => {
+      const savedToken = localStorage.getItem('upay_admin_token');
+      const savedUser = localStorage.getItem('upay_admin_user');
       setToken(savedToken);
-      try {
-        setAdmin(JSON.parse(savedUser));
-      } catch {
-        setAdmin(null);
+      if (savedUser) {
+        try {
+          setAdmin(JSON.parse(savedUser) as User);
+        } catch {
+          localStorage.removeItem('upay_admin_user');
+        }
       }
-    } else {
+      setSessionLoaded(true);
+    })();
+  }, []);
+
+  useEffect(() => {
+    if (!sessionLoaded) return;
+    if (!token) {
       router.push('/');
     }
-    setIsLoaded(true);
-  }, [router]);
+  }, [router, sessionLoaded, token]);
 
   const signOut = () => {
     localStorage.removeItem('upay_admin_token');
@@ -59,7 +67,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
     router.push('/');
   };
 
-  if (!isLoaded || !token) return null;
+  if (!sessionLoaded || !token) return null;
 
   const initials = admin?.full_name 
     ? admin.full_name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase() 
@@ -93,14 +101,6 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
                 {!collapsed && <span>Dashboard</span>}
               </Link>
               <Link 
-                href="/forecast" 
-                className={`nav-item ${pathname === '/forecast' ? 'active' : ''}`}
-                title="Forecast"
-              >
-                <TrendingUp size={19} />
-                {!collapsed && <span>Forecast</span>}
-              </Link>
-              <Link 
                 href="/companies" 
                 className={`nav-item ${pathname === '/companies' ? 'active' : ''}`}
                 title="Companies"
@@ -127,8 +127,8 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
                 {!collapsed && (
                   <>
                     <div className="user-details">
-                      <strong className="user-name">{admin?.full_name || 'Corporate Admin'}</strong>
-                      <span className="user-role">{admin?.role || 'Admin'}</span>
+                      <strong className="user-name">{admin?.full_name || 'Signed-in user'}</strong>
+                      <span className="user-role">{admin?.role || 'Role unavailable'}</span>
                     </div>
                     <div className="user-arrow">
                       <ChevronRight size={16} />
@@ -158,7 +158,6 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
               <div className="header-title-container">
                 <h1 className="header-main-title">
                   {pathname === '/dashboard' && 'Portfolio Liquidity'}
-                  {pathname === '/forecast' && 'Predictive Capital Forecasting'}
                   {pathname === '/companies' && 'Corporate Directory'}
                   {pathname === '/activity' && 'Operations Activity'}
                   {pathname === '/registrations' && 'Employee Registrations'}
@@ -167,10 +166,6 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
               </div>
               
               <div className="header-actions">
-                <button className="icon-badge-btn" aria-label="Notifications" title="Notifications">
-                  <Bell size={20} />
-                  <span className="notification-yellow-dot" />
-                </button>
                 <button className="icon-badge-btn" aria-label="User Profile" title="Profile" onClick={signOut}>
                   <UserIcon size={20} />
                 </button>

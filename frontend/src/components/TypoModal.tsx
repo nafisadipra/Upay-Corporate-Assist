@@ -91,7 +91,7 @@ export const TypoModal: React.FC<TypoModalProps> = ({
 
         <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200/80 space-y-1 text-xs">
           <div className="font-bold text-slate-900 font-space text-sm">{item.employee_name}</div>
-          <div className="text-slate-500 font-mono">Department: {item.department} | Payout: BDT {item.amount.toLocaleString()}</div>
+          <div className="text-slate-500 font-mono">Department: {item.department} | Gross salary: BDT {item.gross_salary.toLocaleString()}</div>
           <div className="text-red-700 font-semibold pt-1">
             Status: {item.account_validation_status}
           </div>

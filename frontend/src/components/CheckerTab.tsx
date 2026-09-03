@@ -1,12 +1,13 @@
 'use client';
 
 import React, { useState } from 'react';
-import { RiskAlert, Batch } from '@/types';
-import { Check, UserCheck, AlertTriangle, CheckCircle2, Bell, ShieldCheck, Shield } from 'lucide-react';
+import { RiskAlert, Batch, BatchItem } from '@/types';
+import { Check, UserCheck, AlertTriangle, CheckCircle2, Bell, ShieldCheck, Shield, FileSpreadsheet } from 'lucide-react';
 
 interface CheckerTabProps {
   alerts: RiskAlert[];
   currentBatch: Batch | null;
+  items: BatchItem[];
   onReviewAlert: (alertId: number, action: 'APPROVED' | 'OVERRIDDEN' | 'REJECTED', notes: string) => void;
   onApproveBatch: (notes: string) => void;
 }
@@ -14,6 +15,7 @@ interface CheckerTabProps {
 export const CheckerTab: React.FC<CheckerTabProps> = ({
   alerts,
   currentBatch,
+  items,
   onReviewAlert,
   onApproveBatch,
 }) => {
@@ -28,6 +30,11 @@ export const CheckerTab: React.FC<CheckerTabProps> = ({
   const reviewedAlerts = alerts.filter((a) => a.review_status !== 'PENDING_REVIEW');
   const isReviewed = currentBatch?.status === 'CHECKER_REVIEWED';
   const isExecuted = currentBatch?.status === 'EXECUTED';
+
+  const formatAmount = (amount: number) => `BDT ${new Intl.NumberFormat('en-BD', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(amount)}`;
 
   return (
     <div className="space-y-6">
@@ -50,15 +57,12 @@ export const CheckerTab: React.FC<CheckerTabProps> = ({
             </p>
           </div>
 
-          {/* Checker Sign-Off CTA Button */}
-          <button
-            onClick={() => onApproveBatch(batchNotes)}
-            disabled={!currentBatch || isReviewed || isExecuted}
-            className="bg-[#059669] hover:bg-[#047857] active:scale-[0.98] disabled:opacity-50 text-white px-5 py-3 rounded-xl text-sm font-extrabold flex items-center space-x-2 transition-all shadow-md self-start sm:self-auto"
-          >
-            <CheckCircle2 className="w-5 h-5" />
-            <span>{isReviewed ? 'Batch Sign-Off Complete' : isExecuted ? 'Batch Executed' : 'Sign-Off & Approve Batch'}</span>
-          </button>
+          {(isReviewed || isExecuted) && (
+            <div className="flex items-center gap-2 rounded-xl bg-emerald-50 px-4 py-3 text-sm font-extrabold text-emerald-700">
+              <CheckCircle2 className="h-5 w-5" />
+              <span>{isExecuted ? 'Batch Executed' : 'Batch Sign-Off Complete'}</span>
+            </div>
+          )}
         </div>
 
         {/* Governance Metrics */}
@@ -119,8 +123,85 @@ export const CheckerTab: React.FC<CheckerTabProps> = ({
               className="bg-white hover:bg-slate-50 text-[#059669] border border-[#059669] px-4 py-2 rounded-xl text-xs font-extrabold flex items-center space-x-1.5 transition-all shadow-sm"
             >
               <Check className="w-3.5 h-3.5" />
-              <span>Record Sign-Off</span>
+              <span>Sign-Off &amp; Approve Batch</span>
             </button>
+          </div>
+        )}
+      </div>
+
+      {/* Payroll spreadsheet preview */}
+      <div className="card-flat overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-sm">
+        <div className="flex flex-col gap-4 border-b border-slate-100 p-6 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-start gap-3">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600">
+              <FileSpreadsheet className="h-5 w-5" />
+            </div>
+            <div>
+              <h3 className="font-outfit text-base font-extrabold text-[#2d3142]">Payroll sheet preview</h3>
+              <p className="mt-0.5 text-xs text-slate-500">
+                {currentBatch ? `${currentBatch.file_name} · ${items.length} uploaded payroll rows` : 'Select a payroll batch to inspect its uploaded rows.'}
+              </p>
+            </div>
+          </div>
+          {currentBatch && (
+            <div className="rounded-xl bg-slate-50 px-3 py-2 text-right">
+              <p className="text-[9px] font-extrabold uppercase tracking-widest text-slate-400">Total payroll</p>
+              <p className="mt-0.5 font-mono text-sm font-extrabold text-slate-800">{formatAmount(currentBatch.total_amount)}</p>
+            </div>
+          )}
+        </div>
+
+        {!currentBatch ? (
+          <div className="px-6 py-12 text-center text-xs text-slate-400">No payroll batch is available for review.</div>
+        ) : items.length === 0 ? (
+          <div className="px-6 py-12 text-center text-xs text-slate-400">Loading the uploaded payroll sheet…</div>
+        ) : (
+          <div className="max-h-[460px] overflow-auto">
+            <table className="w-full min-w-[1040px] border-collapse text-left">
+              <thead className="sticky top-0 z-10 bg-slate-50">
+                <tr className="border-b border-slate-200 text-[9px] font-extrabold uppercase tracking-widest text-slate-500">
+                  <th className="px-5 py-3">#</th>
+                  <th className="px-4 py-3">Employee</th>
+                  <th className="px-4 py-3">Mobile number</th>
+                  <th className="px-4 py-3">Department</th>
+                  <th className="px-4 py-3 text-right">Basic salary</th>
+                  <th className="px-4 py-3 text-right">Gross salary</th>
+                  <th className="px-4 py-3">Validation</th>
+                  <th className="px-4 py-3">Risk review</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {items.map((item, index) => {
+                  const hasRisk = item.is_anomaly || item.account_validation_status !== 'VALID';
+                  return (
+                    <tr key={item.id} className={hasRisk ? 'bg-amber-50/30' : 'hover:bg-slate-50/60'}>
+                      <td className="px-5 py-3.5 font-mono text-[11px] text-slate-400">{index + 1}</td>
+                      <td className="px-4 py-3.5 text-xs font-bold text-slate-800">{item.employee_name}</td>
+                      <td className="px-4 py-3.5 font-mono text-xs text-slate-600">{item.effective_phone_number}</td>
+                      <td className="px-4 py-3.5 text-xs text-slate-600">{item.department || '—'}</td>
+                      <td className="px-4 py-3.5 text-right font-mono text-xs text-slate-700">{formatAmount(item.basic_salary)}</td>
+                      <td className="px-4 py-3.5 text-right font-mono text-xs font-bold text-slate-800">{formatAmount(item.gross_salary)}</td>
+                      <td className="px-4 py-3.5">
+                        <span className={`inline-flex rounded-md px-2 py-1 text-[9px] font-extrabold uppercase tracking-wide ${
+                          item.account_validation_status === 'VALID'
+                            ? 'bg-emerald-50 text-emerald-700'
+                            : 'bg-red-50 text-red-700'
+                        }`}>
+                          {item.account_validation_status.replaceAll('_', ' ')}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3.5">
+                        <span className={`inline-flex rounded-md px-2 py-1 text-[9px] font-extrabold uppercase tracking-wide ${
+                          hasRisk ? 'bg-amber-100 text-amber-800' : 'bg-slate-100 text-slate-600'
+                        }`}>
+                          {hasRisk ? 'Needs review' : 'Within baseline'}
+                        </span>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
           </div>
         )}
       </div>
@@ -172,7 +253,7 @@ export const CheckerTab: React.FC<CheckerTabProps> = ({
                         </div>
                       </td>
                       <td className="py-4 px-2 text-[11px] text-slate-600 font-medium leading-relaxed pr-6">
-                        {alert.review_notes || 'Requires Finance Director sign-off due to high bonus payout amount.'}
+                        {alert.anomaly_reason || `${alert.flag_type.replaceAll('_', ' ')} requires Finance Director review.`}
                       </td>
                       <td className="py-4 px-2">
                         {alert.review_status === 'PENDING_REVIEW' ? (

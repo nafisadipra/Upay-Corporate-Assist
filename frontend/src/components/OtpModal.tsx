@@ -1,18 +1,16 @@
 'use client';
 
 import React, { useState } from 'react';
-import { KeyRound, ShieldCheck, CheckCircle2, X, Sparkles } from 'lucide-react';
+import { KeyRound, ShieldCheck, CheckCircle2, X } from 'lucide-react';
 
 interface OtpModalProps {
   isOpen: boolean;
-  demoOtpCode: string;
   onClose: () => void;
   onAuthorize: (otpCode: string) => void;
 }
 
 export const OtpModal: React.FC<OtpModalProps> = ({
   isOpen,
-  demoOtpCode,
   onClose,
   onAuthorize,
 }) => {
@@ -23,10 +21,6 @@ export const OtpModal: React.FC<OtpModalProps> = ({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     onAuthorize(otp);
-  };
-
-  const handleUseDemoOtp = () => {
-    setOtp(demoOtpCode || '123456');
   };
 
   return (
@@ -45,25 +39,7 @@ export const OtpModal: React.FC<OtpModalProps> = ({
           </button>
         </div>
 
-        <div className="bg-amber-50 p-4 rounded-2xl border border-amber-300/80 text-amber-950 space-y-1.5 text-xs">
-          <div className="flex items-center justify-between font-bold font-space text-amber-900">
-            <span className="flex items-center space-x-1.5">
-              <Sparkles className="w-4 h-4 text-amber-600" />
-              <span>Simulated SMS OTP Token Generated</span>
-            </span>
-            <button
-              type="button"
-              onClick={handleUseDemoOtp}
-              className="text-[11px] font-bold text-emerald-800 hover:underline bg-white px-2 py-0.5 rounded-md border border-amber-300"
-            >
-              Fill OTP
-            </button>
-          </div>
-          <div className="font-mono text-base font-extrabold text-amber-950 tracking-wider">
-            {demoOtpCode || '123456'}
-          </div>
-          <p className="text-[11px] opacity-80">Enter this 6-digit SHA-256 hashed token to authorize central wallet disbursal.</p>
-        </div>
+        <p className="rounded-2xl border border-slate-200 bg-slate-50 p-4 text-xs leading-5 text-slate-600">Enter the six-digit authorization code sent to your registered phone number.</p>
 
         <form onSubmit={handleSubmit} className="space-y-4 text-xs">
           <div>

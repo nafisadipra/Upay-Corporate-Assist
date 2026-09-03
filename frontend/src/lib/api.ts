@@ -69,11 +69,12 @@ export async function updateCompanyWallet(companyId: number, walletId: number, p
   return handleResponse(res, 'Failed to update company wallet');
 }
 
-export async function uploadPayrollFile(file: File, companyId: number = 1, makerId: number = 1) {
+export async function uploadPayrollFile(file: File, companyId: number = 1, makerId: number = 1, payrollPeriod?: string) {
   const formData = new FormData();
   formData.append('file', file);
   formData.append('company_id', companyId.toString());
   formData.append('maker_id', makerId.toString());
+  if (payrollPeriod) formData.append('payroll_period', payrollPeriod);
 
   const token = typeof window !== 'undefined' ? localStorage.getItem('upay_auth_token') : null;
 
@@ -146,6 +147,21 @@ export async function fetchLiquidityForecast(companyId: number = 1) {
     headers: getAuthHeaders(),
   });
   return handleResponse(res, 'Failed to fetch liquidity forecast');
+}
+
+export async function refreshLiquidityForecast(companyId: number) {
+  const res = await fetch(`${API_BASE_URL}/analytics/liquidity-forecast/${companyId}/refresh`, {
+    method: 'POST',
+    headers: getAuthHeaders(),
+  });
+  return handleResponse(res, 'Failed to refresh liquidity forecast');
+}
+
+export async function fetchDisbursementHistory(companyId: number) {
+  const res = await fetch(`${API_BASE_URL}/analytics/disbursement-history/${companyId}`, {
+    headers: getAuthHeaders(),
+  });
+  return handleResponse(res, 'Failed to fetch completed disbursement history');
 }
 
 export async function fetchAuditLogs(batchId: number = 1) {

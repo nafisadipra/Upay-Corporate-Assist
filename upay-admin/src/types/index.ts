@@ -97,5 +97,24 @@ export interface LiquidityForecast {
   predicted_amount: number;
   current_balance: number;
   topup_required: number;
-  confidence_score: number;
+  confidence_score: number | null;
+  lower_bound: number | null;
+  upper_bound: number | null;
+  model_type: string;
+  status: string;
+  history_months: number | null;
+  mae: number | null;
+  mape: number | null;
+  assumptions: string[];
+}
+
+export interface ForecastResponse {
+  company_id: number;
+  generated_at: string | null;
+  source_data_through: string | null;
+  model: { type: string; status: string; history_months: number; mae: number | null; mape: number | null; confidence_level: number | null };
+  forecasts: LiquidityForecast[];
+  liquidity_forecasts: LiquidityForecast[];
+  historical_series: Array<{ period: string; amount: number }>;
+  settings: { planning_baseline_amount: number; include_festival_bonus: boolean; festival_bonus_amount: number; festival_bonus_months: number[] } | null;
 }

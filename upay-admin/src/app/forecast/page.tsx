@@ -1,10 +1,5 @@
-import Forecast from './Forecast';
-import AdminLayout from '@/components/AdminLayout';
+import { redirect } from 'next/navigation';
 
 export default function Page() {
-  return (
-    <AdminLayout>
-      <Forecast />
-    </AdminLayout>
-  );
+  redirect('/dashboard');
 }
