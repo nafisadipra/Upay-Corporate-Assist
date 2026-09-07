@@ -1,5 +1,3 @@
-"""Checker review and atomic payroll-disbursement operations."""
-
 from datetime import datetime
 from flask import current_app
 from decimal import Decimal
