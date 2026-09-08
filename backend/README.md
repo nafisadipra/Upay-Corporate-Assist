@@ -158,7 +158,8 @@ the same email or phone number. Keep real credentials out of version control.
 | Method | Endpoint | Description |
 | :--- | :--- | :--- |
 | `GET` | `/api/risk-alerts` | List open risk alerts |
-| `PUT` | `/api/risk-alerts/<id>/review` | Checker review sign-off (approve/override alert) |
+| `PUT` | `/api/risk-alerts/<id>/review` | Authorize an exception by overriding an AI alert |
+| `POST` | `/api/risk-alerts/manual` | Confirm a payroll issue and return the row to HR |
 
 ### Predictive Analytics (`/api/analytics`)
 | Method | Endpoint | Description |
