@@ -459,7 +459,7 @@ function CheckerWorkspace() {
     return null;
   }
 
-  const handleReviewAlert = async (alertId: number, action: 'APPROVED' | 'OVERRIDDEN' | 'REJECTED', notes: string) => {
+  const handleReviewAlert = async (alertId: number, action: 'OVERRIDDEN_BY_CHECKER', notes: string) => {
     try {
       await api.reviewRiskAlert(alertId, action, notes);
       await loadData();

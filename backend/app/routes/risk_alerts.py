@@ -36,8 +36,8 @@ def create_manual_risk_alert():
         return jsonify({'error': 'Batch not found'}), 404
     if g.current_user.role != 'ADMIN' and batch.company_id != g.current_user.company_id:
         return jsonify({'error': 'Tenant isolation: Cannot flag another company payroll'}), 403
-    if batch.status not in {'PENDING_CHECKER_REVIEW', 'RETURNED_TO_HR'}:
-        return jsonify({'error': 'Manual issues can only be raised during Finance review or while the batch is returned to HR.'}), 400
+    if batch.status not in {'PENDING_CHECKER_REVIEW', 'CHECKER_REVIEWED', 'RETURNED_TO_HR'}:
+        return jsonify({'error': 'Issues can only be raised during Finance review or while the batch is returned to HR.'}), 400
 
     issue_type = str(data.get('issue_type', '')).upper()
     notes = str(data.get('notes', '')).strip()
@@ -55,10 +55,20 @@ def create_manual_risk_alert():
         return jsonify({'error': 'This issue type is already open for the selected payroll row.'}), 409
 
     alert = RiskAlert(batch_item_id=item.id, flag_type=f'MANUAL_{issue_type}', severity='HIGH', review_status='PENDING_REVIEW', reviewed_by=g.current_user.id, review_notes=notes)
+    confirmed_ai_alerts = RiskAlert.query.filter(
+        RiskAlert.batch_item_id == item.id,
+        ~RiskAlert.flag_type.like('MANUAL_%'),
+        RiskAlert.review_status == 'PENDING_REVIEW',
+    ).all()
+    for ai_alert in confirmed_ai_alerts:
+        ai_alert.review_status = 'REJECTED_BY_CHECKER'
+        ai_alert.reviewed_by = g.current_user.id
+        ai_alert.review_notes = notes
+
     item.item_status = 'REJECTED'
     batch.status = 'RETURNED_TO_HR'
     db.session.add(alert)
-    db.session.add(AuditLog(company_id=batch.company_id, batch_id=batch.id, user_id=g.current_user.id, audit_scope='CORPORATE_CLIENT', action='BATCH_RETURNED_TO_HR', details={'item_id': item.id, 'employee_name': item.employee_name, 'issue_type': issue_type, 'notes': notes}))
+    db.session.add(AuditLog(company_id=batch.company_id, batch_id=batch.id, user_id=g.current_user.id, audit_scope='CORPORATE_CLIENT', action='BATCH_RETURNED_TO_HR', details={'item_id': item.id, 'employee_name': item.employee_name, 'issue_type': issue_type, 'notes': notes, 'confirmed_ai_alert_ids': [ai_alert.id for ai_alert in confirmed_ai_alerts]}))
     db.session.commit()
     return jsonify({'message': 'Issue raised and batch returned to HR.', 'risk_alert': alert.to_dict(), 'batch': batch.to_dict()}), 201
 
@@ -68,19 +78,22 @@ def create_manual_risk_alert():
 def review_risk_alert(alert_id):
     """
     Checker Risk Alert Review Sign-Off:
-    Allows Finance Director (Checker) to review, approve, or override flagged anomaly alerts.
+    Allows Finance Director (Checker) to authorize an exception for an AI alert.
     """
     user = g.current_user
     data = request.get_json() or {}
-    action = data.get('action', 'APPROVED_BY_CHECKER').strip()
-    notes = data.get('notes', 'Reviewed and approved by Finance Director (Checker)').strip()
+    action = data.get('action', 'OVERRIDDEN_BY_CHECKER').strip()
+    notes = data.get('notes', 'Exception authorized by Finance Director (Checker)').strip()
 
     alert = RiskAlert.query.get(alert_id)
     if not alert:
         return jsonify({'error': 'Risk alert not found'}), 404
 
-    if action not in {'APPROVED_BY_CHECKER', 'OVERRIDDEN_BY_CHECKER', 'REJECTED_BY_CHECKER'}:
-        return jsonify({'error': 'Action must be APPROVED_BY_CHECKER, OVERRIDDEN_BY_CHECKER, or REJECTED_BY_CHECKER.'}), 400
+    if action != 'OVERRIDDEN_BY_CHECKER':
+        return jsonify({'error': 'AI alerts can only be overridden here. Raise an issue to return incorrect payroll data to HR.'}), 400
+
+    if alert.flag_type.startswith('MANUAL_'):
+        return jsonify({'error': 'Finance-raised issues must be corrected by HR.'}), 400
 
     item = BatchItem.query.get(alert.batch_item_id)
     batch = Batch.query.get(item.batch_id) if item else None
@@ -88,8 +101,8 @@ def review_risk_alert(alert_id):
     if user.role != 'ADMIN' and batch and batch.company_id != user.company_id:
         return jsonify({'error': 'Tenant isolation: Cannot review risk alert of another company'}), 403
 
-    if not batch or batch.status != 'PENDING_CHECKER_REVIEW':
-        return jsonify({'error': 'Risk alerts can only be reviewed while the batch is pending Checker review.'}), 400
+    if not batch or batch.status not in {'PENDING_CHECKER_REVIEW', 'CHECKER_REVIEWED'}:
+        return jsonify({'error': 'Risk alerts can only be reviewed during or immediately after Checker sign-off.'}), 400
 
     alert.review_status = action
     alert.reviewed_by = user.id
@@ -97,7 +110,7 @@ def review_risk_alert(alert_id):
 
     # Update item status
     if item:
-        item.item_status = 'OVERRIDDEN' if 'OVERRIDDEN' in action else ('APPROVED' if 'APPROVED' in action else 'REJECTED')
+        item.item_status = 'OVERRIDDEN'
 
     audit = AuditLog(
         company_id=batch.company_id if batch else user.company_id,

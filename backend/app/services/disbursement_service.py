@@ -19,6 +19,13 @@ def record_checker_review(batch_id, checker_id, review_status='APPROVED_BY_CHECK
     if batch.status != 'PENDING_CHECKER_REVIEW':
         return False, f"Batch can only be reviewed from 'PENDING_CHECKER_REVIEW', not '{batch.status}'."
 
+    open_alerts = RiskAlert.query.join(BatchItem).filter(
+        BatchItem.batch_id == batch.id,
+        RiskAlert.review_status == 'PENDING_REVIEW',
+    ).count()
+    if open_alerts:
+        return False, 'Resolve every AI alert by overriding it or raising an issue before signing off the batch.'
+
     if review_status in ['APPROVED_BY_CHECKER', 'APPROVED']:
         batch.status = 'CHECKER_REVIEWED'
     elif review_status in ['REJECTED', 'REJECTED_BY_CHECKER']:

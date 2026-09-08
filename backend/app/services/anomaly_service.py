@@ -126,3 +126,6 @@ def create_risk_alert(batch_item_id, flag_type, severity, notes):
         existing.flag_type = flag_type
         existing.severity = severity
         existing.review_notes = notes
+        # A correction that is still anomalous requires a fresh Finance decision.
+        existing.review_status = 'PENDING_REVIEW'
+        existing.reviewed_by = None

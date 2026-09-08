@@ -47,6 +47,57 @@ def test_checker_can_only_review_submitted_batch(client, maker_auth, checker_aut
     assert response.status_code == 400
 
 
+def test_checker_raises_ai_alert_as_hr_issue_before_signoff(client, maker_auth, checker_auth):
+    response = client.post('/api/batches/upload', headers=maker_auth, json={
+        'items': [{
+            'raw_phone_number': '01711112233',
+            'employee_name': 'Karim Rahman',
+            'department': 'IT',
+            'basic_salary': 57000,
+            'gross_salary': 95000,
+        }],
+    })
+    batch_id = response.get_json()['batch']['id']
+    assert client.post(f'/api/batches/{batch_id}/submit', headers=maker_auth).status_code == 200
+
+    alerts = client.get(f'/api/risk-alerts?batch_id={batch_id}', headers=checker_auth).get_json()['risk_alerts']
+    ai_alert = next(alert for alert in alerts if not alert['flag_type'].startswith('MANUAL_'))
+
+    premature_signoff = client.post(f'/api/batches/{batch_id}/checker-review', headers=checker_auth, json={})
+    assert premature_signoff.status_code == 400
+    assert 'every ai alert' in premature_signoff.get_json()['error'].lower()
+
+    obsolete_approval = client.put(f"/api/risk-alerts/{ai_alert['id']}/review", headers=checker_auth, json={
+        'action': 'APPROVED_BY_CHECKER',
+    })
+    assert obsolete_approval.status_code == 400
+
+    raised = client.post('/api/risk-alerts/manual', headers=checker_auth, json={
+        'batch_item_id': ai_alert['batch_item_id'],
+        'issue_type': 'INCORRECT_SALARY',
+        'notes': 'The AI alert is correct; HR must restore the approved salary.',
+    })
+    assert raised.status_code == 201
+    assert raised.get_json()['batch']['status'] == 'RETURNED_TO_HR'
+
+    reviewed_alerts = client.get(f'/api/risk-alerts?batch_id={batch_id}', headers=checker_auth).get_json()['risk_alerts']
+    reviewed_ai_alert = next(alert for alert in reviewed_alerts if alert['id'] == ai_alert['id'])
+    manual_alert = next(alert for alert in reviewed_alerts if alert['flag_type'] == 'MANUAL_INCORRECT_SALARY')
+    assert reviewed_ai_alert['review_status'] == 'REJECTED_BY_CHECKER'
+    assert manual_alert['review_status'] == 'PENDING_REVIEW'
+
+    corrected = client.put(f"/api/batches/items/{ai_alert['batch_item_id']}/correct", headers=maker_auth, json={
+        'corrected_phone_number': '01711112233',
+        'employee_name': 'Karim Rahman',
+        'department': 'IT',
+        'basic_salary': 30000,
+        'gross_salary': 45000,
+    })
+    assert corrected.status_code == 200
+    assert client.post(f'/api/batches/{batch_id}/submit', headers=maker_auth).status_code == 200
+    assert client.post(f'/api/batches/{batch_id}/checker-review', headers=checker_auth, json={}).status_code == 200
+
+
 def test_finance_can_return_a_row_to_hr_for_correction(client, maker_auth, checker_auth):
     batch_id = create_valid_batch(client, maker_auth)
     assert client.post(f'/api/batches/{batch_id}/submit', headers=maker_auth).status_code == 200

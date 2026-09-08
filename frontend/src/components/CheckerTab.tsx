@@ -8,7 +8,7 @@ interface CheckerTabProps {
   alerts: RiskAlert[];
   currentBatch: Batch | null;
   items: BatchItem[];
-  onReviewAlert: (alertId: number, action: 'APPROVED' | 'OVERRIDDEN' | 'REJECTED', notes: string) => void;
+  onReviewAlert: (alertId: number, action: 'OVERRIDDEN_BY_CHECKER', notes: string) => void;
   onApproveBatch: (notes: string) => void;
   onRaiseIssue: (itemId: number, issueType: string, notes: string) => Promise<void>;
   onDownloadBatch: () => Promise<void>;
@@ -38,6 +38,7 @@ export const CheckerTab: React.FC<CheckerTabProps> = ({
 
   const openAiAlerts = alerts.filter((alert) => alert.review_status === 'PENDING_REVIEW' && !alert.flag_type.startsWith('MANUAL_'));
   const manualAlerts = alerts.filter((alert) => alert.review_status === 'PENDING_REVIEW' && alert.flag_type.startsWith('MANUAL_'));
+  const hasOpenAlerts = openAiAlerts.length > 0 || manualAlerts.length > 0;
   const reviewedAlerts = alerts.filter((a) => a.review_status !== 'PENDING_REVIEW');
   const alertSections = [
     {
@@ -193,8 +194,11 @@ export const CheckerTab: React.FC<CheckerTabProps> = ({
               />
             </div>
             <button
+              type="button"
+              disabled={hasOpenAlerts}
               onClick={() => onApproveBatch(batchNotes)}
-              className="bg-white hover:bg-slate-50 text-[#059669] border border-[#059669] px-4 py-2 rounded-xl text-xs font-extrabold flex items-center space-x-1.5 transition-all shadow-sm"
+              title={hasOpenAlerts ? 'Override each valid exception or raise an issue before signing off.' : undefined}
+              className="bg-white hover:bg-slate-50 text-[#059669] border border-[#059669] px-4 py-2 rounded-xl text-xs font-extrabold flex items-center space-x-1.5 transition-all shadow-sm disabled:cursor-not-allowed disabled:border-slate-300 disabled:text-slate-400"
             >
               <Check className="w-3.5 h-3.5" />
               <span>Sign-Off &amp; Approve Batch</span>
@@ -324,7 +328,7 @@ export const CheckerTab: React.FC<CheckerTabProps> = ({
                     <th className="pb-3 px-2 w-[35%]">Alert</th>
                     <th className="pb-3 px-2 w-[25%]">Description</th>
                     <th className="pb-3 px-2 w-[25%]"></th>
-                    <th className="pb-3 px-2 text-center">Action</th>
+                    <th className="pb-3 px-2 text-center whitespace-nowrap">Action</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
@@ -349,37 +353,41 @@ export const CheckerTab: React.FC<CheckerTabProps> = ({
                         {alert.anomaly_reason || `${alert.flag_type.replaceAll('_', ' ')} requires Finance Director review.`}
                       </td>
                       <td className="py-4 px-2">
-                        {alert.review_status === 'PENDING_REVIEW' ? (
+                        {alert.review_status === 'PENDING_REVIEW' && activeSection.key === 'ai' ? (
                           <input
                             type="text"
-                            placeholder="Sign-off audit notes..."
+                            placeholder="Reason for exception..."
                             value={selectedNotes[alert.id] || ''}
                             onChange={(e) => handleNotesChange(alert.id, e.target.value)}
                             className="w-full px-3 py-2 text-[11px] bg-white border border-slate-200 rounded-lg focus:outline-none focus:border-[#ef8354] text-slate-700"
                           />
-                        ) : (
+                        ) : alert.review_status !== 'PENDING_REVIEW' ? (
                           <div className="text-[10px] font-bold text-emerald-700 bg-emerald-50 inline-block px-2.5 py-1 rounded border border-emerald-200">
                             ✓ {alert.review_status === 'RESOLVED_BY_HR' ? `Resolved by ${alert.reviewer_name || 'HR'}` : `Reviewed by ${alert.reviewer_name || 'Finance'}`}
+                          </div>
+                        ) : (
+                          <div className="text-[10px] font-bold text-orange-700 bg-orange-50 inline-block px-2.5 py-1 rounded border border-orange-200">
+                            Awaiting HR correction
                           </div>
                         )}
                       </td>
                       <td className="py-4 px-2">
-                        <div className="flex items-center justify-center gap-2">
-                          {alert.review_status === 'PENDING_REVIEW' && currentBatch?.status === 'PENDING_CHECKER_REVIEW' ? (
+                        <div className="flex items-center justify-center gap-2 whitespace-nowrap">
+                          {alert.review_status === 'PENDING_REVIEW' && activeSection.key === 'ai' && ['PENDING_CHECKER_REVIEW', 'CHECKER_REVIEWED'].includes(currentBatch?.status || '') ? (
                             <>
                               <button
-                                onClick={() => onReviewAlert(alert.id, 'APPROVED', selectedNotes[alert.id] || 'Approved by Finance Director')}
-                                className="bg-[#059669] hover:bg-[#047857] text-white font-bold px-3 py-1.5 rounded-lg text-[10px] flex items-center space-x-1 transition-all"
-                              >
-                                <Check className="w-3.5 h-3.5" />
-                                <span>Approve</span>
-                              </button>
-                              <button
-                                onClick={() => onReviewAlert(alert.id, 'OVERRIDDEN', selectedNotes[alert.id] || 'Override authorized')}
-                                className="bg-[#ef8354] hover:bg-[#ef8354]/90 text-white font-bold px-3 py-1.5 rounded-lg text-[10px] flex items-center space-x-1 transition-all"
+                                onClick={() => onReviewAlert(alert.id, 'OVERRIDDEN_BY_CHECKER', selectedNotes[alert.id] || 'Exception authorized by Finance Director')}
+                                className="inline-flex shrink-0 items-center gap-1 rounded-lg bg-[#ef8354] px-3 py-2 text-[10px] font-bold text-white transition-all hover:bg-[#ef8354]/90"
                               >
                                 <AlertTriangle className="w-3.5 h-3.5" />
                                 <span>Override</span>
+                              </button>
+                              <button
+                                onClick={() => setFlaggedItem(items.find((item) => item.id === alert.batch_item_id) || null)}
+                                className="inline-flex shrink-0 items-center gap-1 rounded-lg bg-red-600 px-3 py-2 text-[10px] font-bold text-white transition-all hover:bg-red-700"
+                              >
+                                <Flag className="w-3.5 h-3.5" />
+                                <span>Raise issue</span>
                               </button>
                             </>
                           ) : (
