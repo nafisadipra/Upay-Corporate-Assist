@@ -6,7 +6,7 @@ upay Corporate Assist is a multi-tenant corporate payroll-disbursement platform.
 
 | Directory | Purpose | Default URL |
 | --- | --- | --- |
-| `backend/` | Flask REST API, authentication, business rules, forecasting, and database models | `http://127.0.0.1:5000` |
+| `backend/` | Flask REST API, authentication, business rules, forecasting, and database models | `http://localhost:5000` |
 | `frontend/` | Corporate HR Maker and Finance Checker dashboard | `http://localhost:3000` |
 | `upay-admin/` | Internal upay operations portal | `http://localhost:3001` |
 | `database/` | PostgreSQL schema, indexes, demo data, and maintenance SQL | N/A |
@@ -69,16 +69,27 @@ Edit `backend/.env`:
 
 ```dotenv
 PORT=5000
+HOST=127.0.0.1
 FLASK_ENV=development
 SECRET_KEY=replace-with-a-long-random-secret
 JWT_SECRET_KEY=replace-with-a-different-long-random-secret
 JWT_EXPIRATION_HOURS=24
+AUTH_COOKIE_SECURE=false
+CORS_ORIGINS=http://localhost:3000,http://localhost:3001,http://127.0.0.1:3000,http://127.0.0.1:3001
+RATELIMIT_STORAGE_URI=memory://
 DATABASE_URL=postgresql://localhost:5432/upay_corporate_assist
 UPLOAD_FOLDER=uploads
 DEMO_SEED_PASSWORD=choose-a-local-demo-password
 ```
 
-Generate suitable local secrets with `python3 -c "import secrets; print(secrets.token_hex(32))"`. Run it twice and use a different result for each secret.
+Generate and safely write different local secrets without displaying them:
+
+```bash
+cd backend
+python3 scripts/rotate_secrets.py
+```
+
+Use passwords containing at least 12 characters. For a deployed environment, set `FLASK_ENV=production`, enable `AUTH_COOKIE_SECURE=true`, configure only the deployed frontend origins, and use shared rate-limit storage such as Redis instead of `memory://`.
 
 `backend/.env` is the file the Flask application loads. The root `.env.example` is only a combined reference and is not loaded by the applications.
 
@@ -152,7 +163,7 @@ cp .env.example .env.local
 `frontend/.env.local` should contain:
 
 ```dotenv
-NEXT_PUBLIC_API_URL=http://127.0.0.1:5000/api
+NEXT_PUBLIC_API_URL=http://localhost:5000/api
 NEXT_PUBLIC_APP_NAME=upay Corporate Assist
 ```
 
@@ -167,7 +178,7 @@ cp .env.example .env.local
 `upay-admin/.env.local` should contain:
 
 ```dotenv
-NEXT_PUBLIC_API_URL=http://127.0.0.1:5000/api
+NEXT_PUBLIC_API_URL=http://localhost:5000/api
 ```
 
 Restart a Next.js development server after changing an `.env.local` file.
@@ -201,7 +212,7 @@ npm run dev
 Verify the API:
 
 ```bash
-curl http://127.0.0.1:5000/health
+curl http://localhost:5000/health
 ```
 
 Then open:
@@ -222,7 +233,7 @@ You can onboard a company from **Companies → Onboard company**. That action al
 ### 2. Obtain an admin token
 
 ```bash
-curl -X POST http://127.0.0.1:5000/api/auth/login \
+curl -X POST http://localhost:5000/api/auth/login \
   -H "Content-Type: application/json" \
   -d '{
     "email": "admin@your-upay-domain.com",
@@ -241,14 +252,14 @@ export ADMIN_TOKEN='paste-the-returned-token-here'
 If the company was created in the admin portal, list companies and note its numeric `id`:
 
 ```bash
-curl http://127.0.0.1:5000/api/admin/companies \
+curl http://localhost:5000/api/admin/companies \
   -H "Authorization: Bearer $ADMIN_TOKEN"
 ```
 
 Alternatively, create it through the API:
 
 ```bash
-curl -X POST http://127.0.0.1:5000/api/admin/companies \
+curl -X POST http://localhost:5000/api/admin/companies \
   -H "Authorization: Bearer $ADMIN_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
@@ -264,7 +275,7 @@ The response contains the new company `id`. Use that value as `company_id` for b
 ### 4. Create the HR user (`MAKER`)
 
 ```bash
-curl -X POST http://127.0.0.1:5000/api/admin/users \
+curl -X POST http://localhost:5000/api/admin/users \
   -H "Authorization: Bearer $ADMIN_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
@@ -282,7 +293,7 @@ This user signs in at <http://localhost:3000> and is routed to the Maker workspa
 ### 5. Create the Finance user (`CHECKER`)
 
 ```bash
-curl -X POST http://127.0.0.1:5000/api/admin/users \
+curl -X POST http://localhost:5000/api/admin/users \
   -H "Authorization: Bearer $ADMIN_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
@@ -302,7 +313,7 @@ This user signs in at <http://localhost:3000> and is routed to the Checker works
 An existing `ADMIN` can create another account for `upay-admin` with the same endpoint. Omit `company_id`; admin users are global:
 
 ```bash
-curl -X POST http://127.0.0.1:5000/api/admin/users \
+curl -X POST http://localhost:5000/api/admin/users \
   -H "Authorization: Bearer $ADMIN_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
@@ -319,20 +330,22 @@ The new administrator signs in at <http://localhost:3001>. The API lowercases em
 To confirm the accounts for one company:
 
 ```bash
-curl "http://127.0.0.1:5000/api/admin/users?company_id=1" \
+curl "http://localhost:5000/api/admin/users?company_id=1" \
   -H "Authorization: Bearer $ADMIN_TOKEN"
 ```
 
 ## First payroll workflow
 
 1. The HR Maker signs in to the corporate portal.
-2. HR submits employee registrations from the registration CSV template in `frontend/public/employee_registration_template.csv`.
-3. An upay Admin approves those registrations in the admin portal. Approval creates approved employee-roster records and mock upay account records used by this project.
-4. HR uploads an `.xlsx`, `.xls`, or `.csv` payroll file. A blank workbook is available at `frontend/public/templates/payroll-upload-template.xlsx`.
-5. The API validates phone/account status, reconciles the company roster, and flags salary anomalies.
-6. HR corrects blocking issues and submits the batch for Finance review.
-7. The Finance Checker reviews alerts and approves or rejects the batch.
-8. After approval, the HR Maker executes the disbursement. The API verifies and deducts the company's wallet balance and records audit history.
+2. An upay Admin funds the company's Main central wallet through the admin portal.
+3. HR may create zero-balance sub-wallets and allocate existing Main-wallet funds to them. Transfers debit one wallet and credit the other atomically, so they never create additional company money.
+4. HR submits employee registrations from the registration CSV template in `frontend/public/employee_registration_template.csv`.
+5. An upay Admin approves those registrations in the admin portal. Approval creates approved employee-roster records and mock upay account records used by this project.
+6. HR uploads an `.xlsx`, `.xls`, or `.csv` payroll file. A blank workbook is available at `frontend/public/templates/payroll-upload-template.xlsx`.
+7. The API validates phone/account status, reconciles the company roster, and flags salary anomalies.
+8. HR corrects blocking issues and submits the batch for Finance review.
+9. The Finance Checker reviews alerts and approves or rejects the batch.
+10. After approval, the HR Maker executes the disbursement. The API verifies and deducts the company's wallet balance and records audit history.
 
 The supported payout path is upload → correct/review → submit → checker review → maker execution. The legacy OTP request/authorize endpoints return `410 Gone`.
 
@@ -375,7 +388,7 @@ npm run build
 
 - Replace all development secrets and passwords; never commit `.env`, `.env.local`, or real credentials.
 - Serve the Flask API and Next.js applications behind production servers/reverse proxies; do not use Flask debug mode.
-- Restrict CORS. The current development configuration permits all origins for `/api/*`.
+- Keep `CORS_ORIGINS` limited to the exact deployed corporate and admin portal origins.
 - Use a migration tool and backups for existing databases. The checked-in schema is destructive and `db.create_all()` is not a migration strategy.
 - Use HTTPS, a managed secret store, least-privilege PostgreSQL credentials, and a controlled admin-provisioning process.
 - The mock `accounts` table represents the upay core account registry for this project and must be replaced/integrated appropriately in a real deployment.

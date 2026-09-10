@@ -1,12 +1,12 @@
-import { AuditLog, Company, Employee, BankAccount, ForecastResponse, Overview, RiskAlert, User } from '@/types';
+import { AuditLog, Company, Employee, BankAccount, Overview, RiskAlert, User } from '@/types';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:5000/api';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
 
-async function request<T>(path: string, token: string, options: RequestInit = {}): Promise<T> {
+async function request<T>(path: string, _token: string, options: RequestInit = {}): Promise<T> {
   const response = await fetch(`${API_BASE_URL}${path}`, {
     ...options,
+    credentials: 'include',
     headers: {
-      Authorization: `Bearer ${token}`,
       'Content-Type': 'application/json',
       ...options.headers,
     },
@@ -22,6 +22,7 @@ export async function login(email: string, password: string) {
   const response = await fetch(`${API_BASE_URL}/auth/login`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
     body: JSON.stringify({ email, password }),
   });
   const payload = await response.json();
@@ -29,16 +30,27 @@ export async function login(email: string, password: string) {
   return payload as { token: string; user: User };
 }
 
+export async function me() {
+  try {
+    const response = await fetch(`${API_BASE_URL}/auth/session`, { credentials: 'include' });
+    if (!response.ok) return null;
+    const session = await response.json() as { user: User | null };
+    return session?.user ? session : null;
+  } catch {
+    return null;
+  }
+}
+
+export async function logout() {
+  await fetch(`${API_BASE_URL}/auth/logout`, { method: 'POST', credentials: 'include' })
+    .catch(() => undefined);
+}
+
 // 1. Overview & Activity
 export const getOverview = (token: string) => request<Overview>('/admin/overview', token);
 export const getActivity = (token: string) => request<{ audit_logs: AuditLog[]; risk_alerts: RiskAlert[] }>('/admin/activity', token);
 export const getAdminAuditLogs = (token: string, companyId?: number) =>
   request<{ audit_logs: AuditLog[] }>(`/admin/audit-logs${companyId ? `?company_id=${companyId}` : ''}`, token);
-
-export const getLiquidityForecast = (token: string, companyId: number, includeFestivalBonuses?: boolean) =>
-  request<ForecastResponse>(`/analytics/liquidity-forecast/${companyId}${includeFestivalBonuses === undefined ? '' : `?include_festival_bonus=${includeFestivalBonuses}`}`, token);
-export const refreshLiquidityForecast = (token: string, companyId: number) =>
-  request<ForecastResponse>(`/analytics/liquidity-forecast/${companyId}/refresh`, token, { method: 'POST' });
 
 // 2. Company Onboarding & Status
 export const getCompanies = (token: string) => request<{ companies: Company[] }>('/admin/companies', token);
@@ -83,9 +95,7 @@ export const uploadCompanyEmployees = async (token: string, companyId: number, f
   formData.append('file', file);
   const response = await fetch(`${API_BASE_URL}/admin/companies/${companyId}/employees/upload`, {
     method: 'POST',
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
+    credentials: 'include',
     body: formData,
   });
   const payload = await response.json();

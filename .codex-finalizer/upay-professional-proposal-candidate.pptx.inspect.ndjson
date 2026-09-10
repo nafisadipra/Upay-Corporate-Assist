@@ -1,0 +1,221 @@
+{"kind":"deck","id":"pr/eq1kh7","name":"Deck"}
+{"kind":"layout","layoutId":"ca893473-ef30-4047-b3b4-f5df42659472","name":"Master","type":"master"}
+{"kind":"layout","layoutId":"7fbfa145-365e-47dc-877e-58ced95f513c","name":"Title Slide","type":"title"}
+{"kind":"slide","id":"sl/0u5lk1","slide":1,"title":"u","textShapes":9}
+{"kind":"shape","id":"sh/4je9wjmd","slide":1,"bbox":[0,0,1280,14]}
+{"kind":"shape","id":"sh/3i5sne5s","slide":1,"bbox":[80,66,50,50]}
+{"kind":"textbox","id":"sh/ihwru947","slide":1,"text":"u","textPreview":"u","textChars":1,"textLines":1,"bbox":[80,65,50,50]}
+{"kind":"textbox","id":"sh/hgna1onm","slide":1,"text":"upay","textPreview":"upay","textChars":4,"textLines":1,"bbox":[148,62,160,36]}
+{"kind":"textbox","id":"sh/gfe9sjm1","slide":1,"text":"CORPORATE ASSIST","textPreview":"CORPORATE ASSIST","textChars":16,"textLines":1,"bbox":[148,96,230,22]}
+{"kind":"textbox","id":"sh/ve58ze5g","slide":1,"text":"Hello, I’m","textPreview":"Hello, I’m","textChars":10,"textLines":1,"bbox":[80,205,540,42]}
+{"kind":"textbox","id":"sh/udwrq94v","slide":1,"text":"[YOUR NAME]","textPreview":"[YOUR NAME]","textChars":11,"textLines":1,"bbox":[80,248,720,78]}
+{"kind":"textbox","id":"sh/1crax8nq","slide":1,"text":"[YOUR ROLE]","textPreview":"[YOUR ROLE]","textChars":11,"textLines":1,"bbox":[82,335,560,38]}
+{"kind":"shape","id":"sh/0by943m5","slide":1,"bbox":[82,397,88,4]}
+{"kind":"textbox","id":"sh/up8n6h4b","slide":1,"text":"Working at [COMPANY / DEPARTMENT]","textPreview":"Working at [COMPANY / DEPARTMENT]","textChars":33,"textLines":1,"bbox":[82,425,650,45]}
+{"kind":"textbox","id":"sh/fqh4zmlw","slide":1,"text":"Secure corporate payroll operations","textPreview":"Secure corporate payroll operations","textChars":35,"textLines":1,"bbox":[82,486,600,38]}
+{"kind":"shape","id":"sh/gra58rmh","slide":1,"bbox":[850,168,290,350]}
+{"kind":"shape","id":"sh/hsjm1w32","slide":1,"bbox":[886,204,218,54]}
+{"kind":"shape","id":"sh/61832h4f","slide":1,"bbox":[906,222,20,20]}
+{"kind":"textbox","id":"sh/72h4vm5k","slide":1,"text":"Corporate workspace","textPreview":"Corporate workspace","textChars":19,"textLines":1,"bbox":[944,216,140,30]}
+{"kind":"shape","id":"sh/s3ql4rm5","slide":1,"bbox":[886,286,218,34]}
+{"kind":"shape","id":"sh/tozmxwnq","slide":1,"bbox":[903,297,14,14]}
+{"kind":"shape","id":"sh/qxsne14j","slide":1,"bbox":[933,300,110,7]}
+{"kind":"shape","id":"sh/ry1476l4","slide":1,"bbox":[886,334,218,34]}
+{"kind":"shape","id":"sh/n2dkzylg","slide":1,"bbox":[903,345,14,14]}
+{"kind":"shape","id":"sh/m14jqdkv","slide":1,"bbox":[933,348,144,7]}
+{"kind":"shape","id":"sh/94v2183m","slide":1,"bbox":[886,382,218,34]}
+{"kind":"shape","id":"sh/o3m1s321","slide":1,"bbox":[903,393,14,14]}
+{"kind":"shape","id":"sh/b6dk3ilc","slide":1,"bbox":[933,396,110,7]}
+{"kind":"shape","id":"sh/a54judk7","slide":1,"bbox":[886,430,218,34]}
+{"kind":"shape","id":"sh/x8f25sji","slide":1,"bbox":[903,441,14,14]}
+{"kind":"shape","id":"sh/w7m1wn2x","slide":1,"bbox":[933,444,144,7]}
+{"kind":"notes","id":"nt/0u5lk1","slide":1,"text":"Timing: 35 seconds. Introduce yourself, your role, and where you work. Briefly connect your responsibilities to corporate payroll operations. Replace the bracketed placeholders before presenting."}
+{"kind":"slide","id":"sl/gmgrl8","slide":2,"title":"u","textShapes":17}
+{"kind":"shape","id":"sh/1kvadwjm","slide":2,"bbox":[0,0,86,720]}
+{"kind":"shape","id":"sh/ex4r21kb","slide":2,"bbox":[0,0,86,12]}
+{"kind":"shape","id":"sh/zydsbm1w","slide":2,"bbox":[28,42,30,30]}
+{"kind":"textbox","id":"sh/cvm90r25","slide":2,"text":"u","textPreview":"u","textChars":1,"textLines":1,"bbox":[28,41,30,30]}
+{"kind":"textbox","id":"sh/dwva9wjq","slide":2,"text":"02","textPreview":"02","textChars":2,"textLines":1,"bbox":[28,654,30,24]}
+{"kind":"textbox","id":"sh/qtkryhkz","slide":2,"text":"What I’m working on","textPreview":"What I’m working on","textChars":19,"textLines":1,"bbox":[126,45,1050,48]}
+{"kind":"textbox","id":"sh/ruds7mlk","slide":2,"text":"A safer way to prepare, approve, and execute corporate payroll","textPreview":"A safer way to prepare, approve, and execute corporate payroll","textChars":62,"textLines":1,"bbox":[126,96,1030,28]}
+{"kind":"shape","id":"sh/wr6tcb29","slide":2,"bbox":[126,140,1004,2]}
+{"kind":"textbox","id":"sh/xsfalgju","slide":2,"text":"upay Corporate Assist","textPreview":"upay Corporate Assist","textChars":21,"textLines":1,"bbox":[126,176,620,54]}
+{"kind":"textbox","id":"sh/5ormxgnq","slide":2,"text":"Multi-tenant corporate payroll and disbursement platform","textPreview":"Multi-tenant corporate payroll and disbursement platform","textChars":56,"textLines":1,"bbox":[126,233,650,42]}
+{"kind":"shape","id":"sh/kni5obm5","slide":2,"bbox":[386,398,92,5]}
+{"kind":"shape","id":"sh/jm94v65k","slide":2,"bbox":[126,330,260,145]}
+{"kind":"shape","id":"sh/il03m14f","slide":2,"bbox":[150,354,38,38]}
+{"kind":"textbox","id":"sh/xkrmtwnu","slide":2,"text":"1","textPreview":"1","textChars":1,"textLines":1,"bbox":[150,354,38,38]}
+{"kind":"textbox","id":"sh/wjylkrm9","slide":2,"text":"Corporate HR","textPreview":"Corporate HR","textChars":12,"textLines":1,"bbox":[150,406,210,28]}
+{"kind":"textbox","id":"sh/vip4rm5o","slide":2,"text":"Prepares payroll","textPreview":"Prepares payroll","textChars":16,"textLines":1,"bbox":[150,437,210,24]}
+{"kind":"shape","id":"sh/axg3ih43","slide":2,"bbox":[738,398,92,5]}
+{"kind":"shape","id":"sh/hgbm50ny","slide":2,"bbox":[478,330,260,145]}
+{"kind":"shape","id":"sh/gf25wvmd","slide":2,"bbox":[502,354,38,38]}
+{"kind":"textbox","id":"sh/0buxojy1","slide":2,"text":"2","textPreview":"2","textChars":1,"textLines":1,"bbox":[502,354,38,38]}
+{"kind":"textbox","id":"sh/1w3yhof6","slide":2,"text":"Corporate Assist","textPreview":"Corporate Assist","textChars":16,"textLines":1,"bbox":[502,406,210,28]}
+{"kind":"textbox","id":"sh/e9cfmtgv","slide":2,"text":"Controls the workflow","textPreview":"Controls the workflow","textChars":21,"textLines":1,"bbox":[502,437,210,24]}
+{"kind":"shape","id":"sh/zalgfyxg","slide":2,"bbox":[830,330,260,145]}
+{"kind":"shape","id":"sh/c7axkjyp","slide":2,"bbox":[854,354,38,38]}
+{"kind":"textbox","id":"sh/d83ydofa","slide":2,"text":"3","textPreview":"3","textChars":1,"textLines":1,"bbox":[854,354,38,38]}
+{"kind":"textbox","id":"sh/q5sfi9gj","slide":2,"text":"Employee wallets","textPreview":"Employee wallets","textChars":16,"textLines":1,"bbox":[854,406,210,28]}
+{"kind":"textbox","id":"sh/r61gbex4","slide":2,"text":"Receive payments","textPreview":"Receive payments","textChars":16,"textLines":1,"bbox":[854,437,210,24]}
+{"kind":"shape","id":"sh/43axgzyt","slide":2,"bbox":[126,550,1056,76]}
+{"kind":"textbox","id":"sh/p4je94fe","slide":2,"text":"My focus","textPreview":"My focus","textChars":8,"textLines":1,"bbox":[150,568,130,30]}
+{"kind":"textbox","id":"sh/7ehgzu10","slide":2,"text":"Turning spreadsheet handoffs into a controlled digital process","textPreview":"Turning spreadsheet handoffs into a controlled digital process","textChars":62,"textLines":1,"bbox":[292,558,840,46]}
+{"kind":"notes","id":"nt/gmgrl8","slide":2,"text":"Timing: 40 seconds. Explain that your current project is upay Corporate Assist. It supports the full path from corporate payroll preparation to employee wallet payment, with controls between each stage."}
+{"kind":"slide","id":"sl/5prail","slide":3,"title":"u","textShapes":16}
+{"kind":"shape","id":"sh/poby9kre","slide":3,"bbox":[0,0,86,720]}
+{"kind":"shape","id":"sh/2l0ze5s3","slide":3,"bbox":[0,0,86,12]}
+{"kind":"shape","id":"sh/3mtg7a9o","slide":3,"bbox":[28,42,30,30]}
+{"kind":"textbox","id":"sh/gjihcvax","slide":3,"text":"u","textPreview":"u","textChars":1,"textLines":1,"bbox":[28,41,30,30]}
+{"kind":"textbox","id":"sh/1kry50ri","slide":3,"text":"03","textPreview":"03","textChars":2,"textLines":1,"bbox":[28,654,30,24]}
+{"kind":"textbox","id":"sh/eh0za5sr","slide":3,"text":"Today’s presentation","textPreview":"Today’s presentation","textChars":20,"textLines":1,"bbox":[126,45,1050,48]}
+{"kind":"textbox","id":"sh/fi9g3q9c","slide":3,"text":"A short overview of the proposal","textPreview":"A short overview of the proposal","textChars":32,"textLines":1,"bbox":[126,96,1030,28]}
+{"kind":"shape","id":"sh/0fmhozq1","slide":3,"bbox":[126,140,1004,2]}
+{"kind":"shape","id":"sh/lgvih4rm","slide":3,"bbox":[126,180,88,72]}
+{"kind":"textbox","id":"sh/1kbul0ne","slide":3,"text":"01","textPreview":"01","textChars":2,"textLines":1,"bbox":[126,180,88,72]}
+{"kind":"textbox","id":"sh/0j2tsv6t","slide":3,"text":"The problem","textPreview":"The problem","textChars":11,"textLines":1,"bbox":[246,181,360,32]}
+{"kind":"textbox","id":"sh/fitcjq58","slide":3,"text":"Where payroll operations create risk","textPreview":"Where payroll operations create risk","textChars":36,"textLines":1,"bbox":[246,217,690,27]}
+{"kind":"shape","id":"sh/ehkbqlon","slide":3,"bbox":[246,266,760,1]}
+{"kind":"shape","id":"sh/tgbuhgn2","slide":3,"bbox":[126,286,88,72]}
+{"kind":"textbox","id":"sh/sf2tob6x","slide":3,"text":"02","textPreview":"02","textChars":2,"textLines":1,"bbox":[126,286,88,72]}
+{"kind":"textbox","id":"sh/retcf65c","slide":3,"text":"The solution","textPreview":"The solution","textChars":12,"textLines":1,"bbox":[246,287,360,32]}
+{"kind":"textbox","id":"sh/6d0bm1or","slide":3,"text":"How Corporate Assist addresses it","textPreview":"How Corporate Assist addresses it","textChars":33,"textLines":1,"bbox":[246,323,690,27]}
+{"kind":"shape","id":"sh/xcvutknm","slide":3,"bbox":[246,372,760,1]}
+{"kind":"shape","id":"sh/cbmd0f61","slide":3,"bbox":[126,392,88,72]}
+{"kind":"textbox","id":"sh/wfudwjud","slide":3,"text":"03","textPreview":"03","textChars":2,"textLines":1,"bbox":[126,392,88,72]}
+{"kind":"textbox","id":"sh/xg3epovi","slide":3,"text":"Main features","textPreview":"Main features","textChars":13,"textLines":1,"bbox":[246,393,360,32]}
+{"kind":"textbox","id":"sh/adcvu9c7","slide":3,"text":"The capabilities included in the platform","textPreview":"The capabilities included in the platform","textChars":41,"textLines":1,"bbox":[246,429,690,27]}
+{"kind":"shape","id":"sh/velwneds","slide":3,"bbox":[246,478,760,1]}
+{"kind":"shape","id":"sh/8rudszu1","slide":3,"bbox":[126,498,88,72]}
+{"kind":"textbox","id":"sh/9c3el4vm","slide":3,"text":"04","textPreview":"04","textChars":2,"textLines":1,"bbox":[126,498,88,72]}
+{"kind":"textbox","id":"sh/mpsvq9cv","slide":3,"text":"Implementation","textPreview":"Implementation","textChars":14,"textLines":1,"bbox":[246,499,360,32]}
+{"kind":"textbox","id":"sh/nqlwjedg","slide":3,"text":"How we can validate the solution","textPreview":"How we can validate the solution","textChars":32,"textLines":1,"bbox":[246,535,690,27]}
+{"kind":"notes","id":"nt/5prail","slide":3,"text":"Timing: 25 seconds. Set expectations for the presentation. You will explain the operational problem, introduce the proposed platform, highlight the main features, and close with an implementation approach."}
+{"kind":"slide","id":"sl/6m5gic","slide":4,"title":"u","textShapes":18}
+{"kind":"shape","id":"sh/xcfqpwbi","slide":4,"bbox":[0,0,86,720]}
+{"kind":"shape","id":"sh/a9o7ehc7","slide":4,"bbox":[0,0,86,12]}
+{"kind":"shape","id":"sh/bax8nmts","slide":4,"bbox":[28,42,30,30]}
+{"kind":"textbox","id":"sh/kz6pkru9","slide":4,"text":"u","textPreview":"u","textChars":1,"textLines":1,"bbox":[28,41,30,30]}
+{"kind":"textbox","id":"sh/l0zqtwbu","slide":4,"text":"04","textPreview":"04","textChars":2,"textLines":1,"bbox":[28,654,30,24]}
+{"kind":"textbox","id":"sh/ydo7i1c3","slide":4,"text":"The payroll operations gap","textPreview":"The payroll operations gap","textChars":26,"textLines":1,"bbox":[126,45,1050,48]}
+{"kind":"textbox","id":"sh/jyx8r6to","slide":4,"text":"Spreadsheet-based handoffs make control and visibility difficult","textPreview":"Spreadsheet-based handoffs make control and visibility difficult","textChars":64,"textLines":1,"bbox":[126,96,1030,28]}
+{"kind":"shape","id":"sh/03mp87u5","slide":4,"bbox":[126,140,1004,2]}
+{"kind":"shape","id":"sh/14v6hcba","slide":4,"bbox":[126,188,470,140]}
+{"kind":"shape","id":"sh/t8bi1krm","slide":4,"bbox":[126,188,10,140]}
+{"kind":"textbox","id":"sh/s72h8fq1","slide":4,"text":"01","textPreview":"01","textChars":2,"textLines":1,"bbox":[157,212,44,28]}
+{"kind":"textbox","id":"sh/76t0zu9g","slide":4,"text":"File errors","textPreview":"File errors","textChars":11,"textLines":1,"bbox":[216,206,345,36]}
+{"kind":"textbox","id":"sh/65kz6p8v","slide":4,"text":"Invalid accounts and duplicate rows","textPreview":"Invalid accounts and duplicate rows","textChars":35,"textLines":1,"bbox":[216,249,345,45]}
+{"kind":"shape","id":"sh/hwvi54ri","slide":4,"bbox":[651,188,470,140]}
+{"kind":"shape","id":"sh/gvmhczqx","slide":4,"bbox":[651,188,10,140]}
+{"kind":"textbox","id":"sh/fad03u9c","slide":4,"text":"02","textPreview":"02","textChars":2,"textLines":1,"bbox":[682,212,44,28]}
+{"kind":"textbox","id":"sh/u9kzap87","slide":4,"text":"Approval risk","textPreview":"Approval risk","textChars":13,"textLines":1,"bbox":[741,206,345,36]}
+{"kind":"textbox","id":"sh/p0vi94ru","slide":4,"text":"Weak separation of duties","textPreview":"Weak separation of duties","textChars":25,"textLines":1,"bbox":[741,249,345,45]}
+{"kind":"shape","id":"sh/4zm1gzq9","slide":4,"bbox":[126,368,470,140]}
+{"kind":"shape","id":"sh/8fets72h","slide":4,"bbox":[126,368,10,140]}
+{"kind":"textbox","id":"sh/9gnulcj2","slide":4,"text":"03","textPreview":"03","textChars":2,"textLines":1,"bbox":[157,392,44,28]}
+{"kind":"textbox","id":"sh/mdwbqhkb","slide":4,"text":"Wallet shortfalls","textPreview":"Wallet shortfalls","textChars":17,"textLines":1,"bbox":[216,386,345,36]}
+{"kind":"textbox","id":"sh/ne5sj21w","slide":4,"text":"Funding issues discovered late","textPreview":"Funding issues discovered late","textChars":30,"textLines":1,"bbox":[216,429,345,45]}
+{"kind":"shape","id":"sh/wjytwr2t","slide":4,"bbox":[651,368,470,140]}
+{"kind":"shape","id":"sh/xk7upwjy","slide":4,"bbox":[651,368,10,140]}
+{"kind":"textbox","id":"sh/ahwbuhkn","slide":4,"text":"04","textPreview":"04","textChars":2,"textLines":1,"bbox":[682,392,44,28]}
+{"kind":"textbox","id":"sh/vi5cnm18","slide":4,"text":"Limited audit visibility","textPreview":"Limited audit visibility","textChars":24,"textLines":1,"bbox":[741,386,345,36]}
+{"kind":"textbox","id":"sh/cnutkn29","slide":4,"text":"Approvals spread across channels","textPreview":"Approvals spread across channels","textChars":32,"textLines":1,"bbox":[741,429,345,45]}
+{"kind":"shape","id":"sh/do3atsju","slide":4,"bbox":[126,572,995,3]}
+{"kind":"textbox","id":"sh/fitwzqlc","slide":4,"text":"Need","textPreview":"Need","textChars":4,"textLines":1,"bbox":[126,593,86,32]}
+{"kind":"textbox","id":"sh/uh0vql4r","slide":4,"text":"One controlled and traceable payroll workflow","textPreview":"One controlled and traceable payroll workflow","textChars":45,"textLines":1,"bbox":[220,585,700,46]}
+{"kind":"notes","id":"nt/6m5gic","slide":4,"text":"Timing: 45 seconds. Describe the four common gaps: data quality, independent approval, funding readiness, and evidence for audit or support. Emphasize that these issues interact during a time-sensitive payroll cycle."}
+{"kind":"slide","id":"sl/af10z2","slide":5,"title":"u","textShapes":15}
+{"kind":"shape","id":"sh/8r6xc7ul","slide":5,"bbox":[0,0,86,720]}
+{"kind":"shape","id":"sh/7qdg32tg","slide":5,"bbox":[0,0,86,12]}
+{"kind":"shape","id":"sh/mp4faxcv","slide":5,"bbox":[28,42,30,30]}
+{"kind":"textbox","id":"sh/lovy1sva","slide":5,"text":"u","textPreview":"u","textChars":1,"textLines":1,"bbox":[28,41,30,30]}
+{"kind":"textbox","id":"sh/knmx8nup","slide":5,"text":"05","textPreview":"05","textChars":2,"textLines":1,"bbox":[28,654,30,24]}
+{"kind":"textbox","id":"sh/zmdgzid4","slide":5,"text":"Project proposal","textPreview":"Project proposal","textChars":16,"textLines":1,"bbox":[126,45,1050,48]}
+{"kind":"textbox","id":"sh/yl4f6xcj","slide":5,"text":"One platform with clear roles and shared controls","textPreview":"One platform with clear roles and shared controls","textChars":49,"textLines":1,"bbox":[126,96,1030,28]}
+{"kind":"shape","id":"sh/dkvyxsvy","slide":5,"bbox":[126,140,1004,2]}
+{"kind":"shape","id":"sh/cj2x4nut","slide":5,"bbox":[126,184,302,330]}
+{"kind":"shape","id":"sh/6hwr2xcv","slide":5,"bbox":[126,184,302,72]}
+{"kind":"textbox","id":"sh/7i58b2dg","slide":5,"text":"HR Maker","textPreview":"HR Maker","textChars":8,"textLines":1,"bbox":[148,198,258,30]}
+{"kind":"textbox","id":"sh/8je947ul","slide":5,"text":"PREPARE","textPreview":"PREPARE","textChars":7,"textLines":1,"bbox":[148,270,180,26]}
+{"kind":"textbox","id":"sh/tknqdcv6","slide":5,"text":"Employee registration\nPayroll upload\nCorrections","textPreview":"Employee registration | Payroll upload | Corrections","textChars":48,"textLines":3,"bbox":[148,315,250,140]}
+{"kind":"shape","id":"sh/ytcryxwj","slide":5,"bbox":[478,184,302,330]}
+{"kind":"shape","id":"sh/jul872d4","slide":5,"bbox":[478,184,302,72]}
+{"kind":"textbox","id":"sh/kve907ep","slide":5,"text":"Finance Checker","textPreview":"Finance Checker","textChars":15,"textLines":1,"bbox":[500,198,258,30]}
+{"kind":"textbox","id":"sh/lwnq9cva","slide":5,"text":"APPROVE","textPreview":"APPROVE","textChars":7,"textLines":1,"bbox":[500,270,180,26]}
+{"kind":"textbox","id":"sh/apc7udwn","slide":5,"text":"Exception review\nApprove or reject\nReview notes","textPreview":"Exception review | Approve or reject | Review notes","textChars":47,"textLines":3,"bbox":[500,315,250,140]}
+{"kind":"shape","id":"sh/bql83id8","slide":5,"bbox":[830,184,302,330]}
+{"kind":"shape","id":"sh/zuhobet0","slide":5,"bbox":[830,184,302,72]}
+{"kind":"textbox","id":"sh/et8n2tcf","slide":5,"text":"upay Admin","textPreview":"upay Admin","textChars":10,"textLines":1,"bbox":[852,198,258,30]}
+{"kind":"textbox","id":"sh/1wj6dobq","slide":5,"text":"OPERATE","textPreview":"OPERATE","textChars":7,"textLines":1,"bbox":[852,270,180,26]}
+{"kind":"textbox","id":"sh/0va54jul","slide":5,"text":"Company onboarding\nWallet management\nActivity monitoring","textPreview":"Company onboarding | Wallet management | Activity monitoring","textChars":56,"textLines":3,"bbox":[852,315,250,140]}
+{"kind":"shape","id":"sh/ny1ofytw","slide":5,"bbox":[126,555,1006,72]}
+{"kind":"textbox","id":"sh/mxsn6tcb","slide":5,"text":"Shared control layer","textPreview":"Shared control layer","textChars":20,"textLines":1,"bbox":[152,570,236,34]}
+{"kind":"textbox","id":"sh/90j6h8b2","slide":5,"text":"Authentication  •  tenant isolation  •  workflow rules  •  audit records","textPreview":"Authentication  •  tenant isolation  •  workflow rules  •  audit records","textChars":72,"textLines":1,"bbox":[395,568,700,38]}
+{"kind":"notes","id":"nt/af10z2","slide":5,"text":"Timing: 50 seconds. Explain the three workspaces. HR prepares and corrects payroll. Finance provides independent review. upay Operations manages the corporate account and wallet. The shared backend applies the same security and workflow rules across all roles."}
+{"kind":"slide","id":"sl/9zghjq","slide":6,"title":"u","textShapes":25}
+{"kind":"shape","id":"sh/14fexcbu","slide":6,"bbox":[0,0,86,720]}
+{"kind":"shape","id":"sh/e1ovmhs3","slide":6,"bbox":[0,0,86,12]}
+{"kind":"shape","id":"sh/z2xwvmto","slide":6,"bbox":[28,42,30,30]}
+{"kind":"textbox","id":"sh/cz6dk7ax","slide":6,"text":"u","textPreview":"u","textChars":1,"textLines":1,"bbox":[28,41,30,30]}
+{"kind":"textbox","id":"sh/d0fetcbi","slide":6,"text":"06","textPreview":"06","textChars":2,"textLines":1,"bbox":[28,654,30,24]}
+{"kind":"textbox","id":"sh/qd4vixsr","slide":6,"text":"Main features","textPreview":"Main features","textChars":13,"textLines":1,"bbox":[126,45,1050,48]}
+{"kind":"textbox","id":"sh/redwr2tc","slide":6,"text":"Controls from employee onboarding through disbursement","textPreview":"Controls from employee onboarding through disbursement","textChars":54,"textLines":1,"bbox":[126,96,1030,28]}
+{"kind":"shape","id":"sh/wvqxwbah","slide":6,"bbox":[126,140,1004,2]}
+{"kind":"shape","id":"sh/xwze5gbm","slide":6,"bbox":[126,173,474,86]}
+{"kind":"shape","id":"sh/pk7qt07u","slide":6,"bbox":[146,198,34,34]}
+{"kind":"textbox","id":"sh/ojy90vq9","slide":6,"text":"1","textPreview":"1","textChars":1,"textLines":1,"bbox":[146,198,34,34]}
+{"kind":"textbox","id":"sh/nip8rqpo","slide":6,"text":"Payroll upload","textPreview":"Payroll upload","textChars":14,"textLines":1,"bbox":[198,188,260,30]}
+{"kind":"textbox","id":"sh/2hwryl83","slide":6,"text":"Excel and CSV","textPreview":"Excel and CSV","textChars":13,"textLines":1,"bbox":[198,220,350,23]}
+{"kind":"shape","id":"sh/1gnqpgri","slide":6,"bbox":[642,173,474,86]}
+{"kind":"shape","id":"sh/gfe9wbqx","slide":6,"bbox":[662,198,34,34]}
+{"kind":"textbox","id":"sh/fe58n69c","slide":6,"text":"2","textPreview":"2","textChars":1,"textLines":1,"bbox":[662,198,34,34]}
+{"kind":"textbox","id":"sh/edwrul8r","slide":6,"text":"Data validation","textPreview":"Data validation","textChars":15,"textLines":1,"bbox":[714,188,260,30]}
+{"kind":"textbox","id":"sh/lcra1k7m","slide":6,"text":"Roster and account checks","textPreview":"Roster and account checks","textChars":25,"textLines":1,"bbox":[714,220,350,23]}
+{"kind":"shape","id":"sh/kbi98fqh","slide":6,"bbox":[126,285,474,86]}
+{"kind":"shape","id":"sh/4ralkn2p","slide":6,"bbox":[146,310,34,34]}
+{"kind":"textbox","id":"sh/5sj2t8ja","slide":6,"text":"3","textPreview":"3","textChars":1,"textLines":1,"bbox":[146,310,34,34]}
+{"kind":"textbox","id":"sh/ip83idkj","slide":6,"text":"Maker-checker","textPreview":"Maker-checker","textChars":13,"textLines":1,"bbox":[198,300,260,30]}
+{"kind":"textbox","id":"sh/jqhkri14","slide":6,"text":"Independent approval","textPreview":"Independent approval","textChars":20,"textLines":1,"bbox":[198,332,350,23]}
+{"kind":"shape","id":"sh/w3q1g32t","slide":6,"bbox":[642,285,474,86]}
+{"kind":"shape","id":"sh/hoz2p8jy","slide":6,"bbox":[662,310,34,34]}
+{"kind":"textbox","id":"sh/u18jetkn","slide":6,"text":"4","textPreview":"4","textChars":1,"textLines":1,"bbox":[662,310,34,34]}
+{"kind":"textbox","id":"sh/v2hkny18","slide":6,"text":"Risk review","textPreview":"Risk review","textChars":11,"textLines":1,"bbox":[714,300,260,30]}
+{"kind":"textbox","id":"sh/8zq1c32h","slide":6,"text":"Exception flags","textPreview":"Exception flags","textChars":15,"textLines":1,"bbox":[714,332,350,23]}
+{"kind":"shape","id":"sh/90z2loj2","slide":6,"bbox":[126,397,474,86]}
+{"kind":"shape","id":"sh/buxkvy5o","slide":6,"bbox":[146,422,34,34]}
+{"kind":"textbox","id":"sh/ato32t4j","slide":6,"text":"5","textPreview":"5","textChars":1,"textLines":1,"bbox":[146,422,34,34]}
+{"kind":"textbox","id":"sh/xwfmxonu","slide":6,"text":"Wallet control","textPreview":"Wallet control","textChars":14,"textLines":1,"bbox":[198,412,260,30]}
+{"kind":"textbox","id":"sh/cv6l4jm9","slide":6,"text":"Balance and execution","textPreview":"Balance and execution","textChars":21,"textLines":1,"bbox":[198,444,350,23]}
+{"kind":"shape","id":"sh/zyx4zy50","slide":6,"bbox":[642,397,474,86]}
+{"kind":"shape","id":"sh/yxo36t4f","slide":6,"bbox":[662,422,34,34]}
+{"kind":"textbox","id":"sh/l0zm1836","slide":6,"text":"6","textPreview":"6","textChars":1,"textLines":1,"bbox":[662,422,34,34]}
+{"kind":"textbox","id":"sh/kz6l83ml","slide":6,"text":"Forecasting","textPreview":"Forecasting","textChars":11,"textLines":1,"bbox":[714,412,260,30]}
+{"kind":"textbox","id":"sh/7mh43ilw","slide":6,"text":"Funding estimates","textPreview":"Funding estimates","textChars":17,"textLines":1,"bbox":[714,444,350,23]}
+{"kind":"shape","id":"sh/m183ad4b","slide":6,"bbox":[126,509,474,86]}
+{"kind":"shape","id":"sh/65gn6hcn","slide":6,"bbox":[146,534,34,34]}
+{"kind":"textbox","id":"sh/76pozmt8","slide":6,"text":"7","textPreview":"7","textChars":1,"textLines":1,"bbox":[146,534,34,34]}
+{"kind":"textbox","id":"sh/s7y58rut","slide":6,"text":"Audit trail","textPreview":"Audit trail","textChars":11,"textLines":1,"bbox":[198,524,260,30]}
+{"kind":"textbox","id":"sh/t8761wbe","slide":6,"text":"Recorded actions","textPreview":"Recorded actions","textChars":16,"textLines":1,"bbox":[198,556,350,23]}
+{"kind":"notes","id":"nt/9zghjq","slide":6,"text":"Timing: 65 seconds. Briefly cover the features. Payroll upload and validation reduce file errors. Maker-checker approval and risk review strengthen decisions. Wallet controls manage execution. Forecasting improves funding preparation, and the audit trail records key actions."}
+{"kind":"slide","id":"sl/myo650","slide":7,"title":"u","textShapes":13}
+{"kind":"shape","id":"sh/gfadsbe5","slide":7,"bbox":[0,0,1280,14]}
+{"kind":"shape","id":"sh/ve1wz6x0","slide":7,"bbox":[80,58,44,44]}
+{"kind":"textbox","id":"sh/ud8vq1wf","slide":7,"text":"u","textPreview":"u","textChars":1,"textLines":1,"bbox":[80,57,44,44]}
+{"kind":"textbox","id":"sh/54je50v2","slide":7,"text":"Expected value","textPreview":"Expected value","textChars":14,"textLines":1,"bbox":[80,158,690,60]}
+{"kind":"textbox","id":"sh/43adwveh","slide":7,"text":"01","textPreview":"01","textChars":2,"textLines":1,"bbox":[82,270,50,28]}
+{"kind":"textbox","id":"sh/321w3qxw","slide":7,"text":"Fewer payroll errors","textPreview":"Fewer payroll errors","textChars":20,"textLines":1,"bbox":[144,265,330,40]}
+{"kind":"shape","id":"sh/i1svulwb","slide":7,"bbox":[144,319,300,1]}
+{"kind":"textbox","id":"sh/d83e90vy","slide":7,"text":"02","textPreview":"02","textChars":2,"textLines":1,"bbox":[512,270,50,28]}
+{"kind":"textbox","id":"sh/s7ud0ved","slide":7,"text":"Stronger payment control","textPreview":"Stronger payment control","textChars":24,"textLines":1,"bbox":[574,265,330,40]}
+{"kind":"shape","id":"sh/a50zq94f","slide":7,"bbox":[574,319,300,1]}
+{"kind":"textbox","id":"sh/v6tgze50","slide":7,"text":"03","textPreview":"03","textChars":2,"textLines":1,"bbox":[82,382,50,28]}
+{"kind":"textbox","id":"sh/wr2hsjm5","slide":7,"text":"Better funding visibility","textPreview":"Better funding visibility","textChars":25,"textLines":1,"bbox":[144,377,330,40]}
+{"kind":"shape","id":"sh/xsby1onq","slide":7,"bbox":[144,431,300,1]}
+{"kind":"textbox","id":"sh/itkzut4b","slide":7,"text":"04","textPreview":"04","textChars":2,"textLines":1,"bbox":[512,382,50,28]}
+{"kind":"textbox","id":"sh/jut03y5w","slide":7,"text":"Clear audit records","textPreview":"Clear audit records","textChars":19,"textLines":1,"bbox":[574,377,330,40]}
+{"kind":"shape","id":"sh/kv2hwjmh","slide":7,"bbox":[574,431,300,1]}
+{"kind":"shape","id":"sh/5wbi5on2","slide":7,"bbox":[80,548,1120,92]}
+{"kind":"textbox","id":"sh/yxgzip47","slide":7,"text":"NEXT STEP","textPreview":"NEXT STEP","textChars":9,"textLines":1,"bbox":[108,568,145,30]}
+{"kind":"textbox","id":"sh/zy9gru5s","slide":7,"text":"Approve a pilot with one corporate client","textPreview":"Approve a pilot with one corporate client","textChars":41,"textLines":1,"bbox":[265,558,850,50]}
+{"kind":"textbox","id":"sh/325wjqlk","slide":7,"text":"Thank you","textPreview":"Thank you","textChars":9,"textLines":1,"bbox":[1030,660,170,24]}
+{"kind":"notes","id":"nt/myo650","slide":7,"text":"Timing: 40 seconds. Summarize the expected value and make the request clear: approve a focused pilot with one corporate client and named users for the Maker, Checker, and Admin roles. Close and invite questions."}
