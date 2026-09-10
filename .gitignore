@@ -71,3 +71,4 @@ yarn-error.log*
 # Local Working Artifacts
 scratch/
 outputs/
+premium-audit.json
