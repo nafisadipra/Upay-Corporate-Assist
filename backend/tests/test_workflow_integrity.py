@@ -101,6 +101,47 @@ def test_checker_raises_ai_alert_as_hr_issue_before_signoff(client, maker_auth, 
 def test_finance_can_return_a_row_to_hr_for_correction(client, maker_auth, checker_auth):
     batch_id = create_valid_batch(client, maker_auth)
     assert client.post(f'/api/batches/{batch_id}/submit', headers=maker_auth).status_code == 200
+
+
+def test_ai_recheck_creates_a_fresh_alert_when_hr_correction_is_still_invalid(client, maker_auth, checker_auth):
+    response = client.post('/api/batches/upload', headers=maker_auth, json={
+        'items': [{
+            'raw_phone_number': '01799999999',
+            'employee_name': 'Unregistered Employee',
+            'department': 'IT',
+            'basic_salary': 30000,
+            'gross_salary': 45000,
+        }],
+    })
+    batch_id = response.get_json()['batch']['id']
+    item = response.get_json()['items'][0]
+    assert client.post(f'/api/batches/{batch_id}/submit', headers=maker_auth).status_code == 200
+
+    raised = client.post('/api/risk-alerts/manual', headers=checker_auth, json={
+        'batch_item_id': item['id'],
+        'issue_type': 'INCORRECT_PHONE',
+        'notes': 'Replace this unregistered phone number.',
+    })
+    assert raised.status_code == 201
+
+    corrected = client.put(f"/api/batches/items/{item['id']}/correct", headers=maker_auth, json={
+        'corrected_phone_number': '01799999910',
+        'employee_name': item['employee_name'],
+        'department': item['department'],
+        'basic_salary': item['basic_salary'],
+        'gross_salary': item['gross_salary'],
+    })
+    assert corrected.status_code == 200
+    assert corrected.get_json()['item']['is_anomaly'] is True
+    assert client.post(f'/api/batches/{batch_id}/submit', headers=maker_auth).status_code == 200
+
+    alerts = client.get(f'/api/risk-alerts?batch_id={batch_id}', headers=checker_auth).get_json()['risk_alerts']
+    ai_alerts = [alert for alert in alerts if not alert['flag_type'].startswith('MANUAL_')]
+    assert len(ai_alerts) == 2
+    assert sum(alert['review_status'] == 'PENDING_REVIEW' for alert in ai_alerts) == 1
+    signoff = client.post(f'/api/batches/{batch_id}/checker-review', headers=checker_auth, json={})
+    assert signoff.status_code == 400
+    assert 'every ai alert' in signoff.get_json()['error'].lower()
     item = client.get(f'/api/batches/{batch_id}/items', headers=checker_auth).get_json()['items'][0]
 
     raised = client.post('/api/risk-alerts/manual', headers=checker_auth, json={

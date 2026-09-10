@@ -12,11 +12,9 @@ export default function SignIn() {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
-    // If already logged in, redirect to dashboard
-    const token = localStorage.getItem('upay_admin_token');
-    if (token) {
-      router.push('/dashboard');
-    }
+    void api.me().then((session) => {
+      if (session?.user?.role === 'ADMIN') router.push('/dashboard');
+    });
   }, [router]);
 
   async function submit(event: FormEvent<HTMLFormElement>) {
@@ -25,11 +23,9 @@ export default function SignIn() {
     setIsSubmitting(true);
     try {
       const session = await api.login(email, password);
-      if (session.user.role !== 'ADMIN') {
+      if (session.user?.role !== 'ADMIN') {
         throw new Error('This workspace is available to upay administrators only.');
       }
-      localStorage.setItem('upay_admin_token', session.token);
-      localStorage.setItem('upay_admin_user', JSON.stringify(session.user));
       router.push('/dashboard');
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : 'Sign in failed.');
@@ -54,7 +50,7 @@ export default function SignIn() {
             </div>
           </div>
           
-          <form className="signin-form-element" onSubmit={submit}>
+          <form className="signin-form-element" onSubmit={submit} noValidate>
             <div className="form-field-group">
               <label htmlFor="emailInput" className="form-label">
                 Email address
@@ -120,7 +116,7 @@ export default function SignIn() {
             See the funding position before payroll day.
           </strong>
           <p className="hero-aside-subtext">
-            Real-time analytics, automated liquidity forecasting, and multi-tenant disbursement oversight.
+            Centralized company onboarding, wallet funding, and multi-tenant disbursement oversight.
           </p>
         </div>
       </aside>

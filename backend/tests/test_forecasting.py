@@ -30,6 +30,8 @@ def test_company_maker_refreshes_a_tenant_scoped_holt_forecast(client, app, make
     assert len(payload['forecasts']) == 3
     assert all(item['predicted_amount'] >= 0 for item in payload['forecasts'])
     assert all(item['topup_required'] >= 0 for item in payload['forecasts'])
+    assert isinstance(payload['model']['mae'], float)
+    assert isinstance(payload['model']['mape'], float)
 
     with app.app_context():
         run = ForecastRun.query.filter_by(company_id=1).one()
@@ -117,12 +119,17 @@ def test_executed_payroll_refreshes_the_company_forecast(client, app, maker_auth
         assert PayrollHistory.query.filter_by(company_id=1).one().disbursement_date.date().isoformat() == '2026-04-01'
 
 
-def test_upload_rejects_an_invalid_or_future_payroll_month(client, maker_auth):
+def test_upload_rejects_an_invalid_payroll_month_and_allows_future_months(client, maker_auth):
     salary_row = {'raw_phone_number': '01711112233', 'employee_name': 'Karim Rahman', 'department': 'IT', 'basic_salary': 30_000, 'gross_salary': 45_000}
     invalid = client.post('/api/batches/upload', headers=maker_auth, json={'payroll_period': 'April 2026', 'items': [salary_row]})
     future = client.post('/api/batches/upload', headers=maker_auth, json={'payroll_period': '2099-01', 'items': [salary_row]})
     assert invalid.status_code == 400
-    assert future.status_code == 400
+    assert future.status_code == 201
+    assert future.get_json()['batch']['payroll_period'] == '2099-01-01'
+    batch_id = future.get_json()['batch']['id']
+    audit_logs = client.get(f'/api/audit-logs?batch_id={batch_id}', headers=maker_auth).get_json()['audit_logs']
+    assert audit_logs
+    assert all(log['payroll_period'] == '2099-01-01' for log in audit_logs)
 
 
 def test_two_years_of_history_uses_holt_winters_with_validation(client, app, maker2_auth):

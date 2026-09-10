@@ -1,7 +1,9 @@
 import os
+from collections import Counter
 from io import BytesIO
 from datetime import datetime, date
 from decimal import Decimal
+from uuid import uuid4
 from flask import Blueprint, request, jsonify, current_app, g, send_file
 from openpyxl import Workbook
 from werkzeug.utils import secure_filename
@@ -10,7 +12,7 @@ from app.models import Batch, BatchItem, Company, AuditLog, RiskAlert
 from app.services.excel_parser import parse_payroll_file
 from app.services.validation_service import validate_payee_row
 from app.services.anomaly_service import evaluate_batch_items_anomalies
-from app.services.disbursement_service import record_checker_review, execute_batch_disbursement
+from app.services.disbursement_service import canonical_phone, record_checker_review, execute_batch_disbursement
 from app.utils.auth import require_auth
 
 batches_bp = Blueprint('batches', __name__, url_prefix='/api/batches')
@@ -35,7 +37,7 @@ def maker_owns_batch(batch):
 
 
 def parse_payroll_period(value):
-    """Validate a calendar-month value submitted by the corporate payroll user."""
+    """Parse a calendar month submitted by the corporate payroll user."""
     if not value:
         # Retain compatibility for existing API and test clients; the frontend always
         # submits an explicit month through its calendar control.
@@ -44,8 +46,6 @@ def parse_payroll_period(value):
         period = datetime.strptime(str(value), '%Y-%m').date().replace(day=1)
     except ValueError:
         return None, 'Payroll month must use the YYYY-MM format.'
-    if period > date.today().replace(day=1):
-        return None, 'A payroll month cannot be later than the current month.'
     return period, None
 
 
@@ -75,13 +75,16 @@ def upload_batch():
         if file and allowed_file(file.filename):
             filename = secure_filename(file.filename)
             os.makedirs(current_app.config['UPLOAD_FOLDER'], exist_ok=True)
-            file_path = os.path.join(current_app.config['UPLOAD_FOLDER'], filename)
-            file.save(file_path)
+            file_path = os.path.join(current_app.config['UPLOAD_FOLDER'], f'payroll_{uuid4().hex}_{filename}')
             file_name = filename
             try:
+                file.save(file_path)
                 parsed_rows = parse_payroll_file(file_path)
             except Exception as e:
                 return jsonify({'error': f"Failed to parse spreadsheet: {str(e)}"}), 400
+            finally:
+                if os.path.exists(file_path):
+                    os.remove(file_path)
         else:
             return jsonify({'error': 'Invalid file format. Allowed formats: .xlsx, .xls, .csv'}), 400
     else:
@@ -121,6 +124,14 @@ def upload_batch():
 
     if not parsed_rows:
         return jsonify({'error': 'No payout items found in upload payload'}), 400
+
+    phones = [canonical_phone(row.get('raw_phone_number')) for row in parsed_rows]
+    duplicate_phones = sorted(phone for phone, count in Counter(phones).items() if phone and count > 1)
+    if duplicate_phones:
+        return jsonify({
+            'error': 'Duplicate payout phone numbers are not allowed within one payroll batch.',
+            'duplicate_phone_numbers': duplicate_phones,
+        }), 400
 
     total_amount = sum(Decimal(str(r.get('gross_salary', 0))) for r in parsed_rows)
 
@@ -366,6 +377,14 @@ def correct_item_phone(item_id):
     if basic_salary < 0 or gross_salary < basic_salary:
         return jsonify({'error': 'Gross salary must be greater than or equal to basic salary.'}), 400
 
+    new_canonical_phone = canonical_phone(new_phone)
+    sibling_items = BatchItem.query.filter(
+        BatchItem.batch_id == batch.id,
+        BatchItem.id != item.id,
+    ).all()
+    if any(canonical_phone(other.corrected_phone_number or other.raw_phone_number) == new_canonical_phone for other in sibling_items):
+        return jsonify({'error': 'That phone number already exists in this payroll batch.'}), 409
+
     item.corrected_phone_number = new_phone
     item.employee_name = employee_name
     item.department = department
@@ -374,8 +393,7 @@ def correct_item_phone(item_id):
     val_status, employee_obj, account_obj = validate_payee_row(batch.company_id, new_phone)
     
     item.account_validation_status = val_status
-    if employee_obj:
-        item.employee_id = employee_obj.id
+    item.employee_id = employee_obj.id if employee_obj else None
     item.item_status = 'CORRECTED'
     batch.status = 'FLAGGED_RISK'
 
@@ -385,6 +403,15 @@ def correct_item_phone(item_id):
         RiskAlert.review_status == 'PENDING_REVIEW',
     ).all()
     for alert in resolved_manual_alerts:
+        alert.review_status = 'RESOLVED_BY_HR'
+        alert.reviewed_by = g.current_user.id
+
+    resolved_ai_alerts = RiskAlert.query.filter(
+        RiskAlert.batch_item_id == item.id,
+        ~RiskAlert.flag_type.like('MANUAL_%'),
+        RiskAlert.review_status == 'PENDING_REVIEW',
+    ).all()
+    for alert in resolved_ai_alerts:
         alert.review_status = 'RESOLVED_BY_HR'
         alert.reviewed_by = g.current_user.id
 
@@ -414,6 +441,7 @@ def correct_item_phone(item_id):
             'basic_salary': float(basic_salary),
             'gross_salary': float(gross_salary),
             'finance_issues_resolved': len(resolved_manual_alerts),
+            'automated_alerts_resolved': len(resolved_ai_alerts),
         }
     )
     db.session.add(audit)

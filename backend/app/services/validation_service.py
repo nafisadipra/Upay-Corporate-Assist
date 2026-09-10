@@ -24,7 +24,11 @@ def validate_payee_row(company_id, raw_phone_number):
         return 'INACTIVE_ACCOUNT', None, account
 
     # Step 3: Corporate HR Approved Roster Reconciliation
-    employee = Employee.query.filter_by(company_id=company_id, phone_number=clean_phone).first()
+    employee = Employee.query.filter_by(
+        company_id=company_id,
+        phone_number=clean_phone,
+        status='ACTIVE',
+    ).first()
     if not employee:
         # Valid active mobile number on upay MFS, but NOT on corporate client's HR roster!
         return 'UNRECOGNIZED_PAYEE', None, account

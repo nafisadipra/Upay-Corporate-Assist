@@ -1,8 +1,25 @@
 import os
+import zipfile
 from decimal import Decimal, InvalidOperation
 import pandas as pd
+from flask import current_app, has_app_context
+
+
+def validate_xlsx_size(file_path):
+    """Reject small compressed uploads that expand to an excessive in-memory workbook."""
+    if os.path.splitext(file_path)[1].lower() != '.xlsx':
+        return
+    limit = current_app.config['MAX_SPREADSHEET_EXPANDED_SIZE'] if has_app_context() else 64 * 1024 * 1024
+    try:
+        with zipfile.ZipFile(file_path) as workbook:
+            expanded_size = sum(entry.file_size for entry in workbook.infolist())
+    except zipfile.BadZipFile as error:
+        raise ValueError('The uploaded .xlsx file is not a valid Excel workbook.') from error
+    if expanded_size > limit:
+        raise ValueError('The spreadsheet expands beyond the safe processing limit.')
 
 def parse_employee_registration_file(file_path):
+    validate_xlsx_size(file_path)
     df = pd.read_csv(file_path, dtype=str) if os.path.splitext(file_path)[1].lower() == '.csv' else pd.read_excel(file_path, sheet_name='Employees', dtype=str)
     df.columns = [str(col).strip().lower().replace(' ', '_') for col in df.columns]
     required = {'email', 'full_name', 'wallet_details'}
@@ -26,6 +43,7 @@ def parse_payroll_file(file_path):
     Requires basic_salary and gross_salary. Gross salary is the disbursed amount.
     """
     ext = os.path.splitext(file_path)[1].lower()
+    validate_xlsx_size(file_path)
     
     if ext == '.csv':
         df = pd.read_csv(file_path, dtype=str)
@@ -88,6 +106,7 @@ def parse_employee_roster_file(file_path):
     [{'employee_code': '...', 'employee_name': '...', 'phone_number': '017XXXXXXXX', 'department': '...', 'designation': '...'}]
     """
     ext = os.path.splitext(file_path)[1].lower()
+    validate_xlsx_size(file_path)
     
     if ext == '.csv':
         df = pd.read_csv(file_path, dtype=str)

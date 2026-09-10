@@ -144,8 +144,11 @@ def _backtest(values: list[float], strategy: str) -> tuple[float | None, float |
         if values[cutoff] != 0:
             percentage_errors.append(abs(error / values[cutoff]) * 100)
     return (
-        round(mean(errors), 2) if len(errors) >= 3 else None,
-        round(mean(percentage_errors), 4) if len(percentage_errors) >= 3 else None,
+        # statsmodels/numpy calculations can leave numpy scalar values in these
+        # lists.  Convert them before persisting so PostgreSQL receives ordinary
+        # numeric parameters rather than SQL text such as ``np.float64(...)``.
+        round(float(mean(errors)), 2) if len(errors) >= 3 else None,
+        round(float(mean(percentage_errors)), 4) if len(percentage_errors) >= 3 else None,
         len(errors),
     )
 
@@ -181,7 +184,7 @@ def _base_forecast(company_id: int, horizon: int) -> dict[str, Any]:
     bounds = _prediction_bounds(predictions, residuals)
     records = []
     for index, (amount, (lower, upper)) in enumerate(zip(predictions, bounds), start=1):
-        records.append({'period': _period(_add_months(latest_month, index)), 'predicted_amount': round(max(0.0, amount), 2), 'lower_bound': round(lower, 2), 'upper_bound': round(upper, 2), 'assumptions': assumptions})
+        records.append({'period': _period(_add_months(latest_month, index)), 'predicted_amount': round(float(max(0.0, amount)), 2), 'lower_bound': round(float(lower), 2), 'upper_bound': round(float(upper), 2), 'assumptions': assumptions})
     return {'series': series, 'strategy': strategy, 'status': status, 'history_months': len(values), 'mae': mae, 'mape': mape, 'backtest_folds': folds, 'parameters': parameters, 'source_data_through': source_data_through, 'records': records}
 
 

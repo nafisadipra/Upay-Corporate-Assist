@@ -4,6 +4,15 @@ from decimal import Decimal
 from app.extensions import db
 from app.models import Batch, BatchItem, CentralWallet, Company, AuditLog, PayrollHistory, RiskAlert
 
+
+def canonical_phone(value):
+    phone = str(value or '').strip().replace(' ', '').replace('-', '')
+    if phone.startswith('+880'):
+        phone = phone[3:]
+    elif phone.startswith('880'):
+        phone = phone[2:]
+    return phone
+
 def record_checker_review(batch_id, checker_id, review_status='APPROVED_BY_CHECKER', review_notes=None):
     """
     Records Checker (Finance Director) review and sign-off on a disbursement batch.
@@ -77,6 +86,9 @@ def execute_batch_disbursement(batch_id, executing_user_id):
         return False, 'This corporate client is inactive or suspended. Payroll execution is blocked.'
 
     items = BatchItem.query.filter_by(batch_id=batch.id).all()
+    phones = [canonical_phone(item.corrected_phone_number or item.raw_phone_number) for item in items]
+    if len(phones) != len(set(phones)):
+        return False, 'Batch contains duplicate payout phone numbers. Each payee may appear only once.'
     blocked_items = [item.id for item in items if item.account_validation_status != 'VALID' or item.item_status == 'REJECTED']
     if blocked_items:
         return False, 'Batch contains invalid or rejected payout items. Correct or remove them before execution.'

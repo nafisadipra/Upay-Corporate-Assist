@@ -72,6 +72,15 @@ class CompanyBankAccount(db.Model):
 
 class CentralWallet(db.Model):
     __tablename__ = 'central_wallets'
+    __table_args__ = (
+        db.Index(
+            'uq_central_wallets_one_main_per_company',
+            'company_id',
+            unique=True,
+            postgresql_where=db.text("wallet_type = 'MAIN'"),
+            sqlite_where=db.text("wallet_type = 'MAIN'"),
+        ),
+    )
 
     id = db.Column(db.Integer, primary_key=True)
     company_id = db.Column(db.Integer, db.ForeignKey('companies.id', ondelete='CASCADE'), nullable=False)
@@ -505,6 +514,7 @@ class AuditLog(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     user = db.relationship('User', foreign_keys=[user_id])
+    batch = db.relationship('Batch', foreign_keys=[batch_id])
 
     def to_dict(self):
         return {
@@ -514,6 +524,7 @@ class AuditLog(db.Model):
             'user_id': self.user_id,
             'audit_scope': self.audit_scope,
             'performed_by': self.user.full_name if self.user else 'System',
+            'payroll_period': self.batch.payroll_period.isoformat() if self.batch and self.batch.payroll_period else None,
             'action': self.action,
             'details': self.details,
             'created_at': self.created_at.isoformat() if self.created_at else None

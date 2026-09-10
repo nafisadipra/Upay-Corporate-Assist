@@ -12,5 +12,10 @@ if __name__ == '__main__':
         if '--seed' in sys.argv or '-s' in sys.argv:
             seed_database()
 
-    print(f"Starting upay Corporate Assist Flask Backend Server on http://127.0.0.1:{Config.PORT}")
-    app.run(host='0.0.0.0', port=Config.PORT, debug=(Config.FLASK_ENV == 'development'))
+    print(f"Starting upay Corporate Assist Flask Backend Server on http://{Config.HOST}:{Config.PORT}")
+    app.run(
+        host=Config.HOST,
+        port=Config.PORT,
+        debug=False,
+        use_reloader=Config.FLASK_ENV == 'development',
+    )

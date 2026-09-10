@@ -64,6 +64,8 @@ def seed_database():
     seed_password = os.environ.get('DEMO_SEED_PASSWORD')
     if not seed_password:
         raise RuntimeError('DEMO_SEED_PASSWORD must be set to seed local demonstration accounts.')
+    if len(seed_password) < 12:
+        raise RuntimeError('DEMO_SEED_PASSWORD must contain at least 12 characters.')
 
     print("Seeding database with demonstration data...")
 

@@ -3,7 +3,7 @@ from io import BytesIO
 from openpyxl import load_workbook
 
 from app.extensions import db
-from app.models import Batch, BatchItem
+from app.models import Batch, BatchItem, Employee
 
 
 def test_company_isolation_companies_endpoint(client, maker_auth, maker2_auth, admin_auth):
@@ -53,6 +53,43 @@ def test_cross_tenant_batch_upload_is_blocked(client, maker_auth):
 
     assert response.status_code == 403
     assert Batch.query.count() == 0
+
+
+def test_terminated_employee_is_not_a_valid_payee(client, maker_auth):
+    employee = db.session.get(Employee, 1)
+    employee.status = 'TERMINATED'
+    db.session.commit()
+
+    response = client.post('/api/batches/upload', headers=maker_auth, json={
+        'company_id': 1,
+        'file_name': 'terminated-employee.xlsx',
+        'items': [{
+            'raw_phone_number': employee.phone_number,
+            'employee_name': employee.employee_name,
+            'department': employee.department,
+            'basic_salary': 1000,
+            'gross_salary': 1000,
+        }],
+    })
+    assert response.status_code == 201
+    assert response.get_json()['items'][0]['account_validation_status'] == 'UNRECOGNIZED_PAYEE'
+
+
+def test_duplicate_payee_is_rejected(client, maker_auth):
+    item = {
+        'raw_phone_number': '01711112233',
+        'employee_name': 'Karim Rahman',
+        'department': 'IT',
+        'basic_salary': 1000,
+        'gross_salary': 1000,
+    }
+    response = client.post('/api/batches/upload', headers=maker_auth, json={
+        'company_id': 1,
+        'file_name': 'duplicate-payee.xlsx',
+        'items': [item, dict(item)],
+    })
+    assert response.status_code == 400
+    assert 'duplicate' in response.get_json()['error'].lower()
 
 
 def test_retired_direct_authorization_cannot_execute_another_tenant_batch(client, maker_auth, maker2_auth):

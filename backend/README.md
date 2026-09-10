@@ -22,7 +22,7 @@ The **upay Corporate Assist Backend Engine** is a high-performance RESTful web a
 │  └─────────┬─────────┘    └───────────┬────────────┘    │  Forest)       │  │
 │            │                          │                 └───────┬────────┘  │
 │  ┌─────────┴─────────┐    ┌───────────┴────────────┐    ┌───────┴────────┐  │
-│  │ Maker-Checker OTP │    │  Predictive Liquidity  │    │  BB Audit      │  │
+│  │ Maker-Checker     │    │  Predictive Liquidity  │    │  BB Audit      │  │
 │  │ Authorization     │    │  Forecasting Engine    │    │  Compliance    │  │
 │  └───────────────────┘    └────────────────────────┘    └────────────────┘  │
 └──────────────────────────────────────┬──────────────────────────────────────┘
@@ -51,10 +51,10 @@ The **upay Corporate Assist Backend Engine** is a high-performance RESTful web a
 1. **Established Employees (>= 3 Cycles)**: Evaluates amount against individual 6-month historical average (`six_month_avg_amount`). Flags deviations > 80% as `UNUSUAL_VARIANCE` (Orange Badge).
 2. **Cold-Start Employees (< 3 Cycles)**: Falls back to department-level averages (`dept_avg_amount`) and marks baseline status as **`BASELINE_PENDING`** (non-blocking).
 
-### C. Maker-Checker OTP Authorization & Audit Trail (pp2 Section 4)
+### C. Maker-Checker Authorization & Audit Trail (pp2 Section 4)
 1. Segregation of duties: `MAKER` uploads, `CHECKER` authorizes.
-2. Generates time-limited OTP tokens hashed via SHA-256.
-3. Verifies central wallet balance, deducts balance, and records immutable audit logs in JSONB format compliant with Bangladesh Bank regulations.
+2. Finance resolves risk alerts and records an explicit checker sign-off.
+3. The original Maker performs the final execution after sign-off; wallet debit and audit records are committed transactionally.
 
 ### D. Predictive Capital Forecasting (pp2 Section 3.C)
 Projects 3, 6, and 12-month central wallet pre-funding requirements based on historical disbursement trends.
@@ -76,13 +76,12 @@ backend/
 │   │   ├── excel_parser.py   # Spreadsheet upload parser
 │   │   ├── validation_service.py # Core account & HR roster check
 │   │   ├── anomaly_service.py    # Isolation Forest & cold-start logic
-│   │   ├── otp_service.py        # Maker-Checker OTP authorization
 │   │   ├── forecasting_service.py # Predictive liquidity calculator
 │   │   └── seed_service.py       # DB Seeding utility
 │   └── routes/               # API Blueprints (Controllers)
 │       ├── auth.py           # Login & JWT auth
 │       ├── companies.py      # Company & wallet profiles
-│       ├── batches.py        # Batch upload, grid & OTP authorization
+│       ├── batches.py        # Batch upload, grid, review, and execution
 │       ├── risk_alerts.py    # Checker risk review sign-offs
 │       ├── analytics.py      # Liquidity forecasts & dashboard KPIs
 │       └── audit.py          # Bangladesh Bank audit trail
@@ -102,6 +101,10 @@ cd /Users/user/Documents/Upay-Corporate-Assist/backend
 python3 -m pip install -r requirements.txt
 ```
 
+For development and tests, install `requirements-dev.txt` instead.
+
+Copy `.env.example` to `.env`, configure `DATABASE_URL`, then generate private local signing keys with `python3 scripts/rotate_secrets.py`. The command preserves the other `.env` settings and does not display the generated keys.
+
 ### Step 2: Seed Local Demonstration Data & Start Flask Server
 ```bash
 # DEMO_SEED_PASSWORD is required only for this local seeding command.
@@ -110,7 +113,7 @@ export DEMO_SEED_PASSWORD='choose-a-unique-local-password'
 python3 run.py --seed
 ```
 
-Server will run on `http://127.0.0.1:5000`.
+Server will run on `http://localhost:5000`.
 
 ### Create a local superuser
 
@@ -140,6 +143,8 @@ the same email or phone number. Keep real credentials out of version control.
 | `GET` | `/api/companies` | List corporate clients |
 | `GET` | `/api/companies/<id>` | Get company profile & wallet balance |
 | `GET` | `/api/companies/<id>/wallets` | List pre-funded central wallets |
+| `POST` | `/api/companies/<id>/wallets` | HR Maker creates a zero-balance sub-wallet |
+| `POST` | `/api/companies/<id>/wallets/transfer` | HR Maker transfers existing funds between company wallets |
 | `GET` | `/api/companies/<id>/employees` | Retrieve approved corporate HR roster |
 
 ### Batches & Bento Grid Validation (`/api/batches`)
@@ -178,26 +183,29 @@ the same email or phone number. Keep real credentials out of version control.
 
 ```bash
 # 1. Login with a provisioned HR Maker account
-curl -X POST http://127.0.0.1:5000/api/auth/login \
+curl -X POST http://localhost:5000/api/auth/login \
   -H "Content-Type: application/json" \
   -d '{"email": "maker@example.com", "password": "your-password"}'
 
 # 2. Get Batch Payee Items (Demonstrates Bento Grid UI Flags)
-curl -X GET http://127.0.0.1:5000/api/batches/1/items
+curl -X GET http://localhost:5000/api/batches/1/items \
+  -H "Authorization: Bearer <maker-or-checker-token>"
 
 # 3. Correct Phone Typo Inline
-curl -X PUT http://127.0.0.1:5000/api/batches/items/4/correct \
+curl -X PUT http://localhost:5000/api/batches/items/4/correct \
+  -H "Authorization: Bearer <maker-token>" \
   -H "Content-Type: application/json" \
   -d '{"corrected_phone_number": "01711112233"}'
 
 # 4. Checker reviews and signs off on the submitted batch
-curl -X POST http://127.0.0.1:5000/api/batches/1/checker-review \
+curl -X POST http://localhost:5000/api/batches/1/checker-review \
   -H "Authorization: Bearer <checker-token>" \
   -H "Content-Type: application/json" \
   -d '{"action":"APPROVED_BY_CHECKER", "notes":"Verified"}'
 
 # 5. Get Predictive Liquidity Forecast
-curl -X GET http://127.0.0.1:5000/api/analytics/liquidity-forecast/1
+curl -X GET http://localhost:5000/api/analytics/liquidity-forecast/1 \
+  -H "Authorization: Bearer <maker-token>"
 ```
 
 The legacy `/request-otp` and `/authorize` routes are retired. The only supported payout path is upload, submit, checker review, then maker execution.

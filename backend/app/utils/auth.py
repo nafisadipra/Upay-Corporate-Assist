@@ -12,10 +12,17 @@ def require_auth(roles=None):
         @wraps(f)
         def decorated_function(*args, **kwargs):
             auth_header = request.headers.get('Authorization', '')
-            if not auth_header.startswith('Bearer '):
+            bearer_token = auth_header.split(' ', 1)[1].strip() if auth_header.startswith('Bearer ') else None
+            cookie_token = request.cookies.get(current_app.config['AUTH_COOKIE_NAME'])
+            token = bearer_token or cookie_token
+            if not token:
                 return jsonify({'error': 'Authentication token is required (Bearer <token>)'}), 401
 
-            token = auth_header.split(' ', 1)[1].strip()
+            if cookie_token and not bearer_token and request.method not in {'GET', 'HEAD', 'OPTIONS'}:
+                origin = request.headers.get('Origin')
+                if origin and origin not in current_app.config['CORS_ORIGINS']:
+                    return jsonify({'error': 'Request origin is not allowed.'}), 403
+
             try:
                 payload = jwt.decode(
                     token,

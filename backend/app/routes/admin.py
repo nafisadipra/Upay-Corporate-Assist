@@ -1,6 +1,7 @@
 import os
 from decimal import Decimal
 from functools import wraps
+from uuid import uuid4
 from werkzeug.security import generate_password_hash
 from werkzeug.utils import secure_filename
 from flask import Blueprint, current_app, g, jsonify, request
@@ -100,7 +101,7 @@ def create_company():
 
     if not company_name or not account_number:
         return jsonify({'error': 'Company name and corporate account number are required'}), 400
-    if opening_balance < 0:
+    if not opening_balance.is_finite() or opening_balance < 0:
         return jsonify({'error': 'Opening balance cannot be negative'}), 400
     if Company.query.filter_by(corporate_account_number=account_number).first():
         return jsonify({'error': 'Corporate account number is already registered'}), 409
@@ -180,7 +181,7 @@ def topup_company_wallet(company_id):
     except Exception:
         return jsonify({'error': 'Top-up amount must be a valid positive number'}), 400
 
-    if amount <= 0:
+    if not amount.is_finite() or amount <= 0:
         return jsonify({'error': 'Top-up amount must be greater than zero'}), 400
 
     source_bank = data.get('source_bank', 'UCB Corporate Settlement')
@@ -259,13 +260,16 @@ def upload_employee_roster(company_id):
     file = request.files['file']
     filename = secure_filename(file.filename)
     os.makedirs(current_app.config['UPLOAD_FOLDER'], exist_ok=True)
-    file_path = os.path.join(current_app.config['UPLOAD_FOLDER'], f'roster_{company_id}_{filename}')
-    file.save(file_path)
+    file_path = os.path.join(current_app.config['UPLOAD_FOLDER'], f'roster_{company_id}_{uuid4().hex}_{filename}')
 
     try:
+        file.save(file_path)
         parsed_employees = parse_employee_roster_file(file_path)
     except Exception as e:
         return jsonify({'error': f'Failed to parse employee roster spreadsheet: {str(e)}'}), 400
+    finally:
+        if os.path.exists(file_path):
+            os.remove(file_path)
 
     if not parsed_employees:
         return jsonify({'error': 'No valid employee rows found in spreadsheet.'}), 400
@@ -536,6 +540,8 @@ def create_user():
 
     if not all([full_name, email, phone_number, password]) or role not in {'MAKER', 'CHECKER', 'ADMIN'}:
         return jsonify({'error': 'Name, email, phone, password, and a valid role are required'}), 400
+    if len(password) < 12:
+        return jsonify({'error': 'Password must contain at least 12 characters'}), 400
     if User.query.filter_by(email=email).first():
         return jsonify({'error': 'Email address is already registered'}), 409
     if role != 'ADMIN' and not Company.query.get(company_id):

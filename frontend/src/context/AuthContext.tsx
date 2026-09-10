@@ -1,11 +1,10 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect, startTransition, useCallback } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { User } from '@/types';
 
 interface AuthContextType {
   user: User | null;
-  token: string | null;
   isLoading: boolean;
   login: (email: string, password: string) => Promise<void>;
   logout: () => void;
@@ -14,89 +13,42 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:5000/api';
-
-/** Returns the expiry time in milliseconds, or null when the JWT is malformed. */
-function getTokenExpiry(token: string): number | null {
-  try {
-    const payload = token.split('.')[1];
-    if (!payload) return null;
-
-    const decoded = JSON.parse(atob(payload.replace(/-/g, '+').replace(/_/g, '/')));
-    return typeof decoded.exp === 'number' ? decoded.exp * 1000 : null;
-  } catch {
-    return null;
-  }
-}
-
-function isTokenUsable(token: string): boolean {
-  const expiresAt = getTokenExpiry(token);
-  return expiresAt !== null && expiresAt > Date.now();
-}
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
-  const [token, setToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   const logout = useCallback(() => {
     setUser(null);
-    setToken(null);
-    if (typeof window !== 'undefined') {
-      localStorage.removeItem('upay_auth_token');
-      localStorage.removeItem('upay_auth_user');
-    }
+    void fetch(`${API_BASE_URL}/auth/logout`, { method: 'POST', credentials: 'include' })
+      .catch(() => undefined);
   }, []);
 
   useEffect(() => {
-    // Check saved session in localStorage
-    const savedToken = localStorage.getItem('upay_auth_token');
-    const savedUser = localStorage.getItem('upay_auth_user');
-
-    if (savedToken && savedUser && isTokenUsable(savedToken)) {
-      try {
-        const parsed = JSON.parse(savedUser) as User;
-        startTransition(() => {
-          setToken(savedToken);
-          setUser(parsed);
-        });
-      } catch {
-        localStorage.removeItem('upay_auth_token');
-        localStorage.removeItem('upay_auth_user');
-      }
-    } else if (savedToken || savedUser) {
-      localStorage.removeItem('upay_auth_token');
-      localStorage.removeItem('upay_auth_user');
-    }
+    let active = true;
+    void fetch(`${API_BASE_URL}/auth/session`, { credentials: 'include' })
+      .then(async (response) => response.ok ? response.json() : null)
+      .then((payload) => { if (active) setUser(payload?.user ?? null); })
+      .catch(() => { if (active) setUser(null); })
+      .finally(() => { if (active) setIsLoading(false); });
 
     const handleAuthExpired = () => {
       logout();
     };
 
     window.addEventListener('upay_auth_expired', handleAuthExpired);
-    startTransition(() => {
-      setIsLoading(false);
-    });
-
     return () => {
+      active = false;
       window.removeEventListener('upay_auth_expired', handleAuthExpired);
     };
   }, [logout]);
-
-  useEffect(() => {
-    if (!token) return;
-
-    const expiresAt = getTokenExpiry(token);
-    if (expiresAt === null) return;
-
-    const timeout = window.setTimeout(logout, Math.max(0, expiresAt - Date.now()));
-    return () => window.clearTimeout(timeout);
-  }, [token, logout]);
 
   const login = async (email: string, password: string) => {
     const res = await fetch(`${API_BASE_URL}/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
       body: JSON.stringify({ email, password }),
     });
 
@@ -107,9 +59,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     const data = await res.json();
     setUser(data.user);
-    setToken(data.token);
-    localStorage.setItem('upay_auth_token', data.token);
-    localStorage.setItem('upay_auth_user', JSON.stringify(data.user));
   };
 
   const hasRole = (roles: Array<'MAKER' | 'CHECKER' | 'ADMIN'>) => {
@@ -118,7 +67,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   return (
-    <AuthContext.Provider value={{ user, token, isLoading, login, logout, hasRole }}>
+    <AuthContext.Provider value={{ user, isLoading, login, logout, hasRole }}>
       {children}
     </AuthContext.Provider>
   );

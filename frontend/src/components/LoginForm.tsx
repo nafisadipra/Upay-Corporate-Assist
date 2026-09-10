@@ -6,7 +6,7 @@ import { useAuth } from '@/context/AuthContext';
 import { Mail, Lock, ArrowRight, Building2, ShieldCheck } from 'lucide-react';
 
 export const LoginForm: React.FC = () => {
-  const { login, user } = useAuth();
+  const { login, user, isLoading } = useAuth();
   const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -14,10 +14,13 @@ export const LoginForm: React.FC = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
-    if (user) {
-      router.replace(user.role === 'CHECKER' ? '/checker' : '/maker');
-    }
+    if (user?.role === 'MAKER') router.replace('/maker');
+    if (user?.role === 'CHECKER') router.replace('/checker');
   }, [router, user]);
+
+  const visibleError = error || (user?.role === 'ADMIN'
+    ? 'Administrator accounts must use the upay Admin portal on port 3001.'
+    : null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -31,6 +34,14 @@ export const LoginForm: React.FC = () => {
       setIsSubmitting(false);
     }
   };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-[100dvh] bg-[#f7f9f6] flex items-center justify-center">
+        <div className="text-emerald-700 font-bold text-xs font-outfit">Checking your session...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-[100dvh] bg-[#f7f9f6] flex items-center justify-center p-4 sm:p-6">
@@ -63,9 +74,9 @@ export const LoginForm: React.FC = () => {
             <p className="mt-1 text-xs text-slate-500">Enter your credentials to access your organization dashboard.</p>
           </div>
 
-          {error && (
+          {visibleError && (
             <div className="mb-5 rounded-xl border border-red-200 bg-red-50/90 p-3.5 text-xs font-semibold text-red-900 animate-in fade-in">
-              {error}
+              {visibleError}
             </div>
           )}
 

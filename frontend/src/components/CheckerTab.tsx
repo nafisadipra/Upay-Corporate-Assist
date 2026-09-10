@@ -180,18 +180,22 @@ export const CheckerTab: React.FC<CheckerTabProps> = ({
         </div>
 
         {currentBatch?.status === 'PENDING_CHECKER_REVIEW' && (
-          <div className="mt-6 pt-4 border-t border-slate-100 flex flex-col sm:flex-row gap-4 items-center relative z-10 bg-slate-50/50 p-3 rounded-xl border-dashed">
+          <div className={`mt-6 border-t border-slate-100 p-3 pt-4 relative z-10 flex flex-col items-center gap-4 rounded-xl border-dashed sm:flex-row ${hasOpenAlerts ? 'bg-amber-50/70' : 'bg-slate-50/50'}`}>
             <div className="flex items-center gap-2 flex-1 pl-2">
-              <div className="w-6 h-6 rounded-full bg-[#059669] text-white flex items-center justify-center shrink-0">
-                <Check className="w-3.5 h-3.5" />
+              <div className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-white ${hasOpenAlerts ? 'bg-amber-500' : 'bg-[#059669]'}`}>
+                {hasOpenAlerts ? <AlertTriangle className="h-3.5 w-3.5" /> : <Check className="h-3.5 w-3.5" />}
               </div>
-              <input
-                type="text"
-                placeholder="Sign-off notes for HR Maker..."
-                value={batchNotes}
-                onChange={(e) => setBatchNotes(e.target.value)}
-                className="flex-1 bg-transparent text-xs text-slate-600 focus:outline-none font-medium placeholder-slate-400"
-              />
+              {hasOpenAlerts ? (
+                <div><p className="text-xs font-extrabold text-amber-900">AI recheck found {openAiAlerts.length + manualAlerts.length} remaining {openAiAlerts.length + manualAlerts.length === 1 ? 'issue' : 'issues'}</p><p className="mt-0.5 text-[10px] text-amber-700">Open the alert cards above and resolve every issue before Finance sign-off.</p></div>
+              ) : (
+                <input
+                  type="text"
+                  placeholder="Sign-off notes for HR Maker..."
+                  value={batchNotes}
+                  onChange={(e) => setBatchNotes(e.target.value)}
+                  className="flex-1 bg-transparent text-xs text-slate-600 focus:outline-none font-medium placeholder-slate-400"
+                />
+              )}
             </div>
             <button
               type="button"
@@ -201,7 +205,7 @@ export const CheckerTab: React.FC<CheckerTabProps> = ({
               className="bg-white hover:bg-slate-50 text-[#059669] border border-[#059669] px-4 py-2 rounded-xl text-xs font-extrabold flex items-center space-x-1.5 transition-all shadow-sm disabled:cursor-not-allowed disabled:border-slate-300 disabled:text-slate-400"
             >
               <Check className="w-3.5 h-3.5" />
-              <span>Sign-Off &amp; Approve Batch</span>
+              <span>{hasOpenAlerts ? 'Sign-off locked' : 'Sign-Off &amp; Approve Batch'}</span>
             </button>
           </div>
         )}
@@ -246,7 +250,7 @@ export const CheckerTab: React.FC<CheckerTabProps> = ({
                   <th className="px-4 py-3 text-right">Gross salary</th>
                   <th className="px-4 py-3">Validation</th>
                   <th className="px-4 py-3">Risk review</th>
-                  <th className="px-4 py-3 text-right">Action</th>
+                  <th className="w-[132px] min-w-[132px] px-4 py-3 text-right">Action</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
@@ -277,10 +281,10 @@ export const CheckerTab: React.FC<CheckerTabProps> = ({
                           {hasRisk ? 'Needs review' : 'Within baseline'}
                         </span>
                       </td>
-                      <td className="px-4 py-3.5 text-right">
+                      <td className="w-[132px] min-w-[132px] px-4 py-3.5 text-right">
                         {hasOpenManualIssue ? (
-                          <span className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-slate-100 px-3 py-2 text-[10px] font-extrabold text-slate-500">
-                            <Flag className="h-3.5 w-3.5" />
+                          <span className="inline-flex whitespace-nowrap items-center gap-1.5 rounded-lg border border-slate-200 bg-slate-100 px-3 py-2 text-[10px] font-extrabold text-slate-500">
+                            <Flag className="h-3.5 w-3.5 shrink-0" />
                             On Review
                           </span>
                         ) : (
@@ -288,9 +292,9 @@ export const CheckerTab: React.FC<CheckerTabProps> = ({
                             type="button"
                             disabled={!['PENDING_CHECKER_REVIEW', 'RETURNED_TO_HR'].includes(currentBatch.status)}
                             onClick={() => setFlaggedItem(item)}
-                            className="inline-flex items-center gap-1.5 rounded-lg border border-orange-200 bg-white px-3 py-2 text-[10px] font-extrabold text-[#d56538] shadow-sm transition hover:bg-orange-50 disabled:cursor-not-allowed disabled:opacity-40"
+                            className="inline-flex whitespace-nowrap items-center gap-1.5 rounded-lg border border-orange-200 bg-white px-3 py-2 text-[10px] font-extrabold text-[#d56538] shadow-sm transition hover:border-orange-300 hover:bg-orange-50 active:bg-orange-100 focus:outline-none focus:ring-2 focus:ring-[#ef8354]/25 disabled:cursor-not-allowed disabled:opacity-40"
                           >
-                            <Flag className="h-3.5 w-3.5" />
+                            <Flag className="h-3.5 w-3.5 shrink-0" />
                             Raise issue
                           </button>
                         )}

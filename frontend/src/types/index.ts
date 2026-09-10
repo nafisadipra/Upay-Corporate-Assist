@@ -133,6 +133,7 @@ export interface AuditLog {
   batch_id?: number;
   user_id?: number;
   performed_by: string;
+  payroll_period?: string | null;
   action: string;
   details: Record<string, unknown>;
   created_at: string;

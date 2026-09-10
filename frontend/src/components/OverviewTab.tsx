@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { Company, CentralWallet, Batch } from '@/types';
-import { Building2, Wallet, ArrowUpRight, ShieldCheck, Clock, RefreshCw, CheckCircle2, AlertTriangle, Layers } from 'lucide-react';
+import { Building2, Wallet, ArrowUpRight, ArrowRightLeft, ShieldCheck, Clock, RefreshCw, CheckCircle2, AlertTriangle, Layers, Plus, ChevronDown } from 'lucide-react';
 
 interface OverviewTabProps {
   company: Company | null;
@@ -10,8 +10,8 @@ interface OverviewTabProps {
   batches: Batch[];
   onUploadClick: () => void;
   onRefreshClick: () => void;
-  onCreateWallet: (walletName: string, openingBalance: number) => Promise<void>;
-  onUpdateWalletBalance: (walletId: number, balance: number) => Promise<void>;
+  onCreateWallet: (walletName: string, walletType: string) => Promise<void>;
+  onTransferFunds: (sourceWalletId: number, destinationWalletId: number, amount: number) => Promise<void>;
 }
 
 export const OverviewTab: React.FC<OverviewTabProps> = ({
@@ -21,37 +21,56 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
   onUploadClick,
   onRefreshClick,
   onCreateWallet,
-  onUpdateWalletBalance,
+  onTransferFunds,
 }) => {
   const [walletName, setWalletName] = useState('');
-  const [openingBalance, setOpeningBalance] = useState('');
-  const [selectedWalletId, setSelectedWalletId] = useState('');
-  const [updatedBalance, setUpdatedBalance] = useState('');
+  const [walletType, setWalletType] = useState('OPERATIONAL');
+  const [destinationWalletId, setDestinationWalletId] = useState('');
+  const [transferAmount, setTransferAmount] = useState('');
   const [walletMessage, setWalletMessage] = useState('');
+  const [walletError, setWalletError] = useState('');
+  const [walletAction, setWalletAction] = useState<'create' | 'transfer' | null>(null);
+
+  const normalizedWalletType = (wallet: CentralWallet) => wallet.wallet_type.trim().toUpperCase();
+  const isActiveWallet = (wallet: CentralWallet) => wallet.status.trim().toUpperCase() === 'ACTIVE';
+  const mainWallet = wallets.find((wallet) => normalizedWalletType(wallet) === 'MAIN' && isActiveWallet(wallet));
+  const subWallets = wallets.filter((wallet) => normalizedWalletType(wallet) !== 'MAIN' && isActiveWallet(wallet));
+  const selectedDestinationWallet = subWallets.find((wallet) => wallet.id === Number(destinationWalletId)) ?? subWallets[0];
 
   const createWallet = async (event: React.FormEvent) => {
     event.preventDefault();
     setWalletMessage('');
+    setWalletError('');
+    setWalletAction('create');
     try {
-      await onCreateWallet(walletName, Number(openingBalance));
+      await onCreateWallet(walletName.trim(), walletType);
       setWalletName('');
-      setOpeningBalance('');
-      setWalletMessage('Wallet created successfully.');
+      setWalletMessage('Sub-wallet created with a zero balance. You can now allocate funds to it.');
     } catch (error) {
-      setWalletMessage(error instanceof Error ? error.message : 'Unable to create wallet.');
+      setWalletError(error instanceof Error ? error.message : 'Unable to create wallet.');
+    } finally {
+      setWalletAction(null);
     }
   };
 
-  const updateWalletBalance = async (event: React.FormEvent) => {
+  const transferFunds = async (event: React.FormEvent) => {
     event.preventDefault();
-    if (!selectedWalletId) return;
     setWalletMessage('');
+    setWalletError('');
+    const amount = Number(transferAmount);
+    if (!mainWallet || !selectedDestinationWallet || !Number.isFinite(amount) || amount <= 0) {
+      setWalletError('Choose a destination wallet and enter a valid positive amount.');
+      return;
+    }
+    setWalletAction('transfer');
     try {
-      await onUpdateWalletBalance(Number(selectedWalletId), Number(updatedBalance));
-      setUpdatedBalance('');
-      setWalletMessage('Wallet balance updated successfully.');
+      await onTransferFunds(mainWallet.id, selectedDestinationWallet.id, amount);
+      setTransferAmount('');
+      setWalletMessage('Funds allocated from the Main wallet successfully.');
     } catch (error) {
-      setWalletMessage(error instanceof Error ? error.message : 'Unable to update wallet balance.');
+      setWalletError(error instanceof Error ? error.message : 'Unable to transfer wallet funds.');
+    } finally {
+      setWalletAction(null);
     }
   };
 
@@ -137,33 +156,94 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
 
       </div>
 
-      <div className="order-3 card-flat p-6">
+      <div className="order-2 card-flat p-6">
         <div className="pb-4 mb-4 border-b border-slate-100">
           <h3 className="font-extrabold text-slate-900 text-base font-outfit">HR Wallet Management</h3>
-          <p className="text-xs text-slate-500 mt-0.5">Create a corporate wallet or update the balance of an existing wallet. Every change is audited.</p>
+          <p className="text-xs text-slate-500 mt-1">Create sub-wallets and allocate existing funds from the Main central wallet. Every transfer is audited.</p>
         </div>
-        {walletMessage && <p className="mb-4 rounded-lg bg-slate-50 px-3 py-2 text-xs font-semibold text-slate-700">{walletMessage}</p>}
-        <div className="grid gap-4 md:grid-cols-2">
-          <form onSubmit={createWallet} className="flex flex-col gap-3 rounded-xl bg-slate-50 p-4">
-            <p className="text-xs font-bold text-slate-800">Create corporate wallet</p>
-            <input required value={walletName} onChange={(event) => setWalletName(event.target.value)} placeholder="Wallet name" className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm" />
-            <input required min="0" step="0.01" type="number" value={openingBalance} onChange={(event) => setOpeningBalance(event.target.value)} placeholder="Balance" className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm" />
-            <button className="rounded-lg bg-[#2d3142] px-3 py-2 text-xs font-bold text-white">Create wallet</button>
-          </form>
-          <form onSubmit={updateWalletBalance} className="flex flex-col gap-3 rounded-xl bg-slate-50 p-4">
-            <p className="text-xs font-bold text-slate-800">Update wallet balance</p>
-            <select required value={selectedWalletId} onChange={(event) => setSelectedWalletId(event.target.value)} className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm">
-              <option value="">Select wallet</option>
-              {wallets.map((wallet) => <option key={wallet.id} value={wallet.id}>{wallet.wallet_name} — {wallet.account_number}</option>)}
+
+        {walletMessage && <p className="mb-4 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs font-semibold text-emerald-800">{walletMessage}</p>}
+        {walletError && <p className="mb-4 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs font-semibold text-red-800">{walletError}</p>}
+
+        <div className="grid gap-4 lg:grid-cols-2">
+          <form noValidate onSubmit={createWallet} className="flex flex-col gap-3 rounded-xl border border-slate-200 bg-slate-50 p-4">
+            <div className="flex items-center gap-2 text-slate-800">
+              <Plus className="h-4 w-4 text-[#ef8354]" />
+              <p className="text-xs font-bold">Create a sub-wallet</p>
+            </div>
+            <input
+              required
+              value={walletName}
+              onChange={(event) => setWalletName(event.target.value)}
+              placeholder="For example: Festival Bonus"
+              className="rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm focus:border-emerald-600 focus:outline-none"
+            />
+            <select value={walletType} onChange={(event) => setWalletType(event.target.value)} className="rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm focus:border-emerald-600 focus:outline-none">
+              <option value="PAYROLL">Payroll</option>
+              <option value="OPERATIONAL">Operational</option>
+              <option value="FESTIVAL_BONUS">Festival bonus</option>
+              <option value="VENDOR">Vendor</option>
             </select>
-            <input required min="0" step="0.01" type="number" value={updatedBalance} onChange={(event) => setUpdatedBalance(event.target.value)} placeholder="New balance" className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm" />
-            <button className="rounded-lg bg-[#ef8354] px-3 py-2 text-xs font-bold text-white">Save balance</button>
+            <p className="text-[11px] text-slate-500">New wallets start at BDT 0.00 so company funds remain fully accounted for.</p>
+            <button disabled={walletAction !== null} className="mt-auto rounded-lg bg-[#2d3142] px-3 py-2.5 text-xs font-bold text-white disabled:cursor-wait disabled:opacity-60">
+              {walletAction === 'create' ? 'Creating...' : 'Create sub-wallet'}
+            </button>
+          </form>
+
+          <form noValidate onSubmit={transferFunds} className="flex flex-col gap-3 rounded-xl border border-slate-200 bg-slate-50 p-4">
+            <div className="flex items-center gap-2 text-slate-800">
+              <ArrowRightLeft className="h-4 w-4 text-[#ef8354]" />
+              <p className="text-xs font-bold">Allocate from Main wallet</p>
+            </div>
+            <div className="rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-xs">
+              <span className="text-slate-500">Available in Main</span>
+              <strong className="float-right font-mono text-slate-900">BDT {(mainWallet?.balance ?? 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}</strong>
+            </div>
+            <label htmlFor="destination-wallet" className="text-[11px] font-bold text-slate-600">
+              Select destination wallet
+            </label>
+            <div className="relative">
+              <select
+                id="destination-wallet"
+                value={selectedDestinationWallet ? String(selectedDestinationWallet.id) : ''}
+                onChange={(event) => setDestinationWalletId(event.target.value)}
+                disabled={subWallets.length === 0 || walletAction !== null}
+                className="w-full appearance-none rounded-lg border border-slate-200 bg-white px-3 py-2.5 pr-10 text-sm text-slate-900 focus:border-[#ef8354] focus:outline-none disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-500"
+              >
+                {subWallets.length === 0 ? (
+                  <option value="">No sub-wallet available</option>
+                ) : subWallets.map((wallet) => (
+                  <option key={wallet.id} value={wallet.id}>
+                    {wallet.wallet_name} · {wallet.wallet_type} · BDT {wallet.balance.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                  </option>
+                ))}
+              </select>
+              <ChevronDown aria-hidden="true" className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
+            </div>
+            {subWallets.length === 0 && (
+              <p className="text-[11px] text-slate-500">Create a Payroll, Operational, Bonus, or Vendor wallet first.</p>
+            )}
+            <input
+              required
+              min="0.01"
+              max={mainWallet?.balance}
+              step="0.01"
+              type="number"
+              value={transferAmount}
+              onChange={(event) => setTransferAmount(event.target.value)}
+              placeholder="Amount to allocate"
+              className="rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm focus:border-emerald-600 focus:outline-none"
+            />
+            {!mainWallet && <p className="text-[11px] font-semibold text-red-700">No MAIN wallet is available. Ask upay Admin to fund the company; the top-up process provisions the MAIN wallet automatically.</p>}
+            <button disabled={walletAction !== null || !mainWallet || !selectedDestinationWallet} className="mt-auto rounded-lg bg-[#ef8354] px-3 py-2.5 text-xs font-bold text-white disabled:cursor-not-allowed disabled:opacity-50">
+              {walletAction === 'transfer' ? 'Transferring...' : 'Transfer funds'}
+            </button>
           </form>
         </div>
       </div>
 
       {/* Central Wallets Grid */}
-      <div className="order-2 card-flat p-6">
+      <div className="order-3 card-flat p-6">
         <div className="flex items-center justify-between pb-4 mb-4 border-b border-slate-100">
           <div>
             <h3 className="font-extrabold text-slate-900 text-base font-outfit">Corporate Central Wallets</h3>

@@ -13,7 +13,11 @@ class TestConfig:
     SECRET_KEY = 'test-secret-key'
     JWT_SECRET_KEY = 'test-jwt-secret-key-at-least-32-bytes'
     JWT_EXPIRATION_HOURS = 24
+    AUTH_COOKIE_NAME = 'upay_test_session'
+    AUTH_COOKIE_SECURE = False
+    CORS_ORIGINS = ('http://localhost:3000', 'http://localhost:3001')
     UPLOAD_FOLDER = '/tmp/upay_test_uploads'
+    MAX_SPREADSHEET_EXPANDED_SIZE = 64 * 1024 * 1024
     ALLOWED_EXTENSIONS = {'xlsx', 'xls', 'csv'}
 
 

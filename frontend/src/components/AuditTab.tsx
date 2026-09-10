@@ -44,6 +44,27 @@ function eventCopy(action: string) {
   return EVENT_COPY[action] || { title: titleCase(action), summary: 'This payroll activity was recorded securely.' };
 }
 
+function parseUtcTimestamp(value: string) {
+  const includesTimeZone = /(?:Z|[+-]\d{2}:?\d{2})$/i.test(value);
+  return new Date(includesTimeZone ? value : `${value}Z`);
+}
+
+function auditDisplayTimestamp(createdAt: string, payrollPeriod?: string | null) {
+  const actionTime = parseUtcTimestamp(createdAt);
+  if (!payrollPeriod) return actionTime;
+
+  const [year, month] = payrollPeriod.slice(0, 7).split('-').map(Number);
+  if (!year || !month) return actionTime;
+
+  const dhakaParts = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'Asia/Dhaka', day: 'numeric', hour: 'numeric', minute: 'numeric', second: 'numeric', hourCycle: 'h23',
+  }).formatToParts(actionTime);
+  const part = (type: Intl.DateTimeFormatPartTypes) => Number(dhakaParts.find((item) => item.type === type)?.value || 0);
+  const day = Math.min(part('day'), new Date(Date.UTC(year, month, 0)).getUTCDate());
+
+  return new Date(Date.UTC(year, month - 1, day, part('hour'), part('minute'), part('second')));
+}
+
 function parseDetails(details: AuditLog['details']): Record<string, unknown> {
   if (typeof details !== 'string') return details || {};
   try {
@@ -86,6 +107,7 @@ export const AuditTab: React.FC<AuditTabProps> = ({ logs }) => (
             {logs.map((log) => {
               const copy = eventCopy(log.action);
               const details = Object.entries(parseDetails(log.details)).filter(([key]) => !HIDDEN_DETAILS.has(key));
+              const displayTime = auditDisplayTimestamp(log.created_at, log.payroll_period);
               return (
                 <article key={log.id} className="relative rounded-xl border border-slate-200 bg-white px-4 py-3 shadow-[0_6px_18px_-18px_rgba(45,49,66,.7)]">
                   <span className="absolute -left-[36px] top-4 grid h-4 w-4 place-items-center rounded-full bg-emerald-600 ring-4 ring-emerald-50"><CheckCircle2 className="h-2.5 w-2.5 text-white" /></span>
@@ -95,7 +117,7 @@ export const AuditTab: React.FC<AuditTabProps> = ({ logs }) => (
                     </div>
                     <div className="flex shrink-0 flex-wrap items-center gap-x-4 gap-y-1 text-[11px] text-slate-500">
                       <span className="flex items-center gap-1.5"><User className="h-3.5 w-3.5 text-slate-400" /><strong className="text-slate-700">{log.performed_by || 'Authorized user'}</strong></span>
-                      <span className="flex items-center gap-1.5"><Clock className="h-3.5 w-3.5 text-slate-400" /><time dateTime={log.created_at}>{new Intl.DateTimeFormat('en', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(log.created_at))}</time></span>
+                      <span className="flex items-center gap-1.5"><Clock className="h-3.5 w-3.5 text-slate-400" /><time dateTime={displayTime.toISOString()}>{new Intl.DateTimeFormat('en-BD', { dateStyle: 'medium', timeStyle: 'short', timeZone: 'UTC' }).format(displayTime)}</time></span>
                     </div>
                   </div>
 

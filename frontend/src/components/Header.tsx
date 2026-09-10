@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
+import { Batch } from '@/types';
 import { Building2, LogOut, UserCheck, UserCog, ShieldCheck, LayoutGrid, FileSpreadsheet, ShieldAlert, LineChart, FileText, Users, CalendarDays, ChevronLeft, ChevronRight, Bell, X, CheckCircle2 } from 'lucide-react';
 
 export type DashboardTab = 'overview' | 'upload' | 'review' | 'registration' | 'checker' | 'analytics' | 'audit' | 'archive';
@@ -12,6 +13,7 @@ interface HeaderProps {
   riskAlertCount: number;
   fixedIssueCount?: number;
   financeSignOffReady?: boolean;
+  batchStatus?: Batch['status'];
   selectedPeriod?: string;
   onPeriodChange?: (period: string) => void;
 }
@@ -32,12 +34,9 @@ function SidebarPayrollCalendar({ selectedPeriod, onPeriodChange }: { selectedPe
     day.setDate(gridStart.getDate() + index);
     return day;
   });
-  const currentMonth = monthStart(today);
-  const canGoForward = displayedMonth < currentMonth;
   const displayLabel = new Intl.DateTimeFormat('en-US', { month: 'long', year: 'numeric' }).format(selectedDate);
 
   const chooseDay = (day: Date) => {
-    if (monthStart(day) > currentMonth) return;
     onPeriodChange(monthKey(day));
     setIsOpen(false);
   };
@@ -55,17 +54,16 @@ function SidebarPayrollCalendar({ selectedPeriod, onPeriodChange }: { selectedPe
             <h3 className="font-outfit text-xl font-extrabold tracking-tight">{new Intl.DateTimeFormat('en-US', { month: 'long', year: 'numeric' }).format(displayedMonth)}</h3>
             <div className="flex gap-1">
               <button type="button" onClick={() => setDisplayedMonth((month) => new Date(month.getFullYear(), month.getMonth() - 1, 1))} className="grid h-8 w-8 place-items-center rounded-lg text-[#ef8354] hover:bg-orange-50 focus:outline-none focus:ring-2 focus:ring-[#ef8354]/25" aria-label="Previous month"><ChevronLeft className="h-5 w-5" /></button>
-              <button type="button" disabled={!canGoForward} onClick={() => canGoForward && setDisplayedMonth((month) => new Date(month.getFullYear(), month.getMonth() + 1, 1))} className="grid h-8 w-8 place-items-center rounded-lg text-[#ef8354] hover:bg-orange-50 focus:outline-none focus:ring-2 focus:ring-[#ef8354]/25 disabled:cursor-not-allowed disabled:text-slate-300" aria-label="Next month"><ChevronRight className="h-5 w-5" /></button>
+              <button type="button" onClick={() => setDisplayedMonth((month) => new Date(month.getFullYear(), month.getMonth() + 1, 1))} className="grid h-8 w-8 place-items-center rounded-lg text-[#ef8354] hover:bg-orange-50 focus:outline-none focus:ring-2 focus:ring-[#ef8354]/25" aria-label="Next month"><ChevronRight className="h-5 w-5" /></button>
             </div>
           </div>
           <div className="grid grid-cols-7 gap-y-1 text-center">
             {['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su'].map((weekday) => <span key={weekday} className="mb-2 text-xs font-medium text-slate-400">{weekday}</span>)}
             {days.map((day) => {
               const outsideMonth = day.getMonth() !== displayedMonth.getMonth();
-              const disabled = monthStart(day) > currentMonth;
               const isSelectedMonth = monthKey(day) === selectedPeriod;
               const selectedDay = isSelectedMonth && (monthKey(today) === selectedPeriod ? day.getDate() === today.getDate() : day.getDate() === 1);
-              return <button key={day.toISOString()} type="button" disabled={disabled} onClick={() => chooseDay(day)} className={`mx-auto grid h-9 w-9 place-items-center rounded-full text-sm font-bold transition-all ${selectedDay ? 'bg-[#f55e5a] text-white shadow-md shadow-[#f55e5a]/30' : outsideMonth ? 'text-slate-300 hover:bg-slate-50' : 'text-[#495269] hover:bg-orange-50 hover:text-[#ef8354]'} ${disabled ? 'cursor-not-allowed opacity-35' : ''}`}>{day.getDate()}</button>;
+              return <button key={day.toISOString()} type="button" onClick={() => chooseDay(day)} className={`mx-auto grid h-9 w-9 place-items-center rounded-full text-sm font-bold transition-all ${selectedDay ? 'bg-[#f55e5a] text-white shadow-md shadow-[#f55e5a]/30' : outsideMonth ? 'text-slate-300 hover:bg-slate-50' : 'text-[#495269] hover:bg-orange-50 hover:text-[#ef8354]'}`}>{day.getDate()}</button>;
             })}
           </div>
           <p className="mt-4 border-t border-[#dce7dd] pt-3 text-center text-[11px] leading-4 text-[#6b7790]">Choose any day in the payroll month.</p>
@@ -75,11 +73,15 @@ function SidebarPayrollCalendar({ selectedPeriod, onPeriodChange }: { selectedPe
   );
 }
 
-export const Header: React.FC<HeaderProps> = ({ activeTab, onTabChange, riskAlertCount, fixedIssueCount = 0, financeSignOffReady = false, selectedPeriod, onPeriodChange }) => {
+export const Header: React.FC<HeaderProps> = ({ activeTab, onTabChange, riskAlertCount, fixedIssueCount = 0, financeSignOffReady = false, batchStatus, selectedPeriod, onPeriodChange }) => {
   const { user, logout } = useAuth();
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   if (!user) return null;
-  const notificationCount = riskAlertCount + fixedIssueCount + (financeSignOffReady ? 1 : 0);
+  const financeReviewReady = user.role === 'CHECKER' && batchStatus === 'PENDING_CHECKER_REVIEW';
+  const disbursementCompleted = user.role === 'CHECKER' && batchStatus === 'EXECUTED';
+  const hrIssuesReady = user.role === 'MAKER' ? riskAlertCount : 0;
+  const hrApprovalReady = user.role === 'MAKER' && financeSignOffReady;
+  const notificationCount = (financeReviewReady ? 1 : 0) + (disbursementCompleted ? 1 : 0) + hrIssuesReady + (hrApprovalReady ? 1 : 0);
 
   const roleLabel = user.role === 'MAKER' ? 'HR Officer' : user.role === 'CHECKER' ? 'Finance Director' : 'System Admin';
   const roleIcon = user.role === 'MAKER' ? <UserCog className="h-3.5 w-3.5" /> : user.role === 'CHECKER' ? <UserCheck className="h-3.5 w-3.5" /> : <ShieldCheck className="h-3.5 w-3.5" />;
@@ -124,17 +126,21 @@ export const Header: React.FC<HeaderProps> = ({ activeTab, onTabChange, riskAler
           <section role="dialog" aria-modal="true" aria-label="Notifications" className="w-full max-w-md rounded-3xl border border-slate-200 bg-white p-6 shadow-2xl">
             <div className="flex items-center justify-between border-b border-slate-100 pb-4"><div><h2 className="font-outfit text-lg font-extrabold text-[#2d3142]">Notifications</h2><p className="mt-0.5 text-xs text-slate-500">Payroll workflow updates for the selected month.</p></div><button type="button" onClick={() => setNotificationsOpen(false)} className="rounded-xl p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-700"><X className="h-5 w-5" /></button></div>
             {notificationCount > 0 ? <div className="mt-4 space-y-3">
-              {financeSignOffReady && <button type="button" onClick={() => { onTabChange('upload'); setNotificationsOpen(false); }} className="flex w-full items-start gap-3 rounded-2xl border border-emerald-200 bg-emerald-50/60 p-4 text-left transition hover:bg-emerald-50">
+              {hrApprovalReady && <button type="button" onClick={() => { onTabChange('upload'); setNotificationsOpen(false); }} className="flex w-full items-start gap-3 rounded-2xl border border-emerald-200 bg-emerald-50/60 p-4 text-left transition hover:bg-emerald-50">
                 <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-white text-emerald-600 shadow-sm"><CheckCircle2 className="h-5 w-5" /></span>
                 <span><strong className="block text-sm font-extrabold text-[#2d3142]">Finance signed off the payroll batch</strong><span className="mt-1 block text-xs leading-relaxed text-slate-600">The batch is approved and ready for HR’s final review and disbursement.</span></span>
               </button>}
-              {fixedIssueCount > 0 && <button type="button" onClick={() => { onTabChange('checker'); setNotificationsOpen(false); }} className="flex w-full items-start gap-3 rounded-2xl border border-emerald-200 bg-emerald-50/60 p-4 text-left transition hover:bg-emerald-50">
+              {financeReviewReady && <button type="button" onClick={() => { onTabChange('checker'); setNotificationsOpen(false); }} className="flex w-full items-start gap-3 rounded-2xl border border-emerald-200 bg-emerald-50/60 p-4 text-left transition hover:bg-emerald-50">
                 <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-white text-emerald-600 shadow-sm"><CheckCircle2 className="h-5 w-5" /></span>
-                <span><strong className="block text-sm font-extrabold text-[#2d3142]">HR fixed returned payroll {fixedIssueCount === 1 ? 'issue' : 'issues'}</strong><span className="mt-1 block text-xs leading-relaxed text-slate-600">{fixedIssueCount} {fixedIssueCount === 1 ? 'issue was' : 'issues were'} corrected by HR. Open the review queue to inspect the updated payroll.</span></span>
+                <span><strong className="block text-sm font-extrabold text-[#2d3142]">{fixedIssueCount > 0 ? 'HR resubmitted the corrected payroll' : 'Payroll submitted for Finance review'}</strong><span className="mt-1 block text-xs leading-relaxed text-slate-600">{fixedIssueCount > 0 ? `${fixedIssueCount} returned ${fixedIssueCount === 1 ? 'issue was' : 'issues were'} corrected. Review the resubmitted payroll.` : 'HR submitted a payroll batch. Open the review queue to check and approve it.'}</span></span>
               </button>}
-              {riskAlertCount > 0 && <button type="button" onClick={() => { onTabChange(user.role === 'CHECKER' ? 'checker' : 'review'); setNotificationsOpen(false); }} className="flex w-full items-start gap-3 rounded-2xl border border-orange-200 bg-orange-50/60 p-4 text-left transition hover:bg-orange-50">
+              {hrIssuesReady > 0 && <button type="button" onClick={() => { onTabChange('review'); setNotificationsOpen(false); }} className="flex w-full items-start gap-3 rounded-2xl border border-orange-200 bg-orange-50/60 p-4 text-left transition hover:bg-orange-50">
                 <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-white text-[#ef8354] shadow-sm"><Bell className="h-5 w-5" /></span>
-                <span><strong className="block text-sm font-extrabold text-[#2d3142]">{user.role === 'CHECKER' ? 'Payroll alerts need review' : 'Finance returned payroll issues'}</strong><span className="mt-1 block text-xs leading-relaxed text-slate-600">{user.role === 'CHECKER' ? `${riskAlertCount} open ${riskAlertCount === 1 ? 'alert requires' : 'alerts require'} your attention.` : `${riskAlertCount} ${riskAlertCount === 1 ? 'issue was' : 'issues were'} sent back for HR correction.`}</span></span>
+                <span><strong className="block text-sm font-extrabold text-[#2d3142]">Finance returned payroll issues</strong><span className="mt-1 block text-xs leading-relaxed text-slate-600">{hrIssuesReady} {hrIssuesReady === 1 ? 'issue was' : 'issues were'} sent back for HR correction.</span></span>
+              </button>}
+              {disbursementCompleted && <button type="button" onClick={() => { onTabChange('audit'); setNotificationsOpen(false); }} className="flex w-full items-start gap-3 rounded-2xl border border-blue-200 bg-blue-50/60 p-4 text-left transition hover:bg-blue-50">
+                <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-white text-blue-600 shadow-sm"><CheckCircle2 className="h-5 w-5" /></span>
+                <span><strong className="block text-sm font-extrabold text-[#2d3142]">Payroll disbursement completed</strong><span className="mt-1 block text-xs leading-relaxed text-slate-600">HR completed the approved disbursement. Open approval history to view the audit record.</span></span>
               </button>}
             </div> : <div className="py-10 text-center"><span className="mx-auto grid h-12 w-12 place-items-center rounded-full bg-emerald-50 text-emerald-600"><ShieldCheck className="h-5 w-5" /></span><p className="mt-3 text-sm font-bold text-slate-700">You’re all caught up</p><p className="mt-1 text-xs text-slate-400">No open payroll notifications.</p></div>}
           </section>

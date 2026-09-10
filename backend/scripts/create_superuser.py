@@ -33,6 +33,8 @@ def validate_superuser():
         sys.exit('Replace the example SUPERUSER values before running this script.')
     if not (SUPERUSER['phone_number'].isdigit() and len(SUPERUSER['phone_number']) == 11 and SUPERUSER['phone_number'].startswith('01')):
         sys.exit('phone_number must be an 11-digit Bangladesh mobile number beginning with 01.')
+    if len(SUPERUSER['password']) < 12:
+        sys.exit('password must contain at least 12 characters.')
 
 
 def main():

@@ -15,6 +15,8 @@ CREATE INDEX IF NOT EXISTS idx_employees_status ON employees(company_id, status)
 
 -- 3. Indexes for Central Wallet Balance & Funding Queries
 CREATE INDEX IF NOT EXISTS idx_central_wallets_company ON central_wallets(company_id);
+CREATE UNIQUE INDEX IF NOT EXISTS uq_central_wallets_one_main_per_company
+    ON central_wallets(company_id) WHERE wallet_type = 'MAIN';
 CREATE INDEX IF NOT EXISTS idx_company_bank_accounts_company ON company_bank_accounts(company_id);
 
 -- 4. Indexes for Batch Header Workflow & Dashboard Filters

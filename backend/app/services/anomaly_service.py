@@ -17,11 +17,14 @@ def evaluate_batch_items_anomalies(company_id, batch_items):
             # Record risk alert for account issue
             flag_type = 'UNREGISTERED_PHONE' if item.account_validation_status == 'UNREGISTERED_ACCOUNT' else 'ACCOUNT_INACTIVE'
             severity = 'CRITICAL' if item.account_validation_status == 'UNREGISTERED_ACCOUNT' else 'HIGH'
+            item.is_anomaly = True
+            item.anomaly_score = -0.9000
+            item.anomaly_reason = f"Account validation failed: {item.account_validation_status}"
             create_risk_alert(
                 item.id,
                 flag_type=flag_type,
                 severity=severity,
-                notes=item.anomaly_reason or f"Account validation failed: {item.account_validation_status}"
+                notes=item.anomaly_reason
             )
             continue
 
@@ -104,14 +107,12 @@ def evaluate_batch_items_anomalies(company_id, batch_items):
                 item.anomaly_score = 0.2100
                 item.anomaly_reason = None
 
-    db.session.commit()
-
-
 def create_risk_alert(batch_item_id, flag_type, severity, notes):
     """Helper to record or update a RiskAlert entry for a batch item."""
     existing = RiskAlert.query.filter(
         RiskAlert.batch_item_id == batch_item_id,
         ~RiskAlert.flag_type.like('MANUAL_%'),
+        RiskAlert.review_status == 'PENDING_REVIEW',
     ).first()
     if not existing:
         alert = RiskAlert(

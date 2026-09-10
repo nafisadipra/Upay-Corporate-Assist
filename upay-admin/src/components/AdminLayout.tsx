@@ -4,6 +4,7 @@ import { useRouter, usePathname } from 'next/navigation';
 import { User } from '@/types';
 import { FluentProvider, webLightTheme } from '@fluentui/react-components';
 import Link from 'next/link';
+import * as api from '@/lib/api';
 import { 
   LayoutGrid, 
   Building2, 
@@ -27,8 +28,7 @@ export const useAuth = () => useContext(AuthContext);
 
 export default function AdminLayout({ children }: { children: ReactNode }) {
   // Start from the same empty state on the server and client, then restore the
-  // browser-only session after hydration. Reading localStorage during render
-  // made the client render a FluentProvider where the server rendered nothing.
+  // HttpOnly cookie session after hydration.
   const [token, setToken] = useState<string | null>(null);
   const [admin, setAdmin] = useState<User | null>(null);
   const [sessionLoaded, setSessionLoaded] = useState(false);
@@ -38,15 +38,10 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     void (async () => {
-      const savedToken = localStorage.getItem('upay_admin_token');
-      const savedUser = localStorage.getItem('upay_admin_user');
-      setToken(savedToken);
-      if (savedUser) {
-        try {
-          setAdmin(JSON.parse(savedUser) as User);
-        } catch {
-          localStorage.removeItem('upay_admin_user');
-        }
+      const session = await api.me();
+      if (session?.user?.role === 'ADMIN') {
+        setToken('cookie-session');
+        setAdmin(session.user);
       }
       setSessionLoaded(true);
     })();
@@ -60,8 +55,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
   }, [router, sessionLoaded, token]);
 
   const signOut = () => {
-    localStorage.removeItem('upay_admin_token');
-    localStorage.removeItem('upay_admin_user');
+    void api.logout();
     setToken(null);
     setAdmin(null);
     router.push('/');

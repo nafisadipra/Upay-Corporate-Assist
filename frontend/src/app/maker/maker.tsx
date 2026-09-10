@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { AuthProvider, useAuth } from '@/context/AuthContext';
+import { useAuth } from '@/context/AuthContext';
 import { Company, CentralWallet, Batch, BatchItem, RiskAlert, ForecastResponse, ForecastSettings, AuditLog } from '@/types';
 import * as api from '@/lib/api';
 import { Header } from '@/components/Header';
@@ -11,7 +11,6 @@ import { UploadTab } from '@/components/UploadTab';
 import { AnalyticsTab } from '@/components/AnalyticsTab';
 import { AuditTab } from '@/components/AuditTab';
 import { PayrollItemCorrection, TypoModal } from '@/components/TypoModal';
-import { LoginForm } from '@/components/LoginForm';
 import { EmployeeRegistrationTab } from '@/components/EmployeeRegistrationTab';
 import { DisbursementConfirmModal } from '@/components/DisbursementConfirmModal';
 import { PayrollArchiveTab } from '@/components/PayrollArchiveTab';
@@ -103,10 +102,11 @@ function DashboardContent({ initialTab = 'overview' }: WorkspaceProps) {
   }, [user, loadData]);
 
   useEffect(() => {
-    if (user?.role === 'CHECKER') {
-      router.replace('/checker');
-    }
-  }, [router, user]);
+    if (isLoading) return;
+    if (!user) router.replace('/');
+    else if (user.role === 'CHECKER') router.replace('/checker');
+    else if (user.role !== 'MAKER') router.replace('/');
+  }, [isLoading, router, user]);
 
   if (isLoading) {
     return (
@@ -119,10 +119,10 @@ function DashboardContent({ initialTab = 'overview' }: WorkspaceProps) {
   }
 
   if (!user) {
-    return <LoginForm />;
+    return null;
   }
 
-  if (user.role === 'CHECKER') {
+  if (user.role !== 'MAKER') {
     return null;
   }
 
@@ -183,12 +183,6 @@ function DashboardContent({ initialTab = 'overview' }: WorkspaceProps) {
     }
   };
 
-  const handleCreateWallet = async (walletName: string, openingBalance: number) => {
-    if (!user?.company_id) throw new Error('A company assignment is required to create a wallet.');
-    await api.createCompanyWallet(user.company_id, { wallet_name: walletName, opening_balance: openingBalance });
-    await loadData();
-  };
-
   const handleRefreshForecast = async () => {
     if (!user?.company_id) return;
     setIsForecastRefreshing(true);
@@ -209,9 +203,19 @@ function DashboardContent({ initialTab = 'overview' }: WorkspaceProps) {
     setForecast(updatedForecast as ForecastResponse);
   };
 
-  const handleUpdateWalletBalance = async (walletId: number, balance: number) => {
-    if (!user?.company_id) throw new Error('A company assignment is required to update a wallet.');
-    await api.updateCompanyWallet(user.company_id, walletId, { balance });
+  const handleCreateWallet = async (walletName: string, walletType: string) => {
+    if (!user?.company_id) throw new Error('A company assignment is required to create a wallet.');
+    await api.createCompanyWallet(user.company_id, { wallet_name: walletName, wallet_type: walletType });
+    await loadData();
+  };
+
+  const handleTransferWalletFunds = async (sourceWalletId: number, destinationWalletId: number, amount: number) => {
+    if (!user?.company_id) throw new Error('A company assignment is required to transfer wallet funds.');
+    await api.transferCompanyWalletFunds(user.company_id, {
+      source_wallet_id: sourceWalletId,
+      destination_wallet_id: destinationWalletId,
+      amount,
+    });
     await loadData();
   };
 
@@ -236,6 +240,7 @@ function DashboardContent({ initialTab = 'overview' }: WorkspaceProps) {
           onTabChange={setActiveTab}
           riskAlertCount={riskAlerts.filter((alert) => alert.review_status === 'PENDING_REVIEW' && alert.flag_type.startsWith('MANUAL_')).length}
           financeSignOffReady={currentBatch?.status === 'CHECKER_REVIEWED'}
+          batchStatus={currentBatch?.status}
           selectedPeriod={selectedPeriod}
           onPeriodChange={setSelectedPeriod}
         />
@@ -328,7 +333,7 @@ function DashboardContent({ initialTab = 'overview' }: WorkspaceProps) {
               onUploadClick={() => setActiveTab('upload')}
               onRefreshClick={loadData}
               onCreateWallet={handleCreateWallet}
-              onUpdateWalletBalance={handleUpdateWalletBalance}
+              onTransferFunds={handleTransferWalletFunds}
             />
           )}
 
@@ -391,9 +396,5 @@ function DashboardContent({ initialTab = 'overview' }: WorkspaceProps) {
 }
 
 export default function Maker({ initialTab }: WorkspaceProps) {
-  return (
-    <AuthProvider>
-      <DashboardContent initialTab={initialTab} />
-    </AuthProvider>
-  );
+  return <DashboardContent initialTab={initialTab} />;
 }

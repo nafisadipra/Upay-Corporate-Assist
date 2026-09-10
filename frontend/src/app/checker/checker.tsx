@@ -2,11 +2,10 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { AuthProvider, useAuth } from '@/context/AuthContext';
+import { useAuth } from '@/context/AuthContext';
 import { DashboardTab, Header } from '@/components/Header';
 import { CheckerTab } from '@/components/CheckerTab';
 import { AuditTab } from '@/components/AuditTab';
-import { LoginForm } from '@/components/LoginForm';
 import { Batch, BatchItem, AuditLog, RiskAlert } from '@/types';
 import * as api from '@/lib/api';
 import { History, ShieldAlert, BarChart3, Shield, MoreHorizontal, FileText, CheckCircle2, PlayCircle, XCircle, Hourglass } from 'lucide-react';
@@ -442,20 +441,21 @@ function CheckerWorkspace() {
   }, [loadData, user]);
 
   useEffect(() => {
-    if (user?.role === 'MAKER') {
-      router.replace('/maker');
-    }
-  }, [router, user]);
+    if (isLoading) return;
+    if (!user) router.replace('/');
+    else if (user.role === 'MAKER') router.replace('/maker');
+    else if (user.role !== 'CHECKER') router.replace('/');
+  }, [isLoading, router, user]);
 
   if (isLoading) {
     return <div className="min-h-[100dvh] bg-[#f7f9f6]" />;
   }
 
   if (!user) {
-    return <LoginForm />;
+    return null;
   }
 
-  if (user.role === 'MAKER') {
+  if (user.role !== 'CHECKER') {
     return null;
   }
 
@@ -490,7 +490,6 @@ function CheckerWorkspace() {
   };
 
   const filteredBatches = batches.filter((batch) => batch.payroll_period?.slice(0, 7) === selectedPeriod);
-  const pendingAlertCount = alerts.filter((alert) => alert.review_status === 'PENDING_REVIEW').length;
   const fixedIssueCount = currentBatch && ['FLAGGED_RISK', 'PENDING_CHECKER_REVIEW'].includes(currentBatch.status)
     ? alerts.filter((alert) => alert.flag_type.startsWith('MANUAL_') && alert.review_status === 'RESOLVED_BY_HR').length
     : 0;
@@ -498,7 +497,7 @@ function CheckerWorkspace() {
   return (
     <div className="app-shell text-slate-900 font-sans antialiased flex flex-col justify-between">
       <div className="lg:pl-[272px]">
-        <Header activeTab={activeTab} onTabChange={setActiveTab} riskAlertCount={pendingAlertCount} fixedIssueCount={fixedIssueCount} selectedPeriod={selectedPeriod} onPeriodChange={setSelectedPeriod} />
+        <Header activeTab={activeTab} onTabChange={setActiveTab} riskAlertCount={0} fixedIssueCount={fixedIssueCount} batchStatus={currentBatch?.status} selectedPeriod={selectedPeriod} onPeriodChange={setSelectedPeriod} />
         <main className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto space-y-6">
           {message && <div className="rounded-xl border border-red-200 bg-red-50 p-3 text-xs font-semibold text-red-900">{message}</div>}
 
@@ -531,5 +530,5 @@ function CheckerWorkspace() {
 }
 
 export default function Checker() {
-  return <AuthProvider><CheckerWorkspace /></AuthProvider>;
+  return <CheckerWorkspace />;
 }

@@ -10,4 +10,4 @@ npm install
 npm run dev
 ```
 
-The portal runs at `http://localhost:3001`. Copy `.env.example` to `.env.local` if the Flask API is not at `http://127.0.0.1:5000/api`. Sign in with a provisioned administrator account.
+The portal runs at `http://localhost:3001`. Copy `.env.example` to `.env.local` if the Flask API is not at `http://localhost:5000/api`. Sign in with a provisioned administrator account.
