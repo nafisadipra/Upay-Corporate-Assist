@@ -38,7 +38,7 @@ def company_summary(company):
     total_balance = sum(
         (Decimal(str(w.balance)) for w in wallets if w.status == "ACTIVE"), Decimal("0.00")
     )
-
+    """ dictionary outputs"""
     return {
         **company.to_dict(),
         "wallets": [wallet.to_dict() for wallet in wallets],
