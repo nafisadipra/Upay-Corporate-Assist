@@ -1,0 +1,91 @@
+{
+  "version": 2,
+  "title": "Upay Corporate Assist Database Relationships",
+  "description": "Foreign-key relationships from database/schema/01_create_schema.sql, divided by domain for readability.",
+  "diagrams": [
+    {
+      "id": "company_identity",
+      "title": "Company and identity relationships",
+      "kind": "er",
+      "data": {
+        "entities": [
+          {"id": "COMPANIES", "attributes": ["int id PK", "varchar company_name"]},
+          {"id": "CENTRAL_WALLETS", "attributes": ["int id PK", "int company_id FK"]},
+          {"id": "COMPANY_BANK_ACCOUNTS", "attributes": ["int id PK", "int company_id FK"]},
+          {"id": "USERS", "attributes": ["int id PK", "int company_id FK nullable"]},
+          {"id": "ACCOUNTS", "attributes": ["int id PK", "varchar phone_number UK"]},
+          {"id": "EMPLOYEES", "attributes": ["int id PK", "int company_id FK"]},
+          {"id": "EMPLOYEE_REGISTRATIONS", "attributes": ["int id PK", "int company_id FK", "int submitted_by FK", "int reviewed_by FK nullable"]}
+        ],
+        "relationships": [
+          {"from": "COMPANIES", "to": "CENTRAL_WALLETS", "cardinality": "||--o{", "label": "owns"},
+          {"from": "COMPANIES", "to": "COMPANY_BANK_ACCOUNTS", "cardinality": "||--o{", "label": "funded by"},
+          {"from": "COMPANIES", "to": "USERS", "cardinality": "o|--o{", "label": "tenant membership"},
+          {"from": "COMPANIES", "to": "EMPLOYEES", "cardinality": "||--o{", "label": "roster"},
+          {"from": "COMPANIES", "to": "EMPLOYEE_REGISTRATIONS", "cardinality": "||--o{", "label": "registration requests"},
+          {"from": "USERS", "to": "EMPLOYEE_REGISTRATIONS", "cardinality": "||--o{", "label": "submits"},
+          {"from": "USERS", "to": "EMPLOYEE_REGISTRATIONS", "cardinality": "o|--o{", "label": "reviews"}
+        ]
+      }
+    },
+    {
+      "id": "payroll_governance",
+      "title": "Payroll processing and governance relationships",
+      "kind": "er",
+      "data": {
+        "entities": [
+          {"id": "COMPANIES", "attributes": ["int id PK"]},
+          {"id": "USERS", "attributes": ["int id PK"]},
+          {"id": "EMPLOYEES", "attributes": ["int id PK"]},
+          {"id": "BATCHES", "attributes": ["int id PK", "int company_id FK", "int maker_id FK", "int checker_id FK nullable"]},
+          {"id": "BATCH_ITEMS", "attributes": ["int id PK", "int batch_id FK", "int employee_id FK nullable"]},
+          {"id": "RISK_ALERTS", "attributes": ["int id PK", "int batch_item_id FK", "int reviewed_by FK nullable"]},
+          {"id": "CHECKER_OTPS", "attributes": ["int id PK", "int batch_id FK", "int checker_id FK"]},
+          {"id": "PAYROLL_HISTORY", "attributes": ["int id PK", "int company_id FK"]},
+          {"id": "AUDIT_LOGS", "attributes": ["int id PK", "int company_id FK nullable", "int batch_id FK nullable", "int user_id FK nullable"]}
+        ],
+        "relationships": [
+          {"from": "COMPANIES", "to": "BATCHES", "cardinality": "||--o{", "label": "payroll batches"},
+          {"from": "USERS", "to": "BATCHES", "cardinality": "||--o{", "label": "creates as maker"},
+          {"from": "USERS", "to": "BATCHES", "cardinality": "o|--o{", "label": "reviews as checker"},
+          {"from": "BATCHES", "to": "BATCH_ITEMS", "cardinality": "||--o{", "label": "contains"},
+          {"from": "EMPLOYEES", "to": "BATCH_ITEMS", "cardinality": "o|--o{", "label": "matched roster member"},
+          {"from": "BATCH_ITEMS", "to": "RISK_ALERTS", "cardinality": "||--o{", "label": "raises"},
+          {"from": "USERS", "to": "RISK_ALERTS", "cardinality": "o|--o{", "label": "reviews"},
+          {"from": "BATCHES", "to": "CHECKER_OTPS", "cardinality": "||--o{", "label": "authorization token"},
+          {"from": "USERS", "to": "CHECKER_OTPS", "cardinality": "||--o{", "label": "receives"},
+          {"from": "COMPANIES", "to": "PAYROLL_HISTORY", "cardinality": "||--o{", "label": "history"},
+          {"from": "COMPANIES", "to": "AUDIT_LOGS", "cardinality": "o|--o{", "label": "tenant audit context"},
+          {"from": "BATCHES", "to": "AUDIT_LOGS", "cardinality": "o|--o{", "label": "batch audit context"},
+          {"from": "USERS", "to": "AUDIT_LOGS", "cardinality": "o|--o{", "label": "actor audit context"}
+        ]
+      }
+    },
+    {
+      "id": "forecasting",
+      "title": "Liquidity forecasting relationships",
+      "kind": "er",
+      "data": {
+        "entities": [
+          {"id": "COMPANIES", "attributes": ["int id PK"]},
+          {"id": "USERS", "attributes": ["int id PK"]},
+          {"id": "COMPANY_FORECAST_SETTINGS", "attributes": ["int id PK", "int company_id FK UK", "int configured_by FK nullable"]},
+          {"id": "FORECAST_RUNS", "attributes": ["int id PK", "int company_id FK"]},
+          {"id": "FORECAST_RUN_RESULTS", "attributes": ["int id PK", "int forecast_run_id FK"]},
+          {"id": "LIQUIDITY_FORECASTS", "attributes": ["int id PK", "int company_id FK", "int forecast_run_id FK nullable"]},
+          {"id": "FORECAST_ALERTS", "attributes": ["int id PK", "int company_id FK", "int forecast_run_id FK nullable"]}
+        ],
+        "relationships": [
+          {"from": "COMPANIES", "to": "COMPANY_FORECAST_SETTINGS", "cardinality": "||--o|", "label": "planning settings"},
+          {"from": "USERS", "to": "COMPANY_FORECAST_SETTINGS", "cardinality": "o|--o{", "label": "configures"},
+          {"from": "COMPANIES", "to": "FORECAST_RUNS", "cardinality": "||--o{", "label": "forecast runs"},
+          {"from": "FORECAST_RUNS", "to": "FORECAST_RUN_RESULTS", "cardinality": "||--o{", "label": "period results"},
+          {"from": "COMPANIES", "to": "LIQUIDITY_FORECASTS", "cardinality": "||--o{", "label": "cached forecasts"},
+          {"from": "FORECAST_RUNS", "to": "LIQUIDITY_FORECASTS", "cardinality": "o|--o{", "label": "source run"},
+          {"from": "COMPANIES", "to": "FORECAST_ALERTS", "cardinality": "||--o{", "label": "forecast alerts"},
+          {"from": "FORECAST_RUNS", "to": "FORECAST_ALERTS", "cardinality": "o|--o{", "label": "source run"}
+        ]
+      }
+    }
+  ]
+}

@@ -5,7 +5,11 @@ function getAuthHeaders(): HeadersInit {
 }
 
 const apiFetch = (url: string, options: RequestInit = {}) =>
-  fetch(url, { ...options, credentials: 'include' });
+  fetch(url, {
+    ...options,
+    credentials: 'include',
+    headers: { 'X-Upay-Portal': 'corporate', ...options.headers },
+  });
 
 async function handleResponse(res: Response, defaultErrMsg: string) {
   if (!res.ok) {
@@ -47,7 +51,10 @@ export async function fetchEmployees(companyId: number = 1) {
   return handleResponse(res, 'Failed to fetch employees');
 }
 
-export async function createCompanyWallet(companyId: number, payload: { wallet_name: string; wallet_type: string }) {
+export async function createCompanyWallet(
+  companyId: number,
+  payload: { wallet_name: string; wallet_type: string },
+) {
   const res = await apiFetch(`${API_BASE_URL}/companies/${companyId}/wallets`, {
     method: 'POST',
     headers: getAuthHeaders(),
@@ -56,7 +63,10 @@ export async function createCompanyWallet(companyId: number, payload: { wallet_n
   return handleResponse(res, 'Failed to create company wallet');
 }
 
-export async function transferCompanyWalletFunds(companyId: number, payload: { source_wallet_id: number; destination_wallet_id: number; amount: number }) {
+export async function transferCompanyWalletFunds(
+  companyId: number,
+  payload: { source_wallet_id: number; destination_wallet_id: number; amount: number },
+) {
   const res = await apiFetch(`${API_BASE_URL}/companies/${companyId}/wallets/transfer`, {
     method: 'POST',
     headers: getAuthHeaders(),
@@ -65,7 +75,12 @@ export async function transferCompanyWalletFunds(companyId: number, payload: { s
   return handleResponse(res, 'Failed to transfer wallet funds');
 }
 
-export async function uploadPayrollFile(file: File, companyId: number = 1, makerId: number = 1, payrollPeriod?: string) {
+export async function uploadPayrollFile(
+  file: File,
+  companyId: number = 1,
+  makerId: number = 1,
+  payrollPeriod?: string,
+) {
   const formData = new FormData();
   formData.append('file', file);
   formData.append('company_id', companyId.toString());
@@ -80,12 +95,25 @@ export async function uploadPayrollFile(file: File, companyId: number = 1, maker
 }
 
 export async function uploadEmployeeRegistrationFile(file: File) {
-  const formData = new FormData(); formData.append('file', file);
-  const res = await apiFetch(`${API_BASE_URL}/employee-registrations/upload`, { method: 'POST', body: formData });
+  const formData = new FormData();
+  formData.append('file', file);
+  const res = await apiFetch(`${API_BASE_URL}/employee-registrations/upload`, {
+    method: 'POST',
+    body: formData,
+  });
   return handleResponse(res, 'Failed to submit employee registrations');
 }
 
-export async function correctPayrollItem(itemId: number, payload: { corrected_phone_number: string; employee_name: string; department: string; basic_salary: number; gross_salary: number }) {
+export async function correctPayrollItem(
+  itemId: number,
+  payload: {
+    corrected_phone_number: string;
+    employee_name: string;
+    department: string;
+    basic_salary: number;
+    gross_salary: number;
+  },
+) {
   const res = await apiFetch(`${API_BASE_URL}/batches/items/${itemId}/correct`, {
     method: 'PUT',
     headers: getAuthHeaders(),
@@ -111,7 +139,11 @@ export async function submitBatch(batchId: number) {
   return handleResponse(res, 'Failed to submit batch');
 }
 
-export async function checkerReviewBatch(batchId: number, action: string = 'APPROVED_BY_CHECKER', notes: string = 'Reviewed and signed off by Finance Director') {
+export async function checkerReviewBatch(
+  batchId: number,
+  action: string = 'APPROVED_BY_CHECKER',
+  notes: string = 'Reviewed and signed off by Finance Director',
+) {
   const res = await apiFetch(`${API_BASE_URL}/batches/${batchId}/checker-review`, {
     method: 'POST',
     headers: getAuthHeaders(),
@@ -129,7 +161,9 @@ export async function executeBatch(batchId: number) {
 }
 
 export async function fetchRiskAlerts(batchId?: number) {
-  const url = batchId ? `${API_BASE_URL}/risk-alerts?batch_id=${batchId}` : `${API_BASE_URL}/risk-alerts`;
+  const url = batchId
+    ? `${API_BASE_URL}/risk-alerts?batch_id=${batchId}`
+    : `${API_BASE_URL}/risk-alerts`;
   const res = await apiFetch(url, { headers: getAuthHeaders() });
   return handleResponse(res, 'Failed to fetch risk alerts');
 }
@@ -158,12 +192,15 @@ export async function refreshLiquidityForecast(companyId: number) {
   return handleResponse(res, 'Failed to refresh liquidity forecast');
 }
 
-export async function updateForecastSettings(companyId: number, settings: {
-  planning_baseline_amount: number;
-  include_festival_bonus: boolean;
-  festival_bonus_amount: number;
-  festival_bonus_months: number[];
-}) {
+export async function updateForecastSettings(
+  companyId: number,
+  settings: {
+    planning_baseline_amount: number;
+    include_festival_bonus: boolean;
+    festival_bonus_amount: number;
+    festival_bonus_months: number[];
+  },
+) {
   const res = await apiFetch(`${API_BASE_URL}/analytics/liquidity-forecast/${companyId}/settings`, {
     method: 'PUT',
     headers: getAuthHeaders(),
@@ -187,7 +224,9 @@ export async function fetchAuditLogs(batchId: number = 1) {
 }
 
 export async function downloadPayrollArchive(batchId: number, fileName: string) {
-  const res = await apiFetch(`${API_BASE_URL}/batches/${batchId}/archive`, { headers: getAuthHeaders() });
+  const res = await apiFetch(`${API_BASE_URL}/batches/${batchId}/archive`, {
+    headers: getAuthHeaders(),
+  });
   if (!res.ok) return handleResponse(res, 'Failed to download payroll archive');
   const url = URL.createObjectURL(await res.blob());
   const link = document.createElement('a');
@@ -200,7 +239,9 @@ export async function downloadPayrollArchive(batchId: number, fileName: string) 
 }
 
 export async function downloadBatchWorkbook(batchId: number, fileName: string) {
-  const res = await apiFetch(`${API_BASE_URL}/batches/${batchId}/workbook`, { headers: getAuthHeaders() });
+  const res = await apiFetch(`${API_BASE_URL}/batches/${batchId}/workbook`, {
+    headers: getAuthHeaders(),
+  });
   if (!res.ok) return handleResponse(res, 'Failed to download the selected payroll batch');
   const url = URL.createObjectURL(await res.blob());
   const link = document.createElement('a');

@@ -1,16 +1,24 @@
 'use client';
 import { useRef, useState, useEffect, useCallback } from 'react';
-import { FileSpreadsheet, Upload, Users, HelpCircle, Download, RefreshCw, CheckCircle2 } from 'lucide-react';
+import {
+  FileSpreadsheet,
+  Upload,
+  Users,
+  HelpCircle,
+  Download,
+  RefreshCw,
+  CheckCircle2,
+} from 'lucide-react';
 import * as api from '@/lib/api';
 import { Employee } from '@/types';
 import { useAuth } from '@/context/AuthContext';
 
 export function EmployeeRegistrationTab() {
-  const inputRef = useRef<HTMLInputElement>(null); 
+  const inputRef = useRef<HTMLInputElement>(null);
   const { user } = useAuth();
   const companyId = user?.company_id;
-  const [message, setMessage] = useState(''); 
-  const [error, setError] = useState(''); 
+  const [message, setMessage] = useState('');
+  const [error, setError] = useState('');
   const [uploading, setUploading] = useState(false);
   const [registeredEmployees, setRegisteredEmployees] = useState<Employee[]>([]);
 
@@ -30,26 +38,36 @@ export function EmployeeRegistrationTab() {
     })();
   }, [loadRegisteredEmployees]);
 
-  async function upload(file: File) { 
-    setUploading(true); 
-    setMessage(''); 
-    setError(''); 
-    try { 
-      const result = await api.uploadEmployeeRegistrationFile(file); 
-      setMessage(result.message); 
+  async function upload(file: File) {
+    setUploading(true);
+    setMessage('');
+    setError('');
+    try {
+      const result = await api.uploadEmployeeRegistrationFile(file);
+      setMessage(result.message);
       await loadRegisteredEmployees();
-    } catch (caught) { 
-      setError(caught instanceof Error ? caught.message : 'Unable to submit employee registrations.'); 
-    } finally { 
-      setUploading(false); 
-    } 
+    } catch (caught) {
+      setError(
+        caught instanceof Error ? caught.message : 'Unable to submit employee registrations.',
+      );
+    } finally {
+      setUploading(false);
+    }
   }
 
   return (
     <div className="space-y-6">
-      {message && <div className="rounded-xl border border-emerald-200 bg-emerald-50/50 p-4 text-[13px] font-bold text-emerald-800">{message}</div>}
-      {error && <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-[13px] font-bold text-red-900">{error}</div>}
-      
+      {message && (
+        <div className="rounded-xl border border-emerald-200 bg-emerald-50/50 p-4 text-[13px] font-bold text-emerald-800">
+          {message}
+        </div>
+      )}
+      {error && (
+        <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-[13px] font-bold text-red-900">
+          {error}
+        </div>
+      )}
+
       {/* Top Panel */}
       <div className="bg-[#ffffff] border border-slate-100 rounded-xl p-8 shadow-sm">
         <div className="flex flex-col sm:flex-row sm:items-start justify-between pb-6 border-b border-slate-100 space-y-4 sm:space-y-0">
@@ -58,9 +76,12 @@ export function EmployeeRegistrationTab() {
               <Users className="w-6 h-6 text-[#ef8354]" />
             </div>
             <div>
-              <h2 className="font-extrabold text-[#2d3142] text-xl font-outfit tracking-tight">Employee registration</h2>
+              <h2 className="font-extrabold text-[#2d3142] text-xl font-outfit tracking-tight">
+                Employee registration
+              </h2>
               <p className="text-[13px] text-[#4f5d75] mt-1 max-w-xl">
-                Submit the employee template for Upay Admin approval before payroll validation uses the registered number.
+                Submit the employee template for Upay Admin approval before payroll validation uses
+                the registered number.
               </p>
             </div>
           </div>
@@ -78,24 +99,33 @@ export function EmployeeRegistrationTab() {
               <FileSpreadsheet className="w-5 h-5 text-[#4f5d75]" />
             </div>
             <div>
-              <h3 className="font-bold text-[#2d3142] text-[15px] font-outfit">Upload employee registration template</h3>
-              <p className="text-[13px] text-[#4f5d75] mt-0.5">Required: email, full_name, wallet_details (11-digit Upay number). Choosing a file submits it to Upay Admin.</p>
+              <h3 className="font-bold text-[#2d3142] text-[15px] font-outfit">
+                Upload employee registration template
+              </h3>
+              <p className="text-[13px] text-[#4f5d75] mt-0.5">
+                Required: email, full_name, wallet_details (11-digit Upay number). Choosing a file
+                submits it to Upay Admin.
+              </p>
             </div>
           </div>
-          
+
           <div className="flex items-center space-x-3 shrink-0">
-            <a href="/employee_registration_template.csv" download className="bg-[#ffffff] hover:bg-slate-50 text-[#4f5d75] border border-slate-200 px-5 py-2.5 rounded-xl text-[13px] font-bold flex items-center space-x-2 transition-all shadow-sm">
+            <a
+              href="/employee_registration_template.csv"
+              download
+              className="bg-[#ffffff] hover:bg-slate-50 text-[#4f5d75] border border-slate-200 px-5 py-2.5 rounded-xl text-[13px] font-bold flex items-center space-x-2 transition-all shadow-sm"
+            >
               <Download className="w-4 h-4" />
               <span>Download template</span>
             </a>
-            <input 
-              ref={inputRef} 
-              type="file" 
-              accept=".xlsx,.xls,.csv" 
-              className="hidden" 
-              onChange={(event) => event.target.files?.[0] && upload(event.target.files[0])} 
+            <input
+              ref={inputRef}
+              type="file"
+              accept=".xlsx,.xls,.csv"
+              className="hidden"
+              onChange={(event) => event.target.files?.[0] && upload(event.target.files[0])}
             />
-            <button 
+            <button
               type="button"
               disabled={uploading}
               onClick={() => inputRef.current?.click()}
@@ -106,14 +136,28 @@ export function EmployeeRegistrationTab() {
             </button>
           </div>
         </div>
-        
-        <p className="text-[12px] text-[#bfc0c0] mt-3 ml-2">Supports .xlsx, .xls, .csv files (Up to 16MB)</p>
+
+        <p className="text-[12px] text-[#bfc0c0] mt-3 ml-2">
+          Supports .xlsx, .xls, .csv files (Up to 16MB)
+        </p>
       </div>
 
       {registeredEmployees.length > 0 && (
         <div className="bg-[#ffffff] border border-slate-100 rounded-xl p-8 shadow-sm">
-          <div className="flex items-center justify-between mb-6"><h3 className="font-extrabold text-[#2d3142] text-lg font-outfit tracking-tight">Registered Employees ({registeredEmployees.length})</h3><button type="button" onClick={() => void loadRegisteredEmployees()} className="inline-flex items-center gap-2 text-sm font-bold text-[#4f5d75]"><RefreshCw className="h-4 w-4" />Refresh</button></div>
-          
+          <div className="flex items-center justify-between mb-6">
+            <h3 className="font-extrabold text-[#2d3142] text-lg font-outfit tracking-tight">
+              Registered Employees ({registeredEmployees.length})
+            </h3>
+            <button
+              type="button"
+              onClick={() => void loadRegisteredEmployees()}
+              className="inline-flex items-center gap-2 text-sm font-bold text-[#4f5d75]"
+            >
+              <RefreshCw className="h-4 w-4" />
+              Refresh
+            </button>
+          </div>
+
           <div className="overflow-x-auto">
             <table className="w-full text-left text-[13px]">
               <thead>
@@ -130,10 +174,18 @@ export function EmployeeRegistrationTab() {
                 {registeredEmployees.map((emp, idx) => (
                   <tr key={emp.id} className="hover:bg-slate-50/50 transition-colors group">
                     <td className="py-4 px-2 font-mono text-[#bfc0c0]">{idx + 1}</td>
-                    <td className="py-4 px-2 font-mono font-bold text-[#4f5d75]">{emp.employee_code || '-'}</td>
-                    <td className="py-4 px-2 font-bold text-[#2d3142] font-outfit">{emp.employee_name}</td>
-                    <td className="py-4 px-2 font-mono font-medium text-[#2d3142]">{emp.phone_number}</td>
-                    <td className="py-4 px-2 text-[#4f5d75] font-medium">{emp.department || '-'}</td>
+                    <td className="py-4 px-2 font-mono font-bold text-[#4f5d75]">
+                      {emp.employee_code || '-'}
+                    </td>
+                    <td className="py-4 px-2 font-bold text-[#2d3142] font-outfit">
+                      {emp.employee_name}
+                    </td>
+                    <td className="py-4 px-2 font-mono font-medium text-[#2d3142]">
+                      {emp.phone_number}
+                    </td>
+                    <td className="py-4 px-2 text-[#4f5d75] font-medium">
+                      {emp.department || '-'}
+                    </td>
                     <td className="py-4 px-2">
                       {emp.status === 'ACTIVE' ? (
                         <span className="inline-flex items-center space-x-1.5 bg-emerald-50/50 text-emerald-700 px-3 py-1 rounded-full text-[11px] font-bold border border-emerald-200/60">

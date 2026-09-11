@@ -5,15 +5,15 @@ import { User } from '@/types';
 import { FluentProvider, webLightTheme } from '@fluentui/react-components';
 import Link from 'next/link';
 import * as api from '@/lib/api';
-import { 
-  LayoutGrid, 
-  Building2, 
-  Clock, 
+import {
+  LayoutGrid,
+  Building2,
+  Clock,
   UserPlus,
-  Landmark, 
+  Landmark,
   LogOut,
   ChevronRight,
-  ChevronLeft
+  ChevronLeft,
 } from 'lucide-react';
 
 interface AuthContextType {
@@ -63,8 +63,13 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
 
   if (!sessionLoaded || !token) return null;
 
-  const initials = admin?.full_name 
-    ? admin.full_name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase() 
+  const initials = admin?.full_name
+    ? admin.full_name
+        .split(' ')
+        .map((n) => n[0])
+        .join('')
+        .slice(0, 2)
+        .toUpperCase()
     : 'CA';
 
   const pageMeta: Record<string, { title: string; description: string }> = {
@@ -115,34 +120,39 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
                 {collapsed ? <ChevronRight size={18} /> : <ChevronLeft size={18} />}
               </button>
             </div>
-            
+
             <nav className="sidebar-nav">
-              <Link 
-                href="/dashboard" 
+              <Link
+                href="/dashboard"
                 className={`nav-item ${pathname === '/dashboard' ? 'active' : ''}`}
                 title="Dashboard"
               >
                 <LayoutGrid size={19} />
                 {!collapsed && <span>Dashboard</span>}
               </Link>
-              <Link 
-                href="/companies" 
+              <Link
+                href="/companies"
                 className={`nav-item ${pathname === '/companies' ? 'active' : ''}`}
                 title="Companies"
               >
                 <Building2 size={19} />
                 {!collapsed && <span>Companies</span>}
               </Link>
-              <Link 
-                href="/activity" 
+              <Link
+                href="/activity"
                 className={`nav-item ${pathname === '/activity' ? 'active' : ''}`}
                 title="Activity"
               >
                 <Clock size={19} />
                 {!collapsed && <span>Activity</span>}
               </Link>
-              <Link href="/registrations" className={`nav-item ${pathname === '/registrations' ? 'active' : ''}`} title="Employee registrations">
-                <UserPlus size={19} />{!collapsed && <span>Registrations</span>}
+              <Link
+                href="/registrations"
+                className={`nav-item ${pathname === '/registrations' ? 'active' : ''}`}
+                title="Employee registrations"
+              >
+                <UserPlus size={19} />
+                {!collapsed && <span>Registrations</span>}
               </Link>
             </nav>
 
@@ -158,19 +168,17 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
               </div>
 
               {/* Explicit sign-out action */}
-              <button 
-                className="sidebar-signout-btn" 
-                onClick={signOut}
-                title="Sign out"
-              >
+              <button className="sidebar-signout-btn" onClick={signOut} title="Sign out">
                 <LogOut size={17} aria-hidden="true" />
                 {!collapsed && <span>Sign out</span>}
               </button>
             </div>
           </aside>
-          
+
           {/* Main Workspace Area */}
-          <main className={`admin-workspace ${pathname === '/activity' ? 'activity-workspace' : ''}`}>
+          <main
+            className={`admin-workspace ${pathname === '/activity' ? 'activity-workspace' : ''}`}
+          >
             {/* Top Bar Header */}
             <header className="workspace-header-bar">
               <div className="header-title-container">
@@ -181,9 +189,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
             </header>
 
             {/* Page Content */}
-            <div className="page-content-wrapper">
-              {children}
-            </div>
+            <div className="page-content-wrapper">{children}</div>
           </main>
         </div>
       </AuthContext.Provider>

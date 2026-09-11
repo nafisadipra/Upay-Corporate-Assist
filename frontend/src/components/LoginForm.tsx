@@ -18,9 +18,11 @@ export const LoginForm: React.FC = () => {
     if (user?.role === 'CHECKER') router.replace('/checker');
   }, [router, user]);
 
-  const visibleError = error || (user?.role === 'ADMIN'
-    ? 'Administrator accounts must use the upay Admin portal on port 3001.'
-    : null);
+  const visibleError =
+    error ||
+    (user?.role === 'ADMIN'
+      ? 'Administrator accounts must use the upay Admin portal on port 3001.'
+      : null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -38,7 +40,9 @@ export const LoginForm: React.FC = () => {
   if (isLoading) {
     return (
       <div className="min-h-[100dvh] bg-[#f7f9f6] flex items-center justify-center">
-        <div className="text-emerald-700 font-bold text-xs font-outfit">Checking your session...</div>
+        <div className="text-emerald-700 font-bold text-xs font-outfit">
+          Checking your session...
+        </div>
       </div>
     );
   }
@@ -51,9 +55,15 @@ export const LoginForm: React.FC = () => {
             <div className="grid h-11 w-11 place-items-center rounded-xl bg-yellow-300 text-emerald-950">
               <Building2 className="h-5 w-5" />
             </div>
-            <p className="mt-8 text-xs font-bold uppercase tracking-[.18em] text-emerald-200">upay Corporate Assist</p>
-            <h1 className="mt-3 font-outfit text-4xl font-extrabold tracking-tight">Payroll controls, clearly managed.</h1>
-            <p className="mt-4 max-w-sm text-sm leading-relaxed text-emerald-100">Securely validate, review, and authorize your corporate payout batches.</p>
+            <p className="mt-8 text-xs font-bold uppercase tracking-[.18em] text-emerald-200">
+              upay Corporate Assist
+            </p>
+            <h1 className="mt-3 font-outfit text-4xl font-extrabold tracking-tight">
+              Payroll controls, clearly managed.
+            </h1>
+            <p className="mt-4 max-w-sm text-sm leading-relaxed text-emerald-100">
+              Securely validate, review, and authorize your corporate payout batches.
+            </p>
           </div>
           <div className="flex items-center gap-2 text-xs font-semibold text-emerald-100">
             <ShieldCheck className="h-4 w-4 text-yellow-300" />
@@ -66,12 +76,18 @@ export const LoginForm: React.FC = () => {
             <div className="w-8 h-8 bg-emerald-800 text-yellow-300 rounded-lg flex items-center justify-center font-bold">
               <Building2 className="w-4 h-4" />
             </div>
-            <span className="font-outfit font-extrabold text-slate-900 tracking-tight">upay Corporate Assist</span>
+            <span className="font-outfit font-extrabold text-slate-900 tracking-tight">
+              upay Corporate Assist
+            </span>
           </div>
 
           <div className="mb-7">
-            <h2 className="text-2xl font-bold tracking-tight text-slate-900 font-outfit">Sign in to your corporate workspace</h2>
-            <p className="mt-1 text-xs text-slate-500">Enter your credentials to access your organization dashboard.</p>
+            <h2 className="text-2xl font-bold tracking-tight text-slate-900 font-outfit">
+              Sign in to your corporate workspace
+            </h2>
+            <p className="mt-1 text-xs text-slate-500">
+              Enter your credentials to access your organization dashboard.
+            </p>
           </div>
 
           {visibleError && (
@@ -82,7 +98,9 @@ export const LoginForm: React.FC = () => {
 
           <form onSubmit={handleSubmit} className="space-y-4 text-xs">
             <div>
-              <label className="block text-slate-700 font-bold mb-1.5 font-outfit">Corporate Email</label>
+              <label className="block text-slate-700 font-bold mb-1.5 font-outfit">
+                Corporate Email
+              </label>
               <div className="relative">
                 <Mail className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" />
                 <input
@@ -120,7 +138,6 @@ export const LoginForm: React.FC = () => {
               <ArrowRight className="w-4 h-4" />
             </button>
           </form>
-
         </section>
       </div>
     </div>

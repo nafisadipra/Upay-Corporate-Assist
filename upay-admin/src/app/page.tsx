@@ -49,7 +49,7 @@ export default function SignIn() {
               <p className="signin-subtitle">Portfolio funding and corporate payout oversight.</p>
             </div>
           </div>
-          
+
           <form className="signin-form-element" onSubmit={submit} noValidate>
             <div className="form-field-group">
               <label htmlFor="emailInput" className="form-label">
@@ -57,14 +57,14 @@ export default function SignIn() {
               </label>
               <div className="input-with-icon-wrap">
                 <Mail size={18} className="input-icon" />
-                <input 
+                <input
                   id="emailInput"
-                  type="email" 
+                  type="email"
                   className="custom-text-input"
                   placeholder="admin@upay.com.bd"
-                  value={email} 
-                  onChange={(e) => setEmail(e.target.value)} 
-                  required 
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
                 />
               </div>
             </div>
@@ -75,14 +75,14 @@ export default function SignIn() {
               </label>
               <div className="input-with-icon-wrap">
                 <Lock size={18} className="input-icon" />
-                <input 
+                <input
                   id="passwordInput"
-                  type="password" 
+                  type="password"
                   className="custom-text-input"
                   placeholder="Enter your password"
-                  value={password} 
-                  onChange={(e) => setPassword(e.target.value)} 
-                  required 
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
                 />
               </div>
             </div>
@@ -93,23 +93,19 @@ export default function SignIn() {
               </div>
             )}
 
-            <button 
-              type="submit" 
-              disabled={isSubmitting} 
-              className="signin-submit-btn"
-            >
+            <button type="submit" disabled={isSubmitting} className="signin-submit-btn">
               <span>{isSubmitting ? 'Signing in...' : 'Sign in'}</span>
               <ArrowRight size={18} />
             </button>
           </form>
         </div>
       </section>
-      
+
       {/* Right Hero Section */}
       <aside className="signin-hero-aside" aria-hidden="true">
         <div className="hero-decor-circle circle-1" />
         <div className="hero-decor-circle circle-2" />
-        
+
         <div className="hero-aside-content">
           <span className="hero-aside-tag">CORPORATE LIQUIDITY</span>
           <strong className="hero-aside-heading">

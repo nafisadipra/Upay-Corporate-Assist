@@ -1,10 +1,11 @@
-import type { Metadata } from "next";
+import type { Metadata } from 'next';
 import { AuthProvider } from '@/context/AuthContext';
-import "./globals.css";
+import './globals.css';
 
 export const metadata: Metadata = {
-  title: "upay Corporate Assist - B2B Bulk Disbursement & AI Risk Auditor",
-  description: "Next-gen B2B corporate portal featuring automated account validation, AI Risk Shield anomaly detection, Maker-Checker authorization, and predictive liquidity forecasting.",
+  title: 'upay Corporate Assist - B2B Bulk Disbursement & AI Risk Auditor',
+  description:
+    'Next-gen B2B corporate portal featuring automated account validation, AI Risk Shield anomaly detection, Maker-Checker authorization, and predictive liquidity forecasting.',
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

@@ -6,7 +6,9 @@
     "dev": "next dev --port 3001",
     "build": "next build",
     "start": "next start --port 3001",
-    "lint": "eslint"
+    "lint": "eslint",
+    "format": "prettier --write src eslint.config.mjs next.config.ts postcss.config.mjs package.json tsconfig.json",
+    "format:check": "prettier --check src eslint.config.mjs next.config.ts postcss.config.mjs package.json tsconfig.json"
   },
   "dependencies": {
     "@fluentui/react-components": "^9.74.6",
@@ -22,6 +24,7 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.3.4",
+    "prettier": "^3.9.6",
     "tailwindcss": "^4",
     "typescript": "^5"
   }

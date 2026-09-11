@@ -2,7 +2,20 @@
 
 import React, { useState } from 'react';
 import { Company, CentralWallet, Batch } from '@/types';
-import { Building2, Wallet, ArrowUpRight, ArrowRightLeft, ShieldCheck, Clock, RefreshCw, CheckCircle2, AlertTriangle, Layers, Plus, ChevronDown } from 'lucide-react';
+import {
+  Building2,
+  Wallet,
+  ArrowUpRight,
+  ArrowRightLeft,
+  ShieldCheck,
+  Clock,
+  RefreshCw,
+  CheckCircle2,
+  AlertTriangle,
+  Layers,
+  Plus,
+  ChevronDown,
+} from 'lucide-react';
 
 interface OverviewTabProps {
   company: Company | null;
@@ -11,7 +24,11 @@ interface OverviewTabProps {
   onUploadClick: () => void;
   onRefreshClick: () => void;
   onCreateWallet: (walletName: string, walletType: string) => Promise<void>;
-  onTransferFunds: (sourceWalletId: number, destinationWalletId: number, amount: number) => Promise<void>;
+  onTransferFunds: (
+    sourceWalletId: number,
+    destinationWalletId: number,
+    amount: number,
+  ) => Promise<void>;
 }
 
 export const OverviewTab: React.FC<OverviewTabProps> = ({
@@ -33,9 +50,14 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
 
   const normalizedWalletType = (wallet: CentralWallet) => wallet.wallet_type.trim().toUpperCase();
   const isActiveWallet = (wallet: CentralWallet) => wallet.status.trim().toUpperCase() === 'ACTIVE';
-  const mainWallet = wallets.find((wallet) => normalizedWalletType(wallet) === 'MAIN' && isActiveWallet(wallet));
-  const subWallets = wallets.filter((wallet) => normalizedWalletType(wallet) !== 'MAIN' && isActiveWallet(wallet));
-  const selectedDestinationWallet = subWallets.find((wallet) => wallet.id === Number(destinationWalletId)) ?? subWallets[0];
+  const mainWallet = wallets.find(
+    (wallet) => normalizedWalletType(wallet) === 'MAIN' && isActiveWallet(wallet),
+  );
+  const subWallets = wallets.filter(
+    (wallet) => normalizedWalletType(wallet) !== 'MAIN' && isActiveWallet(wallet),
+  );
+  const selectedDestinationWallet =
+    subWallets.find((wallet) => wallet.id === Number(destinationWalletId)) ?? subWallets[0];
 
   const createWallet = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -76,13 +98,10 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
 
   return (
     <div className="flex flex-col gap-6">
-      
       {/* Asymmetric Top Grid: Company Profile & Quick Actions */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        
         {/* Company Profile Card (Spans 2 Cols) */}
         <div className="lg:col-span-2 card-flat p-6 flex flex-col justify-between relative overflow-hidden">
-          
           <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-5 border-b border-slate-100 space-y-4 sm:space-y-0">
             <div className="flex items-center space-x-4">
               <div className="w-14 h-14 bg-[#2d3142] text-white rounded-2xl flex items-center justify-center font-bold text-xl shadow-md border border-slate-200">
@@ -115,22 +134,31 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
 
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 pt-5 text-xs">
             <div>
-              <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400">Account Status</span>
-              <div className="font-bold text-slate-900 mt-1 font-space">{company?.status || 'Unavailable'}</div>
+              <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400">
+                Account Status
+              </span>
+              <div className="font-bold text-slate-900 mt-1 font-space">
+                {company?.status || 'Unavailable'}
+              </div>
             </div>
             <div>
-              <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400">Total Central Wallets</span>
-              <div className="font-bold text-slate-900 mt-1 font-mono">{wallets.length} Active Wallets</div>
+              <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400">
+                Total Central Wallets
+              </span>
+              <div className="font-bold text-slate-900 mt-1 font-mono">
+                {wallets.length} Active Wallets
+              </div>
             </div>
             <div className="col-span-2 sm:col-span-1">
-              <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400">Compliance Status</span>
+              <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400">
+                Compliance Status
+              </span>
               <div className="font-bold text-[#ef8354] mt-1 flex items-center space-x-1">
                 <ShieldCheck className="w-3.5 h-3.5 text-[#ef8354]" />
                 <span>Verified Active</span>
               </div>
             </div>
           </div>
-
         </div>
 
         {/* Quick Disbursement Action Card (1 Col) */}
@@ -141,7 +169,8 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
               <span>Bulk Disbursement Engine</span>
             </div>
             <p className="text-xs text-slate-500 font-medium leading-relaxed max-w-[90%]">
-              Upload employee spreadsheets for instant core account verification & AI risk shield audit.
+              Upload employee spreadsheets for instant core account verification & AI risk shield
+              audit.
             </p>
           </div>
 
@@ -153,20 +182,36 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
             <ArrowUpRight className="w-4 h-4 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
           </button>
         </div>
-
       </div>
 
       <div className="order-2 card-flat p-6">
         <div className="pb-4 mb-4 border-b border-slate-100">
-          <h3 className="font-extrabold text-slate-900 text-base font-outfit">HR Wallet Management</h3>
-          <p className="text-xs text-slate-500 mt-1">Create sub-wallets and allocate existing funds from the Main central wallet. Every transfer is audited.</p>
+          <h3 className="font-extrabold text-slate-900 text-base font-outfit">
+            HR Wallet Management
+          </h3>
+          <p className="text-xs text-slate-500 mt-1">
+            Create sub-wallets and allocate existing funds from the Main central wallet. Every
+            transfer is audited.
+          </p>
         </div>
 
-        {walletMessage && <p className="mb-4 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs font-semibold text-emerald-800">{walletMessage}</p>}
-        {walletError && <p className="mb-4 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs font-semibold text-red-800">{walletError}</p>}
+        {walletMessage && (
+          <p className="mb-4 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs font-semibold text-emerald-800">
+            {walletMessage}
+          </p>
+        )}
+        {walletError && (
+          <p className="mb-4 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs font-semibold text-red-800">
+            {walletError}
+          </p>
+        )}
 
         <div className="grid gap-4 lg:grid-cols-2">
-          <form noValidate onSubmit={createWallet} className="flex flex-col gap-3 rounded-xl border border-slate-200 bg-slate-50 p-4">
+          <form
+            noValidate
+            onSubmit={createWallet}
+            className="flex flex-col gap-3 rounded-xl border border-slate-200 bg-slate-50 p-4"
+          >
             <div className="flex items-center gap-2 text-slate-800">
               <Plus className="h-4 w-4 text-[#ef8354]" />
               <p className="text-xs font-bold">Create a sub-wallet</p>
@@ -178,26 +223,42 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
               placeholder="For example: Festival Bonus"
               className="rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm focus:border-emerald-600 focus:outline-none"
             />
-            <select value={walletType} onChange={(event) => setWalletType(event.target.value)} className="rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm focus:border-emerald-600 focus:outline-none">
+            <select
+              value={walletType}
+              onChange={(event) => setWalletType(event.target.value)}
+              className="rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm focus:border-emerald-600 focus:outline-none"
+            >
               <option value="PAYROLL">Payroll</option>
               <option value="OPERATIONAL">Operational</option>
               <option value="FESTIVAL_BONUS">Festival bonus</option>
               <option value="VENDOR">Vendor</option>
             </select>
-            <p className="text-[11px] text-slate-500">New wallets start at BDT 0.00 so company funds remain fully accounted for.</p>
-            <button disabled={walletAction !== null} className="mt-auto rounded-lg bg-[#2d3142] px-3 py-2.5 text-xs font-bold text-white disabled:cursor-wait disabled:opacity-60">
+            <p className="text-[11px] text-slate-500">
+              New wallets start at BDT 0.00 so company funds remain fully accounted for.
+            </p>
+            <button
+              disabled={walletAction !== null}
+              className="mt-auto rounded-lg bg-[#2d3142] px-3 py-2.5 text-xs font-bold text-white disabled:cursor-wait disabled:opacity-60"
+            >
               {walletAction === 'create' ? 'Creating...' : 'Create sub-wallet'}
             </button>
           </form>
 
-          <form noValidate onSubmit={transferFunds} className="flex flex-col gap-3 rounded-xl border border-slate-200 bg-slate-50 p-4">
+          <form
+            noValidate
+            onSubmit={transferFunds}
+            className="flex flex-col gap-3 rounded-xl border border-slate-200 bg-slate-50 p-4"
+          >
             <div className="flex items-center gap-2 text-slate-800">
               <ArrowRightLeft className="h-4 w-4 text-[#ef8354]" />
               <p className="text-xs font-bold">Allocate from Main wallet</p>
             </div>
             <div className="rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-xs">
               <span className="text-slate-500">Available in Main</span>
-              <strong className="float-right font-mono text-slate-900">BDT {(mainWallet?.balance ?? 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}</strong>
+              <strong className="float-right font-mono text-slate-900">
+                BDT{' '}
+                {(mainWallet?.balance ?? 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}
+              </strong>
             </div>
             <label htmlFor="destination-wallet" className="text-[11px] font-bold text-slate-600">
               Select destination wallet
@@ -212,16 +273,24 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
               >
                 {subWallets.length === 0 ? (
                   <option value="">No sub-wallet available</option>
-                ) : subWallets.map((wallet) => (
-                  <option key={wallet.id} value={wallet.id}>
-                    {wallet.wallet_name} · {wallet.wallet_type} · BDT {wallet.balance.toLocaleString('en-US', { minimumFractionDigits: 2 })}
-                  </option>
-                ))}
+                ) : (
+                  subWallets.map((wallet) => (
+                    <option key={wallet.id} value={wallet.id}>
+                      {wallet.wallet_name} · {wallet.wallet_type} · BDT{' '}
+                      {wallet.balance.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                    </option>
+                  ))
+                )}
               </select>
-              <ChevronDown aria-hidden="true" className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
+              <ChevronDown
+                aria-hidden="true"
+                className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500"
+              />
             </div>
             {subWallets.length === 0 && (
-              <p className="text-[11px] text-slate-500">Create a Payroll, Operational, Bonus, or Vendor wallet first.</p>
+              <p className="text-[11px] text-slate-500">
+                Create a Payroll, Operational, Bonus, or Vendor wallet first.
+              </p>
             )}
             <input
               required
@@ -234,8 +303,16 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
               placeholder="Amount to allocate"
               className="rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm focus:border-emerald-600 focus:outline-none"
             />
-            {!mainWallet && <p className="text-[11px] font-semibold text-red-700">No MAIN wallet is available. Ask upay Admin to fund the company; the top-up process provisions the MAIN wallet automatically.</p>}
-            <button disabled={walletAction !== null || !mainWallet || !selectedDestinationWallet} className="mt-auto rounded-lg bg-[#ef8354] px-3 py-2.5 text-xs font-bold text-white disabled:cursor-not-allowed disabled:opacity-50">
+            {!mainWallet && (
+              <p className="text-[11px] font-semibold text-red-700">
+                No MAIN wallet is available. Ask upay Admin to fund the company; the top-up process
+                provisions the MAIN wallet automatically.
+              </p>
+            )}
+            <button
+              disabled={walletAction !== null || !mainWallet || !selectedDestinationWallet}
+              className="mt-auto rounded-lg bg-[#ef8354] px-3 py-2.5 text-xs font-bold text-white disabled:cursor-not-allowed disabled:opacity-50"
+            >
               {walletAction === 'transfer' ? 'Transferring...' : 'Transfer funds'}
             </button>
           </form>
@@ -246,25 +323,37 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
       <div className="order-3 card-flat p-6">
         <div className="flex items-center justify-between pb-4 mb-4 border-b border-slate-100">
           <div>
-            <h3 className="font-extrabold text-slate-900 text-base font-outfit">Corporate Central Wallets</h3>
-            
+            <h3 className="font-extrabold text-slate-900 text-base font-outfit">
+              Corporate Central Wallets
+            </h3>
           </div>
-          <span className="text-xs font-mono font-bold text-slate-400">{wallets.length} Accounts</span>
+          <span className="text-xs font-mono font-bold text-slate-400">
+            {wallets.length} Accounts
+          </span>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {wallets.length === 0 ? (
-            <div className="col-span-2 py-6 text-center text-slate-400 text-xs">No central wallets found.</div>
+            <div className="col-span-2 py-6 text-center text-slate-400 text-xs">
+              No central wallets found.
+            </div>
           ) : (
             wallets.map((w) => (
-              <div key={w.id} className="p-4 bg-slate-50/80 rounded-2xl border border-slate-200/80 flex items-center justify-between">
+              <div
+                key={w.id}
+                className="p-4 bg-slate-50/80 rounded-2xl border border-slate-200/80 flex items-center justify-between"
+              >
                 <div className="flex items-center space-x-3.5">
                   <div className="w-10 h-10 bg-[#ef8354] text-white rounded-xl flex items-center justify-center font-bold">
                     <Wallet className="w-5 h-5" />
                   </div>
                   <div>
-                    <div className="text-xs font-bold text-[#2d3142] font-outfit">{w.wallet_name}</div>
-                    <div className="text-[11px] font-mono text-slate-500">{w.account_number} ({w.wallet_type})</div>
+                    <div className="text-xs font-bold text-[#2d3142] font-outfit">
+                      {w.wallet_name}
+                    </div>
+                    <div className="text-[11px] font-mono text-slate-500">
+                      {w.account_number} ({w.wallet_type})
+                    </div>
                   </div>
                 </div>
                 <div className="text-right">
@@ -285,10 +374,16 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
       <div className="order-4 card-flat p-6">
         <div className="flex items-center justify-between pb-4 mb-4 border-b border-slate-100">
           <div>
-            <h3 className="font-extrabold text-slate-900 text-base font-outfit">Recent Disbursement Batches</h3>
-            <p className="text-xs text-slate-500 mt-0.5">Audit log of submitted HR payroll files and approval state</p>
+            <h3 className="font-extrabold text-slate-900 text-base font-outfit">
+              Recent Disbursement Batches
+            </h3>
+            <p className="text-xs text-slate-500 mt-0.5">
+              Audit log of submitted HR payroll files and approval state
+            </p>
           </div>
-          <span className="text-xs font-mono font-bold text-slate-400">{batches.length} Batches Total</span>
+          <span className="text-xs font-mono font-bold text-slate-400">
+            {batches.length} Batches Total
+          </span>
         </div>
 
         <div className="overflow-x-auto">
@@ -306,15 +401,21 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
             <tbody className="divide-y divide-slate-100">
               {batches.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="py-8 text-center text-slate-400">No disbursement history recorded.</td>
+                  <td colSpan={6} className="py-8 text-center text-slate-400">
+                    No disbursement history recorded.
+                  </td>
                 </tr>
               ) : (
                 batches.map((b) => (
                   <tr key={b.id} className="hover:bg-slate-50/80 transition-colors">
                     <td className="py-3.5 font-mono text-slate-900 font-bold">{b.file_name}</td>
-                    <td className="py-3.5 font-semibold text-slate-800 font-outfit">{b.maker_name || `Maker #${b.maker_id}`}</td>
+                    <td className="py-3.5 font-semibold text-slate-800 font-outfit">
+                      {b.maker_name || `Maker #${b.maker_id}`}
+                    </td>
                     <td className="py-3.5 font-mono">{b.total_records} Employees</td>
-                    <td className="py-3.5 font-bold text-slate-900 font-mono">BDT {b.total_amount.toLocaleString()}</td>
+                    <td className="py-3.5 font-bold text-slate-900 font-mono">
+                      BDT {b.total_amount.toLocaleString()}
+                    </td>
                     <td className="py-3.5">
                       {b.status === 'EXECUTED' || b.status === 'APPROVED' ? (
                         <span className="inline-flex items-center space-x-1 bg-slate-100 text-slate-700 px-2.5 py-1 rounded-xl font-bold text-[11px]">
@@ -334,7 +435,11 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
                       )}
                     </td>
                     <td className="py-3.5 text-right text-slate-500 font-mono">
-                      {new Date(b.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                      {new Date(b.created_at).toLocaleDateString('en-US', {
+                        month: 'short',
+                        day: 'numeric',
+                        year: 'numeric',
+                      })}
                     </td>
                   </tr>
                 ))
@@ -343,7 +448,6 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
           </table>
         </div>
       </div>
-
     </div>
   );
 };

@@ -3,7 +3,16 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
-import { Company, CentralWallet, Batch, BatchItem, RiskAlert, ForecastResponse, ForecastSettings, AuditLog } from '@/types';
+import {
+  Company,
+  CentralWallet,
+  Batch,
+  BatchItem,
+  RiskAlert,
+  ForecastResponse,
+  ForecastSettings,
+  AuditLog,
+} from '@/types';
 import * as api from '@/lib/api';
 import { Header } from '@/components/Header';
 import { OverviewTab } from '@/components/OverviewTab';
@@ -17,7 +26,8 @@ import { PayrollArchiveTab } from '@/components/PayrollArchiveTab';
 import { ReviewTab } from '@/components/ReviewTab';
 import { Vault, Send, AlertTriangle, Clock } from 'lucide-react';
 
-export type WorkspaceTab = 'overview' | 'upload' | 'review' | 'registration' | 'checker' | 'analytics' | 'audit' | 'archive';
+export type WorkspaceTab =
+  'overview' | 'upload' | 'review' | 'registration' | 'checker' | 'analytics' | 'audit' | 'archive';
 
 type WorkspaceProps = {
   initialTab?: WorkspaceTab;
@@ -27,7 +37,7 @@ function DashboardContent({ initialTab = 'overview' }: WorkspaceProps) {
   const { user, isLoading } = useAuth();
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<WorkspaceTab>(initialTab);
-  
+
   // Live State from PostgreSQL via Flask API
   const [company, setCompany] = useState<Company | null>(null);
   const [wallets, setWallets] = useState<CentralWallet[]>([]);
@@ -55,11 +65,13 @@ function DashboardContent({ initialTab = 'overview' }: WorkspaceProps) {
 
       const batchData = await api.fetchBatches(compId);
       setBatches(batchData.batches || []);
-      
+
       const availableBatches: Batch[] = batchData.batches || [];
       const defaultBatch = availableBatches[0] || null;
       const activePeriod = selectedPeriod || defaultBatch?.payroll_period?.slice(0, 7) || '';
-      const activeB = availableBatches.find((batch) => batch.payroll_period?.slice(0, 7) === activePeriod) || null;
+      const activeB =
+        availableBatches.find((batch) => batch.payroll_period?.slice(0, 7) === activePeriod) ||
+        null;
       setCurrentBatch(activeB);
       if (!selectedPeriod && activePeriod) setSelectedPeriod(activePeriod);
 
@@ -83,9 +95,11 @@ function DashboardContent({ initialTab = 'overview' }: WorkspaceProps) {
 
       const forecastData = await api.fetchLiquidityForecast(compId);
       setForecast(forecastData as ForecastResponse);
-
     } catch (err: unknown) {
-      if (err instanceof Error && err.message === 'Your session is no longer valid. Please sign in again.') {
+      if (
+        err instanceof Error &&
+        err.message === 'Your session is no longer valid. Please sign in again.'
+      ) {
         return;
       }
       console.error('API Load Error:', err);
@@ -197,7 +211,8 @@ function DashboardContent({ initialTab = 'overview' }: WorkspaceProps) {
   };
 
   const handleSaveForecastSettings = async (settings: ForecastSettings) => {
-    if (!user?.company_id) throw new Error('A company assignment is required to update forecast settings.');
+    if (!user?.company_id)
+      throw new Error('A company assignment is required to update forecast settings.');
     await api.updateForecastSettings(user.company_id, settings);
     const updatedForecast = await api.fetchLiquidityForecast(user.company_id);
     setForecast(updatedForecast as ForecastResponse);
@@ -205,12 +220,20 @@ function DashboardContent({ initialTab = 'overview' }: WorkspaceProps) {
 
   const handleCreateWallet = async (walletName: string, walletType: string) => {
     if (!user?.company_id) throw new Error('A company assignment is required to create a wallet.');
-    await api.createCompanyWallet(user.company_id, { wallet_name: walletName, wallet_type: walletType });
+    await api.createCompanyWallet(user.company_id, {
+      wallet_name: walletName,
+      wallet_type: walletType,
+    });
     await loadData();
   };
 
-  const handleTransferWalletFunds = async (sourceWalletId: number, destinationWalletId: number, amount: number) => {
-    if (!user?.company_id) throw new Error('A company assignment is required to transfer wallet funds.');
+  const handleTransferWalletFunds = async (
+    sourceWalletId: number,
+    destinationWalletId: number,
+    amount: number,
+  ) => {
+    if (!user?.company_id)
+      throw new Error('A company assignment is required to transfer wallet funds.');
     await api.transferCompanyWalletFunds(user.company_id, {
       source_wallet_id: sourceWalletId,
       destination_wallet_id: destinationWalletId,
@@ -220,25 +243,38 @@ function DashboardContent({ initialTab = 'overview' }: WorkspaceProps) {
   };
 
   const walletBal = company?.central_wallet_balance || 0;
-  const filteredBatches = batches.filter((batch) => batch.payroll_period?.slice(0, 7) === selectedPeriod);
+  const filteredBatches = batches.filter(
+    (batch) => batch.payroll_period?.slice(0, 7) === selectedPeriod,
+  );
   const totalDisbursed = filteredBatches
     .filter((b) => b.status === 'EXECUTED')
     .reduce((acc, b) => acc + b.total_amount, 0);
 
-  const flaggedCount = items.filter((i) => i.is_anomaly || i.account_validation_status !== 'VALID').length;
+  const flaggedCount = items.filter(
+    (i) => i.is_anomaly || i.account_validation_status !== 'VALID',
+  ).length;
   const pendingApprovalAmount = filteredBatches
-    .filter((b) => b.status === 'FLAGGED_RISK' || b.status === 'PENDING_CHECKER_REVIEW' || b.status === 'CHECKER_REVIEWED')
+    .filter(
+      (b) =>
+        b.status === 'FLAGGED_RISK' ||
+        b.status === 'PENDING_CHECKER_REVIEW' ||
+        b.status === 'CHECKER_REVIEWED',
+    )
     .reduce((acc, b) => acc + b.total_amount, 0);
 
   return (
     <div className="app-shell text-slate-900 font-sans antialiased flex flex-col justify-between">
-      
       <div className="lg:pl-[272px]">
         {/* Top Header */}
         <Header
           activeTab={activeTab}
           onTabChange={setActiveTab}
-          riskAlertCount={riskAlerts.filter((alert) => alert.review_status === 'PENDING_REVIEW' && alert.flag_type.startsWith('MANUAL_')).length}
+          riskAlertCount={
+            riskAlerts.filter(
+              (alert) =>
+                alert.review_status === 'PENDING_REVIEW' && alert.flag_type.startsWith('MANUAL_'),
+            ).length
+          }
           financeSignOffReady={currentBatch?.status === 'CHECKER_REVIEWED'}
           batchStatus={currentBatch?.status}
           selectedPeriod={selectedPeriod}
@@ -246,51 +282,57 @@ function DashboardContent({ initialTab = 'overview' }: WorkspaceProps) {
         />
 
         <main className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto space-y-6">
-          
           {/* KPI Cards embedded directly */}
           {activeTab === 'overview' && (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              
               {/* Wallet Balance Card */}
               <div className="card-flat bg-white border border-slate-100 rounded-xl p-5 flex flex-col justify-between">
                 <div className="flex items-center justify-between">
-                  <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-500">Central Wallet Vault</span>
+                  <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-500">
+                    Central Wallet Vault
+                  </span>
                   <div className="w-10 h-10 bg-[#2d3142] rounded-lg flex items-center justify-center text-white">
                     <Vault className="w-5 h-5" />
                   </div>
                 </div>
                 <div className="mt-4">
                   <div className="text-2xl font-extrabold text-[#2d3142] font-outfit tracking-tight">
-                    BDT <span className="font-mono">{walletBal.toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
+                    BDT{' '}
+                    <span className="font-mono">
+                      {walletBal.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                    </span>
                   </div>
-                  <div className="text-xs text-slate-600 font-bold mt-1 flex items-center space-x-1">
-                    
-                  </div>
+                  <div className="text-xs text-slate-600 font-bold mt-1 flex items-center space-x-1"></div>
                 </div>
               </div>
 
               {/* Total Disbursed Card */}
               <div className="card-flat bg-white border border-slate-100 rounded-xl p-5 flex flex-col justify-between">
                 <div className="flex items-center justify-between">
-                  <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-500">Total Disbursed</span>
+                  <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-500">
+                    Total Disbursed
+                  </span>
                   <div className="w-10 h-10 bg-[#2d3142] rounded-lg flex items-center justify-center text-white">
                     <Send className="w-5 h-5" />
                   </div>
                 </div>
                 <div className="mt-4">
                   <div className="text-2xl font-extrabold text-[#2d3142] font-outfit tracking-tight">
-                    BDT <span className="font-mono">{totalDisbursed.toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
+                    BDT{' '}
+                    <span className="font-mono">
+                      {totalDisbursed.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                    </span>
                   </div>
-                  <div className="text-xs text-slate-500 font-medium mt-1">
-                    
-                  </div>
+                  <div className="text-xs text-slate-500 font-medium mt-1"></div>
                 </div>
               </div>
 
               {/* Bento Grid Flags Card (Orange Accent) */}
               <div className="card-flat bg-white border border-slate-100 rounded-xl p-5 flex flex-col justify-between">
                 <div className="flex items-center justify-between">
-                  <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-500">Bento Grid Flags</span>
+                  <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-500">
+                    Bento Grid Flags
+                  </span>
                   <div className="w-10 h-10 bg-[#ef8354] rounded-lg flex items-center justify-center text-white">
                     <AlertTriangle className="w-5 h-5" />
                   </div>
@@ -299,28 +341,29 @@ function DashboardContent({ initialTab = 'overview' }: WorkspaceProps) {
                   <div className="text-2xl font-extrabold text-[#2d3142] font-outfit tracking-tight">
                     {flaggedCount} {flaggedCount === 1 ? 'Item' : 'Items'}
                   </div>
-                  
                 </div>
               </div>
 
               {/* Pending Approvals Card */}
               <div className="card-flat bg-white border border-slate-100 rounded-xl p-5 flex flex-col justify-between">
                 <div className="flex items-center justify-between">
-                  <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-500">Pending Approval</span>
+                  <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-500">
+                    Pending Approval
+                  </span>
                   <div className="w-10 h-10 bg-[#2d3142] rounded-lg flex items-center justify-center text-white">
                     <Clock className="w-5 h-5" />
                   </div>
                 </div>
                 <div className="mt-4">
                   <div className="text-2xl font-extrabold text-[#2d3142] font-outfit tracking-tight">
-                    BDT <span className="font-mono">{pendingApprovalAmount.toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
+                    BDT{' '}
+                    <span className="font-mono">
+                      {pendingApprovalAmount.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                    </span>
                   </div>
-                  <div className="text-xs text-slate-500 font-semibold mt-1">
-                    
-                  </div>
+                  <div className="text-xs text-slate-500 font-semibold mt-1"></div>
                 </div>
               </div>
-
             </div>
           )}
 
@@ -363,15 +406,27 @@ function DashboardContent({ initialTab = 'overview' }: WorkspaceProps) {
           )}
 
           {activeTab === 'analytics' && (
-            <AnalyticsTab forecast={forecast} onRefresh={handleRefreshForecast} refreshing={isForecastRefreshing} onSaveSettings={handleSaveForecastSettings} />
+            <AnalyticsTab
+              forecast={forecast}
+              onRefresh={handleRefreshForecast}
+              refreshing={isForecastRefreshing}
+              onSaveSettings={handleSaveForecastSettings}
+            />
           )}
 
-          {activeTab === 'archive' && <PayrollArchiveTab batches={batches} onDownload={(batch) => api.downloadPayrollArchive(batch.id, `payroll-archive-${batch.payroll_period?.slice(0, 7) || batch.id}.xlsx`)} />}
-
-          {activeTab === 'audit' && (
-            <AuditTab logs={auditLogs} />
+          {activeTab === 'archive' && (
+            <PayrollArchiveTab
+              batches={batches}
+              onDownload={(batch) =>
+                api.downloadPayrollArchive(
+                  batch.id,
+                  `payroll-archive-${batch.payroll_period?.slice(0, 7) || batch.id}.xlsx`,
+                )
+              }
+            />
           )}
 
+          {activeTab === 'audit' && <AuditTab logs={auditLogs} />}
         </main>
       </div>
 
@@ -390,7 +445,6 @@ function DashboardContent({ initialTab = 'overview' }: WorkspaceProps) {
         onCancel={() => setIsDisbursementModalOpen(false)}
         onConfirm={confirmExecuteDisbursal}
       />
-
     </div>
   );
 }

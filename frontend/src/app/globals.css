@@ -1,6 +1,6 @@
-@import "tailwindcss";
+@import 'tailwindcss';
 
- :root {
+:root {
   --background: #f7f9f6;
   --surface: #ffffff;
   --surface-soft: #f1f6f1;
@@ -15,10 +15,12 @@
   --foreground: #173328;
   --font-jakarta: Arial, Helvetica, sans-serif;
   --font-outfit: Arial, Helvetica, sans-serif;
-  --font-mono: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  --font-mono: 'SFMono-Regular', Consolas, 'Liberation Mono', monospace;
 }
 
-* { border-color: var(--line); }
+* {
+  border-color: var(--line);
+}
 
 body {
   background: var(--background);
@@ -28,9 +30,18 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-button, input { font: inherit; }
-button { cursor: pointer; }
-button:focus-visible, input:focus-visible { outline: 3px solid rgb(243 191 50 / .45); outline-offset: 2px; }
+button,
+input {
+  font: inherit;
+}
+button {
+  cursor: pointer;
+}
+button:focus-visible,
+input:focus-visible {
+  outline: 3px solid rgb(243 191 50 / 0.45);
+  outline-offset: 2px;
+}
 
 .font-outfit {
   font-family: var(--font-outfit), var(--font-jakarta), sans-serif;
@@ -48,7 +59,7 @@ button:focus-visible, input:focus-visible { outline: 3px solid rgb(243 191 50 / 
 .app-shell {
   min-height: 100dvh;
   background:
-    radial-gradient(circle at 100% 0%, rgb(243 191 50 / .12), transparent 26rem),
+    radial-gradient(circle at 100% 0%, rgb(243 191 50 / 0.12), transparent 26rem),
     linear-gradient(180deg, #fbfdf9 0%, var(--background) 32rem);
 }
 
@@ -56,14 +67,17 @@ button:focus-visible, input:focus-visible { outline: 3px solid rgb(243 191 50 / 
 .card-flat {
   background: var(--surface);
   border: 1px solid var(--line);
-  border-radius: .75rem;
-  box-shadow: 0 10px 30px -24px rgb(23 51 40 / .28);
-  transition: border-color .2s ease, box-shadow .2s ease, transform .2s ease;
+  border-radius: 0.75rem;
+  box-shadow: 0 10px 30px -24px rgb(23 51 40 / 0.28);
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.2s ease;
 }
 
 .card-flat:hover {
   border-color: #bfd6c2;
-  box-shadow: 0 16px 36px -26px rgb(23 51 40 / .34);
+  box-shadow: 0 16px 36px -26px rgb(23 51 40 / 0.34);
 }
 
 .disbursement-action-card {
@@ -100,10 +114,12 @@ button:focus-visible, input:focus-visible { outline: 3px solid rgb(243 191 50 / 
 }
 
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
+  *,
+  *::before,
+  *::after {
     scroll-behavior: auto !important;
-    transition-duration: .01ms !important;
-    animation-duration: .01ms !important;
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
   }
 }

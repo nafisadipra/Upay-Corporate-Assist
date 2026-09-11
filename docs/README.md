@@ -2,6 +2,8 @@
 
 - `architecture/` contains the entity-relationship diagram and other technical diagrams.
 
+- [Database relationship and cardinality reference](architecture/database_relationships.md)
+
 Implementation documentation lives beside the code it describes:
 
 - [Backend API and setup](../backend/README.md)

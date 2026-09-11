@@ -4,15 +4,15 @@ import { useAuth } from '@/components/AdminLayout';
 import * as api from '@/lib/api';
 import { AuditLog } from '@/types';
 import { Spinner, MessageBar, MessageBarBody } from '@fluentui/react-components';
-import { 
-  Monitor, 
-  Users, 
-  AlertTriangle, 
-  Building2, 
-  Wallet, 
-  Landmark, 
-  CheckCircle2, 
-  Clock 
+import {
+  Monitor,
+  Users,
+  AlertTriangle,
+  Building2,
+  Wallet,
+  Landmark,
+  CheckCircle2,
+  Clock,
 } from 'lucide-react';
 
 function formatActionTitle(action: string): string {
@@ -29,7 +29,8 @@ function getActionIcon(action: string) {
   if (act.includes('COMPANY')) return <Building2 size={22} color="#0047BA" />;
   if (act.includes('WALLET') || act.includes('TOPUP')) return <Wallet size={22} color="#0047BA" />;
   if (act.includes('USER') || act.includes('EMPLOYEE')) return <Users size={22} color="#0047BA" />;
-  if (act.includes('ALERT') || act.includes('RISK')) return <AlertTriangle size={22} color="#D97706" />;
+  if (act.includes('ALERT') || act.includes('RISK'))
+    return <AlertTriangle size={22} color="#D97706" />;
   if (act.includes('BANK')) return <Landmark size={22} color="#0047BA" />;
   return <Monitor size={22} color="#0047BA" />;
 }
@@ -44,7 +45,9 @@ function getActionDescription(log: AuditLog): string {
     if (details.status) return `Updated status: ${details.status}`;
     if (details.bank_name) return `Bank: ${details.bank_name}`;
   }
-  return log.performed_by ? `Action performed by ${log.performed_by}` : 'Operations action executed';
+  return log.performed_by
+    ? `Action performed by ${log.performed_by}`
+    : 'Operations action executed';
 }
 
 function formatLogDate(dateStr?: string): string {
@@ -84,13 +87,16 @@ export default function Activity() {
           setLogs(activityData.audit_logs || []);
         }
       } catch (err) {
-        if (mounted) setMessage(err instanceof Error ? err.message : 'Error loading activity from database');
+        if (mounted)
+          setMessage(err instanceof Error ? err.message : 'Error loading activity from database');
       } finally {
         if (mounted) setLoading(false);
       }
     };
     load();
-    return () => { mounted = false; };
+    return () => {
+      mounted = false;
+    };
   }, [token]);
 
   return (
@@ -102,7 +108,6 @@ export default function Activity() {
           </MessageBar>
         </div>
       )}
-      
 
       {/* 2. Filter Dropdown Pill */}
       <div className="activity-filter-row">
@@ -128,9 +133,7 @@ export default function Activity() {
               logs.map((log) => (
                 <div key={log.id} className="activity-row-item">
                   <div className="activity-item-left">
-                    <div className="activity-item-icon-box">
-                      {getActionIcon(log.action)}
-                    </div>
+                    <div className="activity-item-icon-box">{getActionIcon(log.action)}</div>
                     <div className="activity-item-content">
                       <h4 className="activity-item-title">{formatActionTitle(log.action)}</h4>
                       <div className="activity-item-meta-row">
@@ -156,7 +159,9 @@ export default function Activity() {
                 </div>
                 <h4 className="empty-state-headline">No activity recorded</h4>
                 <p className="empty-state-description">
-                  Administrative actions such as onboarding companies, wallet top-ups, employee roster changes, and user management will automatically appear here once recorded in the database.
+                  Administrative actions such as onboarding companies, wallet top-ups, employee
+                  roster changes, and user management will automatically appear here once recorded
+                  in the database.
                 </p>
               </div>
             )}

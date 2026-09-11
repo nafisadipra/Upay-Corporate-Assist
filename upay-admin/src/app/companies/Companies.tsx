@@ -4,14 +4,7 @@ import { useAuth } from '@/components/AdminLayout';
 import * as api from '@/lib/api';
 import { Company, Overview } from '@/types';
 import { Spinner, MessageBar, MessageBarBody } from '@fluentui/react-components';
-import { 
-  Building2, 
-  Landmark, 
-  Plus, 
-  X, 
-  Wallet,
-  ArrowRight
-} from 'lucide-react';
+import { Building2, Landmark, Plus, X, Wallet, ArrowRight } from 'lucide-react';
 
 const formatMoneyBDT = (amount: number) => {
   return `BDT ${new Intl.NumberFormat('en-BD', { maximumFractionDigits: 0 }).format(amount)}`;
@@ -85,7 +78,7 @@ function OnboardModal({ isOpen, onClose, token, onCreated }: OnboardModalProps) 
           <div className="form-two-col-row">
             <div className="modal-field-item">
               <label className="modal-label">Company name</label>
-              <input 
+              <input
                 type="text"
                 className="modal-input focused-input"
                 placeholder="Enter company name"
@@ -97,7 +90,7 @@ function OnboardModal({ isOpen, onClose, token, onCreated }: OnboardModalProps) 
             </div>
             <div className="modal-field-item">
               <label className="modal-label">Corporate account number</label>
-              <input 
+              <input
                 type="text"
                 className="modal-input"
                 placeholder="Enter corporate account number"
@@ -108,23 +101,22 @@ function OnboardModal({ isOpen, onClose, token, onCreated }: OnboardModalProps) 
             </div>
           </div>
 
-          <div className="wallet-auto-note"><Wallet size={18} /><div><strong>Main wallet created automatically</strong><span>The company can allocate this balance across its own accounts after funding.</span></div></div>
+          <div className="wallet-auto-note">
+            <Wallet size={18} />
+            <div>
+              <strong>Main wallet created automatically</strong>
+              <span>
+                The company can allocate this balance across its own accounts after funding.
+              </span>
+            </div>
+          </div>
 
           {/* Bottom Action Buttons */}
           <div className="modal-bottom-actions">
-            <button 
-              type="button" 
-              className="modal-btn-cancel" 
-              onClick={onClose}
-              disabled={saving}
-            >
+            <button type="button" className="modal-btn-cancel" onClick={onClose} disabled={saving}>
               Cancel
             </button>
-            <button 
-              type="submit" 
-              className="modal-btn-submit"
-              disabled={saving}
-            >
+            <button type="submit" className="modal-btn-submit" disabled={saving}>
               {saving ? 'Creating...' : 'Create company'}
             </button>
           </div>
@@ -159,29 +151,83 @@ function FundWalletModal({ company, token, onClose, onFunded }: FundWalletModalP
     setSaving(true);
     setError('');
     try {
-      await api.topupCompanyWallet(token, companyId, { amount: numericAmount, reference_note: reference || undefined });
+      await api.topupCompanyWallet(token, companyId, {
+        amount: numericAmount,
+        reference_note: reference || undefined,
+      });
       await onFunded();
       onClose();
     } catch (caught) {
-      setError(caught instanceof Error ? caught.message : 'Unable to add funds to the main wallet.');
+      setError(
+        caught instanceof Error ? caught.message : 'Unable to add funds to the main wallet.',
+      );
     } finally {
       setSaving(false);
     }
   }
 
-  return <div className="modal-backdrop-overlay" onClick={() => !saving && onClose()}>
-    <div className="onboard-modal-card" onClick={(event) => event.stopPropagation()}>
-      <button className="modal-close-btn" onClick={onClose} disabled={saving} aria-label="Close"><X size={18} /></button>
-      <div className="modal-header-group"><div className="modal-icon-circle"><Wallet size={24} color="#D97706" /></div><div className="modal-title-wrap"><h3 className="modal-main-title">Fund main wallet</h3><p className="modal-subtitle">Add disbursement funds for {company.company_name}.</p></div></div>
-      <form onSubmit={submit} className="modal-form-body">
-        {error && <div className="modal-error-bar">{error}</div>}
-        <div className="wallet-balance-summary"><span>Current main-wallet balance</span><strong>{formatMoneyBDT(company.wallet_balance)}</strong></div>
-        <div className="modal-field-item full-width"><label className="modal-label" htmlFor="topup-amount">Amount to add (BDT)</label><input id="topup-amount" type="number" min="0.01" step="0.01" required autoFocus className="modal-input" placeholder="Enter funding amount" value={amount} onChange={(event) => setAmount(event.target.value)} /></div>
-        <div className="modal-field-item full-width"><label className="modal-label" htmlFor="topup-reference">Reference note <span className="optional-label">Optional</span></label><input id="topup-reference" className="modal-input" placeholder="Bank transfer or funding reference" value={reference} onChange={(event) => setReference(event.target.value)} /></div>
-        <div className="modal-bottom-actions"><button type="button" className="modal-btn-cancel" onClick={onClose} disabled={saving}>Cancel</button><button type="submit" className="modal-btn-submit" disabled={saving}>{saving ? 'Adding funds…' : 'Add to main wallet'}</button></div>
-      </form>
+  return (
+    <div className="modal-backdrop-overlay" onClick={() => !saving && onClose()}>
+      <div className="onboard-modal-card" onClick={(event) => event.stopPropagation()}>
+        <button className="modal-close-btn" onClick={onClose} disabled={saving} aria-label="Close">
+          <X size={18} />
+        </button>
+        <div className="modal-header-group">
+          <div className="modal-icon-circle">
+            <Wallet size={24} color="#D97706" />
+          </div>
+          <div className="modal-title-wrap">
+            <h3 className="modal-main-title">Fund main wallet</h3>
+            <p className="modal-subtitle">Add disbursement funds for {company.company_name}.</p>
+          </div>
+        </div>
+        <form onSubmit={submit} className="modal-form-body">
+          {error && <div className="modal-error-bar">{error}</div>}
+          <div className="wallet-balance-summary">
+            <span>Current main-wallet balance</span>
+            <strong>{formatMoneyBDT(company.wallet_balance)}</strong>
+          </div>
+          <div className="modal-field-item full-width">
+            <label className="modal-label" htmlFor="topup-amount">
+              Amount to add (BDT)
+            </label>
+            <input
+              id="topup-amount"
+              type="number"
+              min="0.01"
+              step="0.01"
+              required
+              autoFocus
+              className="modal-input"
+              placeholder="Enter funding amount"
+              value={amount}
+              onChange={(event) => setAmount(event.target.value)}
+            />
+          </div>
+          <div className="modal-field-item full-width">
+            <label className="modal-label" htmlFor="topup-reference">
+              Reference note <span className="optional-label">Optional</span>
+            </label>
+            <input
+              id="topup-reference"
+              className="modal-input"
+              placeholder="Bank transfer or funding reference"
+              value={reference}
+              onChange={(event) => setReference(event.target.value)}
+            />
+          </div>
+          <div className="modal-bottom-actions">
+            <button type="button" className="modal-btn-cancel" onClick={onClose} disabled={saving}>
+              Cancel
+            </button>
+            <button type="submit" className="modal-btn-submit" disabled={saving}>
+              {saving ? 'Adding funds…' : 'Add to main wallet'}
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
-  </div>;
+  );
 }
 
 export default function Companies() {
@@ -228,19 +274,12 @@ export default function Companies() {
         <div className="toolbar-left-info">
           <span className="toolbar-top-tag">Corporate directory</span>
           <div className="toolbar-sub-line">
-            <strong className="clients-count-blue">
-              {companiesList.length} connected clients
-            </strong>
-            <span className="clients-desc-muted">
-              Manage your corporate payout network.
-            </span>
+            <strong className="clients-count-blue">{companiesList.length} connected clients</strong>
+            <span className="clients-desc-muted">Manage your corporate payout network.</span>
           </div>
         </div>
 
-        <button 
-          className="btn-onboard-company" 
-          onClick={() => setModalOpen(true)}
-        >
+        <button className="btn-onboard-company" onClick={() => setModalOpen(true)}>
           <Plus size={16} strokeWidth={2.5} />
           <span>Onboard company</span>
         </button>
@@ -252,38 +291,64 @@ export default function Companies() {
         </div>
       ) : (
         <div className="companies-cards-list">
-          {companiesList.length === 0 ? <div className="loading-state-box">No companies are registered in the database.</div> : companiesList.map((company) => (
-            <button key={company.id} type="button" className="company-list-card-item company-card-button" onClick={() => setFundingCompany(company)} aria-label={`Add funds to ${company.company_name} main wallet`}>
-              <div className="company-card-left">
-                <div className="company-badge-icon-box">
-                  <Building2 size={24} color="#D97706" />
-                </div>
-                
-                <div className="company-details-stack">
-                  <span className={`status-pill ${company.status.toLowerCase()}`}>
-                    {company.status}
-                  </span>
-                  <h3 className="company-item-name">{company.company_name}</h3>
-                  <p className="company-item-meta">
-                    {company.employees_count ?? 0} employees · {company.users_count ?? 0} users · {company.batches_count ?? 0} batches
-                  </p>
-                </div>
-              </div>
+          {companiesList.length === 0 ? (
+            <div className="loading-state-box">No companies are registered in the database.</div>
+          ) : (
+            companiesList.map((company) => (
+              <button
+                key={company.id}
+                type="button"
+                className="company-list-card-item company-card-button"
+                onClick={() => setFundingCompany(company)}
+                aria-label={`Add funds to ${company.company_name} main wallet`}
+              >
+                <div className="company-card-left">
+                  <div className="company-badge-icon-box">
+                    <Building2 size={24} color="#D97706" />
+                  </div>
 
-              <div className="company-card-right">
-                <strong className="company-item-balance">
-                  {formatMoneyBDT(company.wallet_balance)}
-                </strong>
-                <span className="company-fund-action">Add funds <ArrowRight size={15} /></span>
-              </div>
-            </button>
-          ))}
+                  <div className="company-details-stack">
+                    <span className={`status-pill ${company.status.toLowerCase()}`}>
+                      {company.status}
+                    </span>
+                    <h3 className="company-item-name">{company.company_name}</h3>
+                    <p className="company-item-meta">
+                      {company.employees_count ?? 0} employees · {company.users_count ?? 0} users ·{' '}
+                      {company.batches_count ?? 0} batches
+                    </p>
+                  </div>
+                </div>
+
+                <div className="company-card-right">
+                  <strong className="company-item-balance">
+                    {formatMoneyBDT(company.wallet_balance)}
+                  </strong>
+                  <span className="company-fund-action">
+                    Add funds <ArrowRight size={15} />
+                  </span>
+                </div>
+              </button>
+            ))
+          )}
         </div>
       )}
 
       {/* Onboard Company Modal */}
       {token && (
-        <><OnboardModal isOpen={modalOpen} onClose={() => setModalOpen(false)} token={token} onCreated={load} /><FundWalletModal company={fundingCompany} token={token} onClose={() => setFundingCompany(null)} onFunded={load} /></>
+        <>
+          <OnboardModal
+            isOpen={modalOpen}
+            onClose={() => setModalOpen(false)}
+            token={token}
+            onCreated={load}
+          />
+          <FundWalletModal
+            company={fundingCompany}
+            token={token}
+            onClose={() => setFundingCompany(null)}
+            onFunded={load}
+          />
+        </>
       )}
     </div>
   );

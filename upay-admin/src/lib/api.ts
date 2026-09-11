@@ -1,6 +1,7 @@
 import { AuditLog, Company, Employee, BankAccount, Overview, RiskAlert, User } from '@/types';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+const ADMIN_PORTAL_HEADERS = { 'X-Upay-Portal': 'admin' };
 
 async function request<T>(path: string, _token: string, options: RequestInit = {}): Promise<T> {
   const response = await fetch(`${API_BASE_URL}${path}`, {
@@ -8,6 +9,7 @@ async function request<T>(path: string, _token: string, options: RequestInit = {
     credentials: 'include',
     headers: {
       'Content-Type': 'application/json',
+      ...ADMIN_PORTAL_HEADERS,
       ...options.headers,
     },
   });
@@ -21,7 +23,7 @@ async function request<T>(path: string, _token: string, options: RequestInit = {
 export async function login(email: string, password: string) {
   const response = await fetch(`${API_BASE_URL}/auth/login`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', ...ADMIN_PORTAL_HEADERS },
     credentials: 'include',
     body: JSON.stringify({ email, password }),
   });
@@ -32,9 +34,12 @@ export async function login(email: string, password: string) {
 
 export async function me() {
   try {
-    const response = await fetch(`${API_BASE_URL}/auth/session`, { credentials: 'include' });
+    const response = await fetch(`${API_BASE_URL}/auth/session`, {
+      credentials: 'include',
+      headers: ADMIN_PORTAL_HEADERS,
+    });
     if (!response.ok) return null;
-    const session = await response.json() as { user: User | null };
+    const session = (await response.json()) as { user: User | null };
     return session?.user ? session : null;
   } catch {
     return null;
@@ -42,30 +47,45 @@ export async function me() {
 }
 
 export async function logout() {
-  await fetch(`${API_BASE_URL}/auth/logout`, { method: 'POST', credentials: 'include' })
-    .catch(() => undefined);
+  await fetch(`${API_BASE_URL}/auth/logout`, {
+    method: 'POST',
+    credentials: 'include',
+    headers: ADMIN_PORTAL_HEADERS,
+  }).catch(() => undefined);
 }
 
 // 1. Overview & Activity
 export const getOverview = (token: string) => request<Overview>('/admin/overview', token);
-export const getActivity = (token: string) => request<{ audit_logs: AuditLog[]; risk_alerts: RiskAlert[] }>('/admin/activity', token);
+export const getActivity = (token: string) =>
+  request<{ audit_logs: AuditLog[]; risk_alerts: RiskAlert[] }>('/admin/activity', token);
 export const getAdminAuditLogs = (token: string, companyId?: number) =>
-  request<{ audit_logs: AuditLog[] }>(`/admin/audit-logs${companyId ? `?company_id=${companyId}` : ''}`, token);
+  request<{ audit_logs: AuditLog[] }>(
+    `/admin/audit-logs${companyId ? `?company_id=${companyId}` : ''}`,
+    token,
+  );
 
 // 2. Company Onboarding & Status
-export const getCompanies = (token: string) => request<{ companies: Company[] }>('/admin/companies', token);
-export const getCompany = (token: string, companyId: number) => request<{ company: Company }>(`/admin/companies/${companyId}`, token);
-export const createCompany = (token: string, payload: Record<string, unknown>) => request<{ company: Company }>('/admin/companies', token, {
-  method: 'POST',
-  body: JSON.stringify(payload),
-});
-export const updateCompanyStatus = (token: string, companyId: number, status: string) => request<{ company: Company }>(`/admin/companies/${companyId}/status`, token, {
-  method: 'PUT',
-  body: JSON.stringify({ status }),
-});
+export const getCompanies = (token: string) =>
+  request<{ companies: Company[] }>('/admin/companies', token);
+export const getCompany = (token: string, companyId: number) =>
+  request<{ company: Company }>(`/admin/companies/${companyId}`, token);
+export const createCompany = (token: string, payload: Record<string, unknown>) =>
+  request<{ company: Company }>('/admin/companies', token, {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  });
+export const updateCompanyStatus = (token: string, companyId: number, status: string) =>
+  request<{ company: Company }>(`/admin/companies/${companyId}/status`, token, {
+    method: 'PUT',
+    body: JSON.stringify({ status }),
+  });
 
 // 3. Disbursement Float Top-Up
-export const topupCompanyWallet = (token: string, companyId: number, payload: { amount: number; source_bank?: string; reference_note?: string }) =>
+export const topupCompanyWallet = (
+  token: string,
+  companyId: number,
+  payload: { amount: number; source_bank?: string; reference_note?: string },
+) =>
   request<{ message: string; company: Company }>(`/admin/companies/${companyId}/topup`, token, {
     method: 'POST',
     body: JSON.stringify(payload),
@@ -75,11 +95,19 @@ export const topupCompanyWallet = (token: string, companyId: number, payload: { 
 export const getCompanyBankAccounts = (token: string, companyId: number) =>
   request<{ bank_accounts: BankAccount[] }>(`/admin/companies/${companyId}/bank-accounts`, token);
 
-export const addCompanyBankAccount = (token: string, companyId: number, payload: Record<string, unknown>) =>
-  request<{ message: string; bank_account: BankAccount }>(`/admin/companies/${companyId}/bank-accounts`, token, {
-    method: 'POST',
-    body: JSON.stringify(payload),
-  });
+export const addCompanyBankAccount = (
+  token: string,
+  companyId: number,
+  payload: Record<string, unknown>,
+) =>
+  request<{ message: string; bank_account: BankAccount }>(
+    `/admin/companies/${companyId}/bank-accounts`,
+    token,
+    {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    },
+  );
 
 export const removeCompanyBankAccount = (token: string, companyId: number, accountId: number) =>
   request<{ message: string }>(`/admin/companies/${companyId}/bank-accounts/${accountId}`, token, {
@@ -88,7 +116,10 @@ export const removeCompanyBankAccount = (token: string, companyId: number, accou
 
 // 5. Employee Roster Management
 export const getCompanyEmployees = (token: string, companyId: number) =>
-  request<{ company_id: number; company_name: string; employees: Employee[] }>(`/admin/companies/${companyId}/employees`, token);
+  request<{ company_id: number; company_name: string; employees: Employee[] }>(
+    `/admin/companies/${companyId}/employees`,
+    token,
+  );
 
 export const uploadCompanyEmployees = async (token: string, companyId: number, file: File) => {
   const formData = new FormData();
@@ -96,6 +127,7 @@ export const uploadCompanyEmployees = async (token: string, companyId: number, f
   const response = await fetch(`${API_BASE_URL}/admin/companies/${companyId}/employees/upload`, {
     method: 'POST',
     credentials: 'include',
+    headers: ADMIN_PORTAL_HEADERS,
     body: formData,
   });
   const payload = await response.json();
@@ -103,36 +135,58 @@ export const uploadCompanyEmployees = async (token: string, companyId: number, f
   return payload as { message: string; total_employees: number; employees: Employee[] };
 };
 
-export const addCompanyEmployee = (token: string, companyId: number, payload: Record<string, unknown>) =>
-  request<{ message: string; employee: Employee }>(`/admin/companies/${companyId}/employees`, token, {
-    method: 'POST',
-    body: JSON.stringify(payload),
-  });
+export const addCompanyEmployee = (
+  token: string,
+  companyId: number,
+  payload: Record<string, unknown>,
+) =>
+  request<{ message: string; employee: Employee }>(
+    `/admin/companies/${companyId}/employees`,
+    token,
+    {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    },
+  );
 
 export const removeCompanyEmployee = (token: string, companyId: number, employeeId: number) =>
   request<{ message: string }>(`/admin/companies/${companyId}/employees/${employeeId}`, token, {
     method: 'DELETE',
   });
 
-export const getEmployeeRegistrations = (token: string, companyId?: number, status = 'PENDING_ADMIN_APPROVAL') => {
+export const getEmployeeRegistrations = (
+  token: string,
+  companyId?: number,
+  status = 'PENDING_ADMIN_APPROVAL',
+) => {
   const params = new URLSearchParams({ status });
   if (companyId) params.set('company_id', String(companyId));
-  return request<{ registrations: Array<Record<string, unknown>> }>(`/employee-registrations?${params.toString()}`, token);
+  return request<{ registrations: Array<Record<string, unknown>> }>(
+    `/employee-registrations?${params.toString()}`,
+    token,
+  );
 };
 export const getPendingEmployeeRegistrations = (token: string, companyId?: number) =>
   getEmployeeRegistrations(token, companyId);
 export const approveEmployeeRegistration = (token: string, registrationId: number) =>
-  request<{ message: string }>(`/employee-registrations/${registrationId}/approve`, token, { method: 'POST' });
-export const bulkApproveEmployeeRegistrations = (token: string, registrationIds: number[]) =>
-  request<{ message: string; approved_count: number }>('/employee-registrations/bulk-approve', token, {
+  request<{ message: string }>(`/employee-registrations/${registrationId}/approve`, token, {
     method: 'POST',
-    body: JSON.stringify({ registration_ids: registrationIds }),
   });
+export const bulkApproveEmployeeRegistrations = (token: string, registrationIds: number[]) =>
+  request<{ message: string; approved_count: number }>(
+    '/employee-registrations/bulk-approve',
+    token,
+    {
+      method: 'POST',
+      body: JSON.stringify({ registration_ids: registrationIds }),
+    },
+  );
 
 // 6. Identity & Users
 export const getUsers = (token: string, companyId?: number) =>
   request<{ users: User[] }>(`/admin/users${companyId ? `?company_id=${companyId}` : ''}`, token);
-export const createUser = (token: string, payload: Record<string, unknown>) => request<{ user: User }>('/admin/users', token, {
-  method: 'POST',
-  body: JSON.stringify(payload),
-});
+export const createUser = (token: string, payload: Record<string, unknown>) =>
+  request<{ user: User }>('/admin/users', token, {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  });

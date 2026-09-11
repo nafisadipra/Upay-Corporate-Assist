@@ -8,33 +8,71 @@ import { CheckerTab } from '@/components/CheckerTab';
 import { AuditTab } from '@/components/AuditTab';
 import { Batch, BatchItem, AuditLog, RiskAlert } from '@/types';
 import * as api from '@/lib/api';
-import { History, ShieldAlert, BarChart3, Shield, MoreHorizontal, FileText, CheckCircle2, PlayCircle, XCircle, Hourglass } from 'lucide-react';
+import {
+  History,
+  ShieldAlert,
+  BarChart3,
+  Shield,
+  MoreHorizontal,
+  FileText,
+  CheckCircle2,
+  PlayCircle,
+  XCircle,
+  Hourglass,
+} from 'lucide-react';
 
 type ChartItem = { label: string; value: number; color: string };
 
-const REVIEW_STATUSES = ['FLAGGED_RISK', 'PENDING_CHECKER_REVIEW', 'PENDING_CHECKER_APPROVAL', 'RETURNED_TO_HR'];
+const REVIEW_STATUSES = [
+  'FLAGGED_RISK',
+  'PENDING_CHECKER_REVIEW',
+  'PENDING_CHECKER_APPROVAL',
+  'RETURNED_TO_HR',
+];
 
 function formatAmount(amount: number) {
-  return amount >= 1_000_000 ? `BDT ${(amount / 1_000_000).toFixed(1)}M` : `BDT ${amount.toLocaleString()}`;
+  return amount >= 1_000_000
+    ? `BDT ${(amount / 1_000_000).toFixed(1)}M`
+    : `BDT ${amount.toLocaleString()}`;
 }
 
-function DonutChart({ items, centreLabel, centreValue }: { items: ChartItem[]; centreLabel: string; centreValue: string }) {
+function DonutChart({
+  items,
+  centreLabel,
+  centreValue,
+}: {
+  items: ChartItem[];
+  centreLabel: string;
+  centreValue: string;
+}) {
   const total = items.reduce((sum, item) => sum + item.value, 0);
   const visibleItems = items.filter((item) => item.value > 0);
-  const gradient = visibleItems.map((item, index) => {
-    const precedingValue = visibleItems.slice(0, index).reduce((sum, segment) => sum + segment.value, 0);
-    const start = total ? (precedingValue / total) * 100 : 0;
-    const end = total ? ((precedingValue + item.value) / total) * 100 : 0;
-    return `${item.color} ${start}% ${end}%`;
-  }).join(', ') || '#e2e8f0 0% 100%';
+  const gradient =
+    visibleItems
+      .map((item, index) => {
+        const precedingValue = visibleItems
+          .slice(0, index)
+          .reduce((sum, segment) => sum + segment.value, 0);
+        const start = total ? (precedingValue / total) * 100 : 0;
+        const end = total ? ((precedingValue + item.value) / total) * 100 : 0;
+        return `${item.color} ${start}% ${end}%`;
+      })
+      .join(', ') || '#e2e8f0 0% 100%';
 
   return (
     <div className="flex flex-col gap-6 sm:flex-row sm:items-center justify-between px-4 mt-2">
-      <div className="relative h-36 w-36 shrink-0 rounded-full" style={{ background: `conic-gradient(${gradient})` }}>
+      <div
+        className="relative h-36 w-36 shrink-0 rounded-full"
+        style={{ background: `conic-gradient(${gradient})` }}
+      >
         <div className="absolute inset-[14px] grid place-items-center rounded-full bg-white text-center">
           <div>
-            <strong className="block font-outfit text-4xl font-extrabold text-slate-900">{centreValue}</strong>
-            <span className="text-[10px] font-bold uppercase tracking-widest text-slate-500">{centreLabel}</span>
+            <strong className="block font-outfit text-4xl font-extrabold text-slate-900">
+              {centreValue}
+            </strong>
+            <span className="text-[10px] font-bold uppercase tracking-widest text-slate-500">
+              {centreLabel}
+            </span>
           </div>
         </div>
       </div>
@@ -56,21 +94,55 @@ function DonutChart({ items, centreLabel, centreValue }: { items: ChartItem[]; c
 function DisbursementCards({ items }: { items: ChartItem[] }) {
   const bgColors = ['bg-orange-50/50', 'bg-emerald-50/50', 'bg-blue-50/50', 'bg-red-50/50'];
   const textColors = ['text-orange-600', 'text-emerald-600', 'text-blue-600', 'text-red-600'];
-  const borderColors = ['border-t-orange-500', 'border-t-emerald-500', 'border-t-blue-500', 'border-t-red-500'];
+  const borderColors = [
+    'border-t-orange-500',
+    'border-t-emerald-500',
+    'border-t-blue-500',
+    'border-t-red-500',
+  ];
   const icons = [
-    <div key="0" className="flex h-8 w-8 items-center justify-center rounded-full bg-orange-100 text-orange-500 mb-3"><span className="text-sm font-bold font-serif">৳</span></div>,
-    <div key="1" className="flex h-8 w-8 items-center justify-center rounded-full bg-emerald-100 text-emerald-600 mb-3"><CheckCircle2 className="h-4 w-4" /></div>,
-    <div key="2" className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-100 text-blue-600 mb-3"><PlayCircle className="h-4 w-4 fill-current" /></div>,
-    <div key="3" className="flex h-8 w-8 items-center justify-center rounded-full bg-red-100 text-red-600 mb-3"><XCircle className="h-4 w-4" /></div>,
+    <div
+      key="0"
+      className="flex h-8 w-8 items-center justify-center rounded-full bg-orange-100 text-orange-500 mb-3"
+    >
+      <span className="text-sm font-bold font-serif">৳</span>
+    </div>,
+    <div
+      key="1"
+      className="flex h-8 w-8 items-center justify-center rounded-full bg-emerald-100 text-emerald-600 mb-3"
+    >
+      <CheckCircle2 className="h-4 w-4" />
+    </div>,
+    <div
+      key="2"
+      className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-100 text-blue-600 mb-3"
+    >
+      <PlayCircle className="h-4 w-4 fill-current" />
+    </div>,
+    <div
+      key="3"
+      className="flex h-8 w-8 items-center justify-center rounded-full bg-red-100 text-red-600 mb-3"
+    >
+      <XCircle className="h-4 w-4" />
+    </div>,
   ];
 
   return (
     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
       {items.map((item, index) => (
-        <div key={item.label} className={`flex flex-col rounded-xl shadow-sm border-t-4 border-l border-r border-b border-slate-100 p-4 ${bgColors[index]} ${borderColors[index]}`}>
+        <div
+          key={item.label}
+          className={`flex flex-col rounded-xl shadow-sm border-t-4 border-l border-r border-b border-slate-100 p-4 ${bgColors[index]} ${borderColors[index]}`}
+        >
           {icons[index]}
-          <p className={`text-[10px] font-extrabold uppercase tracking-widest ${textColors[index]}`}>{item.label}</p>
-          <strong className="block font-mono text-xs font-extrabold text-slate-900 mt-1">{formatAmount(item.value)}</strong>
+          <p
+            className={`text-[10px] font-extrabold uppercase tracking-widest ${textColors[index]}`}
+          >
+            {item.label}
+          </p>
+          <strong className="block font-mono text-xs font-extrabold text-slate-900 mt-1">
+            {formatAmount(item.value)}
+          </strong>
         </div>
       ))}
     </div>
@@ -80,13 +152,20 @@ function DisbursementCards({ items }: { items: ChartItem[] }) {
 function SeverityCards({ items }: { items: ChartItem[] }) {
   const bgColors = ['bg-emerald-50/50', 'bg-amber-50/50', 'bg-orange-50/50', 'bg-red-50/50'];
   const textColors = ['text-emerald-600', 'text-amber-600', 'text-orange-600', 'text-red-600'];
-  
+
   return (
     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
       {items.map((item, index) => (
-        <div key={item.label} className={`flex flex-col rounded-xl border border-slate-100 p-5 items-center justify-center text-center ${bgColors[index]}`}>
-          <strong className={`block font-mono text-3xl font-extrabold ${textColors[index]}`}>{item.value}</strong>
-          <p className="text-[10px] font-extrabold uppercase tracking-widest text-slate-500 mt-2">{item.label}</p>
+        <div
+          key={item.label}
+          className={`flex flex-col rounded-xl border border-slate-100 p-5 items-center justify-center text-center ${bgColors[index]}`}
+        >
+          <strong className={`block font-mono text-3xl font-extrabold ${textColors[index]}`}>
+            {item.value}
+          </strong>
+          <p className="text-[10px] font-extrabold uppercase tracking-widest text-slate-500 mt-2">
+            {item.label}
+          </p>
           <span className="text-[10px] text-slate-400 mt-1">{item.value} alerts</span>
         </div>
       ))}
@@ -96,15 +175,35 @@ function SeverityCards({ items }: { items: ChartItem[] }) {
 
 function PipelineFlow({ items }: { items: ChartItem[] }) {
   const icons = [
-    <div key="0" className="flex h-10 w-10 items-center justify-center rounded-full bg-orange-500 text-white z-10"><Hourglass className="h-5 w-5" /></div>,
-    <div key="1" className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-600 text-white z-10"><CheckCircle2 className="h-5 w-5" /></div>,
-    <div key="2" className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-600 text-white z-10"><PlayCircle className="h-5 w-5 fill-current" /></div>,
-    <div key="3" className="flex h-10 w-10 items-center justify-center rounded-full bg-red-600 text-white z-10"><XCircle className="h-5 w-5" /></div>,
+    <div
+      key="0"
+      className="flex h-10 w-10 items-center justify-center rounded-full bg-orange-500 text-white z-10"
+    >
+      <Hourglass className="h-5 w-5" />
+    </div>,
+    <div
+      key="1"
+      className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-600 text-white z-10"
+    >
+      <CheckCircle2 className="h-5 w-5" />
+    </div>,
+    <div
+      key="2"
+      className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-600 text-white z-10"
+    >
+      <PlayCircle className="h-5 w-5 fill-current" />
+    </div>,
+    <div
+      key="3"
+      className="flex h-10 w-10 items-center justify-center rounded-full bg-red-600 text-white z-10"
+    >
+      <XCircle className="h-5 w-5" />
+    </div>,
   ];
 
   let progressPercent = 0;
   let progressColor = 'bg-slate-200';
-  
+
   if (items[3].value > 0) {
     progressPercent = 100;
     progressColor = 'bg-red-500';
@@ -122,9 +221,9 @@ function PipelineFlow({ items }: { items: ChartItem[] }) {
   return (
     <div className="relative mt-8 mb-4 px-6">
       <div className="absolute left-[12%] right-[12%] top-5 h-[2px] bg-slate-200 z-0">
-        <div 
-          className={`absolute left-0 top-0 h-full transition-all duration-1000 ${progressColor}`} 
-          style={{ width: `${progressPercent}%` }} 
+        <div
+          className={`absolute left-0 top-0 h-full transition-all duration-1000 ${progressColor}`}
+          style={{ width: `${progressPercent}%` }}
         />
       </div>
       <div className="relative z-10 flex justify-between">
@@ -132,8 +231,12 @@ function PipelineFlow({ items }: { items: ChartItem[] }) {
           <div key={item.label} className="flex flex-col items-center gap-4 bg-white px-2">
             {icons[index]}
             <div className="text-center">
-              <p className="text-[10px] font-extrabold uppercase tracking-widest text-slate-500">{item.label}</p>
-              <strong className="block font-mono text-xl font-extrabold text-slate-900 mt-1">{item.value}</strong>
+              <p className="text-[10px] font-extrabold uppercase tracking-widest text-slate-500">
+                {item.label}
+              </p>
+              <strong className="block font-mono text-xl font-extrabold text-slate-900 mt-1">
+                {item.value}
+              </strong>
               <span className="text-[10px] text-slate-400">batches</span>
             </div>
           </div>
@@ -151,20 +254,20 @@ function formatYAxis(value: number) {
 }
 
 function LineTrend({ items }: { items: ChartItem[] }) {
-  const width = 600; 
-  const height = 180; 
-  const marginLeft = 40; 
-  const marginBottom = 24; 
-  const marginTop = 10; 
+  const width = 600;
+  const height = 180;
+  const marginLeft = 40;
+  const marginBottom = 24;
+  const marginTop = 10;
   const marginRight = 10;
-  
+
   const chartWidth = width - marginLeft - marginRight;
   const chartHeight = height - marginTop - marginBottom;
-  
+
   const actualMax = Math.max(...items.map((item) => item.value), 600000);
   // Round up to nearest nice number if needed, for now just use actualMax
   const maxValue = actualMax;
-  
+
   const yTicks = [0, maxValue * 0.333, maxValue * 0.666, maxValue];
 
   const points = items.map((item, index) => {
@@ -179,8 +282,10 @@ function LineTrend({ items }: { items: ChartItem[] }) {
     : points.map((point, index) => `${index ? 'L' : 'M'} ${point.x} ${point.y}`).join(' ');
   const area = isSinglePoint
     ? `M ${marginLeft} ${marginTop + chartHeight} L ${marginLeft} ${points[0].y} L ${width - marginRight} ${points[0].y} L ${width - marginRight} ${marginTop + chartHeight} Z`
-    : points.length ? `M ${points[0].x} ${marginTop + chartHeight} L ${points.map((point) => `${point.x} ${point.y}`).join(' L ')} L ${points[points.length - 1].x} ${marginTop + chartHeight} Z` : '';
-  
+    : points.length
+      ? `M ${points[0].x} ${marginTop + chartHeight} L ${points.map((point) => `${point.x} ${point.y}`).join(' L ')} L ${points[points.length - 1].x} ${marginTop + chartHeight} Z`
+      : '';
+
   return (
     <div className="mt-6">
       <svg viewBox={`0 0 ${width} ${height}`} className="h-48 w-full overflow-visible">
@@ -190,28 +295,60 @@ function LineTrend({ items }: { items: ChartItem[] }) {
             <stop offset="100%" stopColor="#f97316" stopOpacity="0" />
           </linearGradient>
         </defs>
-        
+
         {/* Y-axis grid and labels */}
         {yTicks.map((tick, i) => {
           const y = marginTop + chartHeight - (tick / maxValue) * chartHeight;
           return (
             <g key={i}>
-              <text x={marginLeft - 8} y={y + 4} textAnchor="end" className="fill-slate-500 text-[11px] font-medium font-mono">
+              <text
+                x={marginLeft - 8}
+                y={y + 4}
+                textAnchor="end"
+                className="fill-slate-500 text-[11px] font-medium font-mono"
+              >
                 {formatYAxis(tick)}
               </text>
-              <line x1={marginLeft} y1={y} x2={width - marginRight} y2={y} stroke="#f1f5f9" strokeDasharray={i === 0 ? "" : "4 4"} strokeWidth={i === 0 ? "2" : "1"} />
+              <line
+                x1={marginLeft}
+                y1={y}
+                x2={width - marginRight}
+                y2={y}
+                stroke="#f1f5f9"
+                strokeDasharray={i === 0 ? '' : '4 4'}
+                strokeWidth={i === 0 ? '2' : '1'}
+              />
             </g>
           );
         })}
-        
+
         <path d={area} fill="url(#checkerTrend)" />
-        <path d={path} fill="none" stroke="#f97316" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
-        
+        <path
+          d={path}
+          fill="none"
+          stroke="#f97316"
+          strokeWidth="2.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+
         {/* Points and X-axis labels */}
         {points.map((point, index) => (
           <g key={index}>
-            <circle cx={point.x} cy={point.y} r="4.5" fill="#ffffff" stroke="#f97316" strokeWidth="2.5" />
-            <text x={point.x} y={height - 2} textAnchor="middle" className="fill-slate-500 text-[11px] font-medium">
+            <circle
+              cx={point.x}
+              cy={point.y}
+              r="4.5"
+              fill="#ffffff"
+              stroke="#f97316"
+              strokeWidth="2.5"
+            />
+            <text
+              x={point.x}
+              y={height - 2}
+              textAnchor="middle"
+              className="fill-slate-500 text-[11px] font-medium"
+            >
               {point.label}
             </text>
           </g>
@@ -221,9 +358,16 @@ function LineTrend({ items }: { items: ChartItem[] }) {
   );
 }
 
-function renderDashboard(batches: Batch[], alerts: RiskAlert[], selectedPeriod: string, disbursementHistory: Array<{ period: string; amount: number }>) {
+function renderDashboard(
+  batches: Batch[],
+  alerts: RiskAlert[],
+  selectedPeriod: string,
+  disbursementHistory: Array<{ period: string; amount: number }>,
+) {
   const periodLabel = selectedPeriod
-    ? new Intl.DateTimeFormat('en-US', { month: 'long', year: 'numeric' }).format(new Date(`${selectedPeriod}-01T00:00:00`))
+    ? new Intl.DateTimeFormat('en-US', { month: 'long', year: 'numeric' }).format(
+        new Date(`${selectedPeriod}-01T00:00:00`),
+      )
     : 'Selected month';
   const statusGroups = [
     { label: 'Pending', statuses: REVIEW_STATUSES, color: '#f97316' },
@@ -231,23 +375,65 @@ function renderDashboard(batches: Batch[], alerts: RiskAlert[], selectedPeriod: 
     { label: 'Executed', statuses: ['EXECUTED'], color: '#2563eb' },
     { label: 'Rejected', statuses: ['REJECTED', 'CANCELLED'], color: '#dc2626' },
   ];
-  const batchStatusData = statusGroups.map((group) => ({ label: group.label, value: batches.filter((batch) => group.statuses.includes(batch.status)).length, color: group.color }));
-  const payoutStatusData = statusGroups.map((group) => ({ label: group.label, value: batches.filter((batch) => group.statuses.includes(batch.status)).reduce((sum, batch) => sum + batch.total_amount, 0), color: group.color }));
-  
+  const batchStatusData = statusGroups.map((group) => ({
+    label: group.label,
+    value: batches.filter((batch) => group.statuses.includes(batch.status)).length,
+    color: group.color,
+  }));
+  const payoutStatusData = statusGroups.map((group) => ({
+    label: group.label,
+    value: batches
+      .filter((batch) => group.statuses.includes(batch.status))
+      .reduce((sum, batch) => sum + batch.total_amount, 0),
+    color: group.color,
+  }));
+
   const riskStatusData: ChartItem[] = [
-    { label: 'Unresolved', value: alerts.filter((alert) => alert.review_status === 'PENDING_REVIEW').length, color: '#dc2626' },
-    { label: 'Overridden', value: alerts.filter((alert) => alert.review_status === 'OVERRIDDEN_BY_CHECKER').length, color: '#f97316' },
-    { label: 'Approved', value: alerts.filter((alert) => alert.review_status === 'APPROVED_BY_CHECKER').length, color: '#059669' },
-    { label: 'Rejected', value: alerts.filter((alert) => alert.review_status === 'REJECTED_BY_CHECKER').length, color: '#64748b' },
+    {
+      label: 'Unresolved',
+      value: alerts.filter((alert) => alert.review_status === 'PENDING_REVIEW').length,
+      color: '#dc2626',
+    },
+    {
+      label: 'Overridden',
+      value: alerts.filter((alert) => alert.review_status === 'OVERRIDDEN_BY_CHECKER').length,
+      color: '#f97316',
+    },
+    {
+      label: 'Approved',
+      value: alerts.filter((alert) => alert.review_status === 'APPROVED_BY_CHECKER').length,
+      color: '#059669',
+    },
+    {
+      label: 'Rejected',
+      value: alerts.filter((alert) => alert.review_status === 'REJECTED_BY_CHECKER').length,
+      color: '#64748b',
+    },
   ];
-  
+
   const severityData: ChartItem[] = [
-    { label: 'Low', value: alerts.filter((alert) => alert.severity === 'LOW').length, color: '#059669' },
-    { label: 'Medium', value: alerts.filter((alert) => alert.severity === 'MEDIUM').length, color: '#d97706' },
-    { label: 'High', value: alerts.filter((alert) => alert.severity === 'HIGH').length, color: '#ea580c' },
-    { label: 'Critical', value: alerts.filter((alert) => alert.severity === 'CRITICAL').length, color: '#be123c' },
+    {
+      label: 'Low',
+      value: alerts.filter((alert) => alert.severity === 'LOW').length,
+      color: '#059669',
+    },
+    {
+      label: 'Medium',
+      value: alerts.filter((alert) => alert.severity === 'MEDIUM').length,
+      color: '#d97706',
+    },
+    {
+      label: 'High',
+      value: alerts.filter((alert) => alert.severity === 'HIGH').length,
+      color: '#ea580c',
+    },
+    {
+      label: 'Critical',
+      value: alerts.filter((alert) => alert.severity === 'CRITICAL').length,
+      color: '#be123c',
+    },
   ];
-  
+
   const selectedDate = selectedPeriod ? new Date(`${selectedPeriod}-01T00:00:00`) : new Date();
   const chartYear = selectedDate.getFullYear();
   const selectedMonth = selectedDate.getMonth();
@@ -260,8 +446,10 @@ function renderDashboard(batches: Batch[], alerts: RiskAlert[], selectedPeriod: 
       color: '#f97316',
     };
   });
-  
-  const recentActivity = [...batches].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()).slice(0, 5);
+
+  const recentActivity = [...batches]
+    .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+    .slice(0, 5);
 
   return (
     <div className="space-y-6">
@@ -273,11 +461,17 @@ function renderDashboard(batches: Batch[], alerts: RiskAlert[], selectedPeriod: 
                 <History className="h-5 w-5" />
               </div>
               <div>
-                <h2 className="font-outfit text-base font-extrabold text-slate-900">Batch approval flow</h2>
-                <p className="mt-0.5 text-xs text-slate-500">Where {periodLabel} payroll batches sit in the disbursement pipeline.</p>
+                <h2 className="font-outfit text-base font-extrabold text-slate-900">
+                  Batch approval flow
+                </h2>
+                <p className="mt-0.5 text-xs text-slate-500">
+                  Where {periodLabel} payroll batches sit in the disbursement pipeline.
+                </p>
               </div>
             </div>
-            <button className="text-slate-400 hover:text-slate-600"><MoreHorizontal className="h-5 w-5" /></button>
+            <button className="text-slate-400 hover:text-slate-600">
+              <MoreHorizontal className="h-5 w-5" />
+            </button>
           </div>
           <PipelineFlow items={batchStatusData} />
         </article>
@@ -289,13 +483,23 @@ function renderDashboard(batches: Batch[], alerts: RiskAlert[], selectedPeriod: 
                 <ShieldAlert className="h-5 w-5" />
               </div>
               <div>
-                <h2 className="font-outfit text-base font-extrabold text-slate-900">Risk posture</h2>
-                <p className="mt-0.5 text-xs text-slate-500">Outcome of payroll flaws flagged in {periodLabel}.</p>
+                <h2 className="font-outfit text-base font-extrabold text-slate-900">
+                  Risk posture
+                </h2>
+                <p className="mt-0.5 text-xs text-slate-500">
+                  Outcome of payroll flaws flagged in {periodLabel}.
+                </p>
               </div>
             </div>
-            <button className="text-slate-400 hover:text-slate-600"><MoreHorizontal className="h-5 w-5" /></button>
+            <button className="text-slate-400 hover:text-slate-600">
+              <MoreHorizontal className="h-5 w-5" />
+            </button>
           </div>
-          <DonutChart items={riskStatusData} centreValue={String(alerts.length)} centreLabel="Flaws" />
+          <DonutChart
+            items={riskStatusData}
+            centreValue={String(alerts.length)}
+            centreLabel="Flaws"
+          />
         </article>
       </section>
 
@@ -307,11 +511,17 @@ function renderDashboard(batches: Batch[], alerts: RiskAlert[], selectedPeriod: 
                 <BarChart3 className="h-5 w-5" />
               </div>
               <div>
-                <h2 className="font-outfit text-base font-extrabold text-slate-900">Disbursement value</h2>
-                <p className="mt-0.5 text-xs text-slate-500">{periodLabel} payroll value held at each control stage.</p>
+                <h2 className="font-outfit text-base font-extrabold text-slate-900">
+                  Disbursement value
+                </h2>
+                <p className="mt-0.5 text-xs text-slate-500">
+                  {periodLabel} payroll value held at each control stage.
+                </p>
               </div>
             </div>
-            <button className="text-slate-400 hover:text-slate-600"><MoreHorizontal className="h-5 w-5" /></button>
+            <button className="text-slate-400 hover:text-slate-600">
+              <MoreHorizontal className="h-5 w-5" />
+            </button>
           </div>
           <DisbursementCards items={payoutStatusData} />
         </article>
@@ -323,11 +533,17 @@ function renderDashboard(batches: Batch[], alerts: RiskAlert[], selectedPeriod: 
                 <Shield className="h-5 w-5" />
               </div>
               <div>
-                <h2 className="font-outfit text-base font-extrabold text-slate-900">Severity mix</h2>
-                <p className="mt-0.5 text-xs text-slate-500">{periodLabel} risk findings by review severity.</p>
+                <h2 className="font-outfit text-base font-extrabold text-slate-900">
+                  Severity mix
+                </h2>
+                <p className="mt-0.5 text-xs text-slate-500">
+                  {periodLabel} risk findings by review severity.
+                </p>
               </div>
             </div>
-            <button className="text-slate-400 hover:text-slate-600"><MoreHorizontal className="h-5 w-5" /></button>
+            <button className="text-slate-400 hover:text-slate-600">
+              <MoreHorizontal className="h-5 w-5" />
+            </button>
           </div>
           <SeverityCards items={severityData} />
         </article>
@@ -337,41 +553,79 @@ function renderDashboard(batches: Batch[], alerts: RiskAlert[], selectedPeriod: 
         <article className="rounded-[20px] border border-slate-100 bg-white p-6 shadow-sm">
           <div className="flex items-start justify-between">
             <div>
-              <h2 className="font-outfit text-base font-extrabold text-slate-900">Recorded disbursement volume</h2>
-              <p className="mt-0.5 text-xs text-slate-500">Payroll value from January through {periodLabel}.</p>
+              <h2 className="font-outfit text-base font-extrabold text-slate-900">
+                Recorded disbursement volume
+              </h2>
+              <p className="mt-0.5 text-xs text-slate-500">
+                Payroll value from January through {periodLabel}.
+              </p>
             </div>
-            <span className="rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-600">{chartYear}</span>
+            <span className="rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-600">
+              {chartYear}
+            </span>
           </div>
-          {recentPayouts.length ? <LineTrend items={recentPayouts} /> : <div className="grid h-40 place-items-center text-xs text-slate-400">No disbursement data is available yet.</div>}
+          {recentPayouts.length ? (
+            <LineTrend items={recentPayouts} />
+          ) : (
+            <div className="grid h-40 place-items-center text-xs text-slate-400">
+              No disbursement data is available yet.
+            </div>
+          )}
         </article>
 
         <article className="rounded-[20px] border border-slate-100 bg-white p-6 shadow-sm flex flex-col">
           <div className="flex items-start justify-between mb-4">
             <div>
-              <h2 className="font-outfit text-base font-extrabold text-slate-900">Recent pipeline activity</h2>
+              <h2 className="font-outfit text-base font-extrabold text-slate-900">
+                Recent pipeline activity
+              </h2>
               <p className="mt-0.5 text-xs text-slate-500">Read-only batch movement.</p>
             </div>
-            <button className="text-slate-400 hover:text-slate-600"><MoreHorizontal className="h-5 w-5" /></button>
+            <button className="text-slate-400 hover:text-slate-600">
+              <MoreHorizontal className="h-5 w-5" />
+            </button>
           </div>
           <div className="flex-1">
-            {recentActivity.length ? recentActivity.map((batch) => (
-              <div key={batch.id} className="rounded-xl border border-slate-100 bg-slate-50/50 p-4">
-                <div className="flex items-start gap-4">
-                  <div className="mt-1 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-slate-200/50 text-slate-600">
-                    <FileText className="h-5 w-5" />
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-start justify-between gap-3">
-                      <p className="truncate font-mono text-[12px] font-bold text-slate-900">{batch.file_name}</p>
-                      <span className="shrink-0 rounded bg-red-100 px-2 py-0.5 text-[9px] font-extrabold text-red-600">{batch.status.replaceAll('_', ' ')}</span>
+            {recentActivity.length ? (
+              recentActivity.map((batch) => (
+                <div
+                  key={batch.id}
+                  className="rounded-xl border border-slate-100 bg-slate-50/50 p-4"
+                >
+                  <div className="flex items-start gap-4">
+                    <div className="mt-1 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-slate-200/50 text-slate-600">
+                      <FileText className="h-5 w-5" />
                     </div>
-                    <p className="mt-1 text-xs text-slate-500">{formatAmount(batch.total_amount)} • {new Date(batch.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</p>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-start justify-between gap-3">
+                        <p className="truncate font-mono text-[12px] font-bold text-slate-900">
+                          {batch.file_name}
+                        </p>
+                        <span className="shrink-0 rounded bg-red-100 px-2 py-0.5 text-[9px] font-extrabold text-red-600">
+                          {batch.status.replaceAll('_', ' ')}
+                        </span>
+                      </div>
+                      <p className="mt-1 text-xs text-slate-500">
+                        {formatAmount(batch.total_amount)} •{' '}
+                        {new Date(batch.created_at).toLocaleDateString('en-US', {
+                          month: 'short',
+                          day: 'numeric',
+                          year: 'numeric',
+                        })}
+                      </p>
+                    </div>
                   </div>
                 </div>
+              ))
+            ) : (
+              <div className="py-8 text-center text-xs text-slate-400">
+                No recent batch activity.
               </div>
-            )) : <div className="py-8 text-center text-xs text-slate-400">No recent batch activity.</div>}
+            )}
           </div>
-          <button className="mt-4 text-left text-sm font-bold text-orange-500 hover:text-orange-600">View all activity &rarr;</button>
+          <button className="mt-4 text-left text-sm font-bold text-orange-500 hover:text-orange-600">
+            View all activity &rarr;
+          </button>
         </article>
       </section>
     </div>
@@ -387,7 +641,9 @@ function CheckerWorkspace() {
   const [batchItems, setBatchItems] = useState<BatchItem[]>([]);
   const [alerts, setAlerts] = useState<RiskAlert[]>([]);
   const [auditLogs, setAuditLogs] = useState<AuditLog[]>([]);
-  const [disbursementHistory, setDisbursementHistory] = useState<Array<{ period: string; amount: number }>>([]);
+  const [disbursementHistory, setDisbursementHistory] = useState<
+    Array<{ period: string; amount: number }>
+  >([]);
   const [message, setMessage] = useState('');
   const [selectedPeriod, setSelectedPeriod] = useState('');
 
@@ -402,11 +658,14 @@ function CheckerWorkspace() {
       ]);
       setDisbursementHistory(historyData.historical_series || []);
       const companyBatches = batchData.batches || [];
-      const preferredBatch = companyBatches.find((batch: Batch) =>
-        REVIEW_STATUSES.includes(batch.status),
-      ) || companyBatches[0] || null;
+      const preferredBatch =
+        companyBatches.find((batch: Batch) => REVIEW_STATUSES.includes(batch.status)) ||
+        companyBatches[0] ||
+        null;
       const activePeriod = selectedPeriod || preferredBatch?.payroll_period?.slice(0, 7) || '';
-      const reviewBatch = companyBatches.find((batch: Batch) => batch.payroll_period?.slice(0, 7) === activePeriod) || null;
+      const reviewBatch =
+        companyBatches.find((batch: Batch) => batch.payroll_period?.slice(0, 7) === activePeriod) ||
+        null;
 
       setBatches(companyBatches);
       setCurrentBatch(reviewBatch);
@@ -459,7 +718,11 @@ function CheckerWorkspace() {
     return null;
   }
 
-  const handleReviewAlert = async (alertId: number, action: 'OVERRIDDEN_BY_CHECKER', notes: string) => {
+  const handleReviewAlert = async (
+    alertId: number,
+    action: 'OVERRIDDEN_BY_CHECKER',
+    notes: string,
+  ) => {
     try {
       await api.reviewRiskAlert(alertId, action, notes);
       await loadData();
@@ -489,19 +752,38 @@ function CheckerWorkspace() {
     }
   };
 
-  const filteredBatches = batches.filter((batch) => batch.payroll_period?.slice(0, 7) === selectedPeriod);
-  const fixedIssueCount = currentBatch && ['FLAGGED_RISK', 'PENDING_CHECKER_REVIEW'].includes(currentBatch.status)
-    ? alerts.filter((alert) => alert.flag_type.startsWith('MANUAL_') && alert.review_status === 'RESOLVED_BY_HR').length
-    : 0;
+  const filteredBatches = batches.filter(
+    (batch) => batch.payroll_period?.slice(0, 7) === selectedPeriod,
+  );
+  const fixedIssueCount =
+    currentBatch && ['FLAGGED_RISK', 'PENDING_CHECKER_REVIEW'].includes(currentBatch.status)
+      ? alerts.filter(
+          (alert) =>
+            alert.flag_type.startsWith('MANUAL_') && alert.review_status === 'RESOLVED_BY_HR',
+        ).length
+      : 0;
 
   return (
     <div className="app-shell text-slate-900 font-sans antialiased flex flex-col justify-between">
       <div className="lg:pl-[272px]">
-        <Header activeTab={activeTab} onTabChange={setActiveTab} riskAlertCount={0} fixedIssueCount={fixedIssueCount} batchStatus={currentBatch?.status} selectedPeriod={selectedPeriod} onPeriodChange={setSelectedPeriod} />
+        <Header
+          activeTab={activeTab}
+          onTabChange={setActiveTab}
+          riskAlertCount={0}
+          fixedIssueCount={fixedIssueCount}
+          batchStatus={currentBatch?.status}
+          selectedPeriod={selectedPeriod}
+          onPeriodChange={setSelectedPeriod}
+        />
         <main className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto space-y-6">
-          {message && <div className="rounded-xl border border-red-200 bg-red-50 p-3 text-xs font-semibold text-red-900">{message}</div>}
+          {message && (
+            <div className="rounded-xl border border-red-200 bg-red-50 p-3 text-xs font-semibold text-red-900">
+              {message}
+            </div>
+          )}
 
-          {activeTab === 'overview' && renderDashboard(filteredBatches, alerts, selectedPeriod, disbursementHistory)}
+          {activeTab === 'overview' &&
+            renderDashboard(filteredBatches, alerts, selectedPeriod, disbursementHistory)}
 
           {activeTab === 'checker' && (
             <CheckerTab
@@ -516,7 +798,11 @@ function CheckerWorkspace() {
                 try {
                   await api.downloadBatchWorkbook(currentBatch.id, currentBatch.file_name);
                 } catch (err) {
-                  setMessage(err instanceof Error ? err.message : 'Failed to download the selected payroll batch.');
+                  setMessage(
+                    err instanceof Error
+                      ? err.message
+                      : 'Failed to download the selected payroll batch.',
+                  );
                 }
               }}
             />

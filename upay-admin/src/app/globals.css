@@ -1,19 +1,19 @@
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
 
 :root {
-  --upay-blue: #0047BA;
+  --upay-blue: #0047ba;
   --upay-blue-dark: #003399;
-  --upay-blue-light: #EFF6FF;
-  --upay-yellow: #FFC700;
-  --upay-yellow-light: #FFFBEB;
-  --upay-ink: #0F172A;
-  --upay-heading: #0A192F;
+  --upay-blue-light: #eff6ff;
+  --upay-yellow: #ffc700;
+  --upay-yellow-light: #fffbeb;
+  --upay-ink: #0f172a;
+  --upay-heading: #0a192f;
   --upay-slate: #334155;
-  --upay-muted: #64748B;
-  --upay-faint: #94A3B8;
-  --upay-border: #E2E8F0;
-  --upay-bg: #F4F6F9;
-  --upay-card-bg: #FFFFFF;
+  --upay-muted: #64748b;
+  --upay-faint: #94a3b8;
+  --upay-border: #e2e8f0;
+  --upay-bg: #f4f6f9;
+  --upay-card-bg: #ffffff;
 }
 
 * {
@@ -22,15 +22,23 @@
   padding: 0;
 }
 
-html, body {
+html,
+body {
   min-height: 100vh;
   color: var(--upay-ink);
   background: var(--upay-bg);
-  font-family: 'Plus Jakarta Sans', 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-family:
+    'Plus Jakarta Sans',
+    'Outfit',
+    -apple-system,
+    BlinkMacSystemFont,
+    sans-serif;
   -webkit-font-smoothing: antialiased;
 }
 
-button, input, select {
+button,
+input,
+select {
   font: inherit;
 }
 
@@ -41,35 +49,337 @@ button {
 }
 
 /* Employee registrations: company-first approval desk */
-.registration-workspace { max-width: 1320px; margin: 0 auto; padding: 8px 0 36px; }
-.registration-table-heading > div > span { color: var(--upay-blue); font-size: 11px; font-weight: 800; letter-spacing: .11em; text-transform: uppercase; }
-.registration-control-card { min-height: 100px; display: flex; align-items: center; justify-content: space-between; gap: 24px; padding: 18px 22px; background: #fff; border: 1px solid var(--upay-border); border-radius: 16px; box-shadow: 0 4px 18px rgba(15,23,42,.035); }
-.registration-company-control { display: flex; align-items: center; gap: 13px; flex: 1; }
-.registration-control-icon { display: grid; width: 42px; height: 42px; place-items: center; color: var(--upay-blue); background: var(--upay-blue-light); border-radius: 12px; }
-.registration-company-control label { display: grid; gap: 5px; width: min(100%, 460px); color: var(--upay-slate); font-size: 11px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
-.registration-company-control select { width: 100%; padding: 9px 34px 9px 0; color: var(--upay-ink); background: #fff; border: 0; border-bottom: 1px solid var(--upay-border); outline: none; font-size: 15px; font-weight: 700; text-transform: none; }
-.registration-company-control select:focus { border-color: var(--upay-blue); }
-.registration-company-meta { display: grid; gap: 3px; min-width: 210px; padding-left: 22px; border-left: 1px solid var(--upay-border); }
-.registration-company-meta span { color: var(--upay-muted); font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .07em; }
-.registration-company-meta strong { color: var(--upay-heading); font-size: 14px; }
-.registration-tabs { display: flex; gap: 4px; width: fit-content; margin: 26px 0 16px; padding: 4px; background: #eaf0f8; border-radius: 11px; }
-.registration-tabs button { display: inline-flex; align-items: center; gap: 8px; padding: 9px 14px; color: var(--upay-muted); border-radius: 8px; font-size: 13px; font-weight: 800; }
-.registration-tabs button.active { color: #fff; background: var(--upay-blue); box-shadow: 0 2px 6px rgba(0,71,186,.22); }
-.registration-message { margin-bottom: 16px; padding: 11px 14px; color: #075985; background: #ecfeff; border: 1px solid #a5f3fc; border-radius: 10px; font-size: 13px; font-weight: 650; }
-.registration-empty-state { display: grid; justify-items: center; gap: 9px; padding: 80px 24px; color: var(--upay-muted); text-align: center; background: #fff; border: 1px dashed #bfd0e5; border-radius: 16px; }
-.registration-empty-state svg { color: var(--upay-blue); }.registration-empty-state h3 { color: var(--upay-heading); font-size: 17px; }.registration-empty-state p { max-width: 420px; font-size: 13px; line-height: 1.6; }
-.registration-table-card { background: #fff; border: 1px solid var(--upay-border); border-radius: 16px; overflow: hidden; box-shadow: 0 4px 18px rgba(15,23,42,.035); }
-.registration-table-heading { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 21px 22px 18px; border-bottom: 1px solid var(--upay-border); }
-.registration-table-heading h3 { margin-top: 4px; color: var(--upay-heading); font-family: 'Outfit', sans-serif; font-size: 18px; letter-spacing: -.025em; }
-.registration-heading-actions { display: flex; align-items: center; gap: 10px; }
-.registration-count { padding: 6px 10px; color: var(--upay-blue); background: var(--upay-blue-light); border-radius: 99px; font-size: 12px; font-weight: 800; white-space: nowrap; }
-.registration-table-scroll { overflow-x: auto; }.registration-table { width: 100%; min-width: 800px; border-collapse: collapse; text-align: left; }
-.registration-table th { padding: 12px 18px; color: var(--upay-muted); background: #f8fafc; border-bottom: 1px solid var(--upay-border); font-size: 10.5px; font-weight: 800; letter-spacing: .07em; text-transform: uppercase; }
-.registration-table td { padding: 15px 18px; color: var(--upay-slate); border-bottom: 1px solid #edf2f7; font-size: 13px; font-weight: 600; vertical-align: middle; }.registration-table tr:last-child td { border-bottom: 0; }.registration-table td strong, .registration-table td span { display: block; }.registration-table td strong { color: var(--upay-heading); font-weight: 750; }.registration-table td span { margin-top: 3px; color: var(--upay-muted); font-size: 11.5px; font-weight: 550; }
-.registration-number { color: var(--upay-heading) !important; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12px !important; }.registration-approve-button, .registration-bulk-approve-button { display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-width: 100px; padding: 8px 12px; color: #fff; background: var(--upay-blue); border-radius: 8px; font-size: 12px; font-weight: 800; box-shadow: 0 2px 5px rgba(0,71,186,.18); }.registration-bulk-approve-button { min-width: 136px; }.registration-approve-button:hover:not(:disabled), .registration-bulk-approve-button:hover:not(:disabled) { background: var(--upay-blue-dark); }.registration-approve-button:disabled, .registration-bulk-approve-button:disabled { opacity: .55; cursor: not-allowed; box-shadow: none; }.registration-selection-cell { width: 50px; padding-right: 6px !important; text-align: center; }.registration-selection-cell input { width: 16px; height: 16px; accent-color: var(--upay-blue); cursor: pointer; }.registration-selection-cell input:disabled { cursor: not-allowed; }.registration-table tbody tr.selected { background: #f5f9ff; }
-.registration-role, .registration-status { width: fit-content; margin-top: 0 !important; padding: 4px 8px; border-radius: 6px; font-size: 10.5px !important; font-weight: 800 !important; letter-spacing: .04em; }.registration-role { color: #3730a3 !important; background: #eef2ff; }.registration-status.active { color: #166534 !important; background: #dcfce7; }.registration-status.inactive, .registration-status.suspended { color: #991b1b !important; background: #fee2e2; }.registration-table-empty { padding: 52px !important; color: var(--upay-muted) !important; text-align: center; }
-.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
-@media (max-width: 700px) { .registration-control-card { align-items: flex-start; flex-direction: column; }.registration-company-control label { width: 100%; }.registration-company-meta { width: 100%; padding: 14px 0 0; border-top: 1px solid var(--upay-border); border-left: 0; }.registration-table-heading { align-items: flex-start; flex-direction: column; }.registration-heading-actions { width: 100%; justify-content: space-between; } }
+.registration-workspace {
+  max-width: 1320px;
+  margin: 0 auto;
+  padding: 8px 0 36px;
+}
+.registration-table-heading > div > span {
+  color: var(--upay-blue);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+}
+.registration-control-card {
+  min-height: 100px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 18px 22px;
+  background: #fff;
+  border: 1px solid var(--upay-border);
+  border-radius: 16px;
+  box-shadow: 0 4px 18px rgba(15, 23, 42, 0.035);
+}
+.registration-company-control {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  flex: 1;
+}
+.registration-control-icon {
+  display: grid;
+  width: 42px;
+  height: 42px;
+  place-items: center;
+  color: var(--upay-blue);
+  background: var(--upay-blue-light);
+  border-radius: 12px;
+}
+.registration-company-control label {
+  display: grid;
+  gap: 5px;
+  width: min(100%, 460px);
+  color: var(--upay-slate);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.registration-company-control select {
+  width: 100%;
+  padding: 9px 34px 9px 0;
+  color: var(--upay-ink);
+  background: #fff;
+  border: 0;
+  border-bottom: 1px solid var(--upay-border);
+  outline: none;
+  font-size: 15px;
+  font-weight: 700;
+  text-transform: none;
+}
+.registration-company-control select:focus {
+  border-color: var(--upay-blue);
+}
+.registration-company-meta {
+  display: grid;
+  gap: 3px;
+  min-width: 210px;
+  padding-left: 22px;
+  border-left: 1px solid var(--upay-border);
+}
+.registration-company-meta span {
+  color: var(--upay-muted);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+}
+.registration-company-meta strong {
+  color: var(--upay-heading);
+  font-size: 14px;
+}
+.registration-tabs {
+  display: flex;
+  gap: 4px;
+  width: fit-content;
+  margin: 26px 0 16px;
+  padding: 4px;
+  background: #eaf0f8;
+  border-radius: 11px;
+}
+.registration-tabs button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 14px;
+  color: var(--upay-muted);
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 800;
+}
+.registration-tabs button.active {
+  color: #fff;
+  background: var(--upay-blue);
+  box-shadow: 0 2px 6px rgba(0, 71, 186, 0.22);
+}
+.registration-message {
+  margin-bottom: 16px;
+  padding: 11px 14px;
+  color: #075985;
+  background: #ecfeff;
+  border: 1px solid #a5f3fc;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 650;
+}
+.registration-empty-state {
+  display: grid;
+  justify-items: center;
+  gap: 9px;
+  padding: 80px 24px;
+  color: var(--upay-muted);
+  text-align: center;
+  background: #fff;
+  border: 1px dashed #bfd0e5;
+  border-radius: 16px;
+}
+.registration-empty-state svg {
+  color: var(--upay-blue);
+}
+.registration-empty-state h3 {
+  color: var(--upay-heading);
+  font-size: 17px;
+}
+.registration-empty-state p {
+  max-width: 420px;
+  font-size: 13px;
+  line-height: 1.6;
+}
+.registration-table-card {
+  background: #fff;
+  border: 1px solid var(--upay-border);
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 4px 18px rgba(15, 23, 42, 0.035);
+}
+.registration-table-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 21px 22px 18px;
+  border-bottom: 1px solid var(--upay-border);
+}
+.registration-table-heading h3 {
+  margin-top: 4px;
+  color: var(--upay-heading);
+  font-family: 'Outfit', sans-serif;
+  font-size: 18px;
+  letter-spacing: -0.025em;
+}
+.registration-heading-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.registration-count {
+  padding: 6px 10px;
+  color: var(--upay-blue);
+  background: var(--upay-blue-light);
+  border-radius: 99px;
+  font-size: 12px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+.registration-table-scroll {
+  overflow-x: auto;
+}
+.registration-table {
+  width: 100%;
+  min-width: 800px;
+  border-collapse: collapse;
+  text-align: left;
+}
+.registration-table th {
+  padding: 12px 18px;
+  color: var(--upay-muted);
+  background: #f8fafc;
+  border-bottom: 1px solid var(--upay-border);
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+.registration-table td {
+  padding: 15px 18px;
+  color: var(--upay-slate);
+  border-bottom: 1px solid #edf2f7;
+  font-size: 13px;
+  font-weight: 600;
+  vertical-align: middle;
+}
+.registration-table tr:last-child td {
+  border-bottom: 0;
+}
+.registration-table td strong,
+.registration-table td span {
+  display: block;
+}
+.registration-table td strong {
+  color: var(--upay-heading);
+  font-weight: 750;
+}
+.registration-table td span {
+  margin-top: 3px;
+  color: var(--upay-muted);
+  font-size: 11.5px;
+  font-weight: 550;
+}
+.registration-number {
+  color: var(--upay-heading) !important;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 12px !important;
+}
+.registration-approve-button,
+.registration-bulk-approve-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-width: 100px;
+  padding: 8px 12px;
+  color: #fff;
+  background: var(--upay-blue);
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 800;
+  box-shadow: 0 2px 5px rgba(0, 71, 186, 0.18);
+}
+.registration-bulk-approve-button {
+  min-width: 136px;
+}
+.registration-approve-button:hover:not(:disabled),
+.registration-bulk-approve-button:hover:not(:disabled) {
+  background: var(--upay-blue-dark);
+}
+.registration-approve-button:disabled,
+.registration-bulk-approve-button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+.registration-selection-cell {
+  width: 50px;
+  padding-right: 6px !important;
+  text-align: center;
+}
+.registration-selection-cell input {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--upay-blue);
+  cursor: pointer;
+}
+.registration-selection-cell input:disabled {
+  cursor: not-allowed;
+}
+.registration-table tbody tr.selected {
+  background: #f5f9ff;
+}
+.registration-role,
+.registration-status {
+  width: fit-content;
+  margin-top: 0 !important;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 10.5px !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.04em;
+}
+.registration-role {
+  color: #3730a3 !important;
+  background: #eef2ff;
+}
+.registration-status.active {
+  color: #166534 !important;
+  background: #dcfce7;
+}
+.registration-status.inactive,
+.registration-status.suspended {
+  color: #991b1b !important;
+  background: #fee2e2;
+}
+.registration-table-empty {
+  padding: 52px !important;
+  color: var(--upay-muted) !important;
+  text-align: center;
+}
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+@media (max-width: 700px) {
+  .registration-control-card {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+  .registration-company-control label {
+    width: 100%;
+  }
+  .registration-company-meta {
+    width: 100%;
+    padding: 14px 0 0;
+    border-top: 1px solid var(--upay-border);
+    border-left: 0;
+  }
+  .registration-table-heading {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+  .registration-heading-actions {
+    width: 100%;
+    justify-content: space-between;
+  }
+}
 
 /* =========================================================
    1. Admin Layout Grid & Canvas
@@ -130,10 +440,13 @@ button {
   margin-left: auto;
   place-items: center;
   color: var(--upay-slate);
-  background: #F8FAFC;
+  background: #f8fafc;
   border: 1px solid var(--upay-border);
   border-radius: 9px;
-  transition: background 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease,
+    transform 0.2s ease;
 }
 
 .admin-canvas.sidebar-collapsed .sidebar-top-collapse {
@@ -143,8 +456,8 @@ button {
 
 .sidebar-top-collapse:hover {
   color: var(--upay-ink);
-  background: #F1F5F9;
-  border-color: #CBD5E1;
+  background: #f1f5f9;
+  border-color: #cbd5e1;
 }
 
 .sidebar-top-collapse:active {
@@ -210,7 +523,7 @@ button {
 }
 
 .nav-item:hover {
-  background: #F1F5F9;
+  background: #f1f5f9;
   color: var(--upay-ink);
 }
 
@@ -284,9 +597,9 @@ button {
   gap: 10px;
   padding: 10px 13px;
   border-radius: 12px;
-  color: #B42318;
-  background: #FFF7F6;
-  border: 1px solid #FEE4E2;
+  color: #b42318;
+  background: #fff7f6;
+  border: 1px solid #fee4e2;
   font-size: 13px;
   font-weight: 700;
   cursor: pointer;
@@ -299,8 +612,8 @@ button {
 
 .sidebar-signout-btn:hover {
   color: #912018;
-  background: #FEECE9;
-  border-color: #FECDCA;
+  background: #feece9;
+  border-color: #fecdca;
 }
 
 .sidebar-signout-btn:active {
@@ -601,7 +914,7 @@ button {
 }
 
 .chart-horizontal-grid {
-  stroke: #F1F5F9;
+  stroke: #f1f5f9;
   stroke-width: 1.5;
   stroke-dasharray: 4 4;
 }
@@ -803,7 +1116,7 @@ button {
 }
 
 .btn-onboard-company:hover {
-  background: #E6B400;
+  background: #e6b400;
   transform: translateY(-1px);
 }
 
@@ -829,18 +1142,50 @@ button {
   box-shadow: 0 6px 20px rgba(15, 23, 42, 0.05);
 }
 
-.company-card-button { width: 100%; text-align: left; cursor: pointer; font: inherit; color: inherit; }
-.company-card-button:hover { transform: translateY(-1px); }
+.company-card-button {
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+  font: inherit;
+  color: inherit;
+}
+.company-card-button:hover {
+  transform: translateY(-1px);
+}
 
 @media (max-width: 720px) {
-  .admin-workspace { padding: 16px 18px 28px; }
-  .workspace-header-bar { align-items: flex-start; padding: 15px 16px; }
-  .header-main-title { font-size: 22px; }
-  .header-page-description { max-width: 38ch; }
+  .admin-workspace {
+    padding: 16px 18px 28px;
+  }
+  .workspace-header-bar {
+    align-items: flex-start;
+    padding: 15px 16px;
+  }
+  .header-main-title {
+    font-size: 22px;
+  }
+  .header-page-description {
+    max-width: 38ch;
+  }
 }
-.company-card-button:focus-visible { outline: 3px solid rgba(0, 71, 186, .18); outline-offset: 2px; }
-.company-card-right { display: flex; flex-direction: column; align-items: flex-end; gap: 5px; }
-.company-fund-action { display: inline-flex; align-items: center; gap: 5px; color: var(--upay-blue); font-size: 12px; font-weight: 800; }
+.company-card-button:focus-visible {
+  outline: 3px solid rgba(0, 71, 186, 0.18);
+  outline-offset: 2px;
+}
+.company-card-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 5px;
+}
+.company-fund-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--upay-blue);
+  font-size: 12px;
+  font-weight: 800;
+}
 
 .company-card-left {
   display: flex;
@@ -871,7 +1216,7 @@ button {
   font-size: 10.5px;
   font-weight: 800;
   text-transform: uppercase;
-  background: #DCFCE7;
+  background: #dcfce7;
   color: #166534;
   margin-bottom: 4px;
 }
@@ -941,7 +1286,7 @@ button {
 }
 
 .modal-close-btn:hover {
-  background: #F1F5F9;
+  background: #f1f5f9;
   color: var(--upay-ink);
 }
 
@@ -988,23 +1333,64 @@ button {
 }
 
 .modal-error-bar {
-  background: #FEF2F2;
-  border: 1px solid #FEE2E2;
-  color: #991B1B;
+  background: #fef2f2;
+  border: 1px solid #fee2e2;
+  color: #991b1b;
   padding: 10px 14px;
   border-radius: 10px;
   font-size: 13px;
   font-weight: 600;
 }
 
-.wallet-auto-note { display: flex; align-items: flex-start; gap: 12px; padding: 14px; border: 1px solid #DBEAFE; border-radius: 12px; background: #F8FAFF; color: var(--upay-blue); }
-.wallet-auto-note div { display: flex; flex-direction: column; gap: 3px; }
-.wallet-auto-note strong { font-size: 13px; color: var(--upay-ink); }
-.wallet-auto-note span { font-size: 11.5px; line-height: 1.5; color: var(--upay-muted); }
-.wallet-balance-summary { display: flex; align-items: center; justify-content: space-between; gap: 16px; border: 1px solid var(--upay-border); border-radius: 12px; padding: 15px; background: #F8FAFC; }
-.wallet-balance-summary span { font-size: 12px; color: var(--upay-muted); font-weight: 650; }
-.wallet-balance-summary strong { color: var(--upay-ink); font-size: 17px; font-variant-numeric: tabular-nums; }
-.optional-label { color: var(--upay-muted); font-size: 10px; font-weight: 500; }
+.wallet-auto-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 14px;
+  border: 1px solid #dbeafe;
+  border-radius: 12px;
+  background: #f8faff;
+  color: var(--upay-blue);
+}
+.wallet-auto-note div {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.wallet-auto-note strong {
+  font-size: 13px;
+  color: var(--upay-ink);
+}
+.wallet-auto-note span {
+  font-size: 11.5px;
+  line-height: 1.5;
+  color: var(--upay-muted);
+}
+.wallet-balance-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  border: 1px solid var(--upay-border);
+  border-radius: 12px;
+  padding: 15px;
+  background: #f8fafc;
+}
+.wallet-balance-summary span {
+  font-size: 12px;
+  color: var(--upay-muted);
+  font-weight: 650;
+}
+.wallet-balance-summary strong {
+  color: var(--upay-ink);
+  font-size: 17px;
+  font-variant-numeric: tabular-nums;
+}
+.optional-label {
+  color: var(--upay-muted);
+  font-size: 10px;
+  font-weight: 500;
+}
 
 .form-two-col-row {
   display: grid;
@@ -1093,7 +1479,7 @@ button {
   gap: 12px;
   margin-top: 8px;
   padding-top: 20px;
-  border-top: 1px solid #F1F5F9;
+  border-top: 1px solid #f1f5f9;
 }
 
 .modal-btn-cancel {
@@ -1109,8 +1495,8 @@ button {
 }
 
 .modal-btn-cancel:hover {
-  background: #F8FAFC;
-  border-color: #CBD5E1;
+  background: #f8fafc;
+  border-color: #cbd5e1;
 }
 
 .modal-btn-submit {
@@ -1127,7 +1513,7 @@ button {
 }
 
 .modal-btn-submit:hover {
-  background: #E6B400;
+  background: #e6b400;
   transform: translateY(-1px);
 }
 
@@ -1165,8 +1551,8 @@ button {
 }
 
 .activity-top-banner-card {
-  background: #FFFDF0;
-  border: 1px solid #FEF3C7;
+  background: #fffdf0;
+  border: 1px solid #fef3c7;
   border-radius: 20px;
   padding: 24px 32px;
   display: flex;
@@ -1288,17 +1674,26 @@ button {
   padding-right: 8px;
 }
 
-.activity-rows-container::-webkit-scrollbar { width: 8px; }
-.activity-rows-container::-webkit-scrollbar-track { background: transparent; }
-.activity-rows-container::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 99px; }
-.activity-rows-container::-webkit-scrollbar-thumb:hover { background: #94A3B8; }
+.activity-rows-container::-webkit-scrollbar {
+  width: 8px;
+}
+.activity-rows-container::-webkit-scrollbar-track {
+  background: transparent;
+}
+.activity-rows-container::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 99px;
+}
+.activity-rows-container::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
 
 .activity-row-item {
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding: 20px 0;
-  border-bottom: 1px solid #F1F5F9;
+  border-bottom: 1px solid #f1f5f9;
   transition: all 0.2s ease;
 }
 
@@ -1373,7 +1768,7 @@ button {
   width: 60px;
   height: 60px;
   border-radius: 50%;
-  background: #F8FAFC;
+  background: #f8fafc;
   border: 1px solid var(--upay-border);
   display: grid;
   place-items: center;
@@ -1406,18 +1801,18 @@ button {
 }
 
 .pill-completed {
-  background: #DCFCE7;
+  background: #dcfce7;
   color: #166534;
 }
 
 .pill-in-progress {
-  background: #EFF6FF;
+  background: #eff6ff;
   color: var(--upay-blue);
 }
 
 .pill-pending {
-  background: #FEF9C3;
-  color: #B45309;
+  background: #fef9c3;
+  color: #b45309;
 }
 
 /* =========================================================
@@ -1525,7 +1920,7 @@ button {
   border: 1.5px solid var(--upay-border);
   font-size: 14px;
   color: var(--upay-ink);
-  background: #F8FAFC;
+  background: #f8fafc;
   outline: none;
   transition: all 0.2s ease;
 }
@@ -1537,9 +1932,9 @@ button {
 }
 
 .signin-error-alert {
-  background: #FEF2F2;
-  border: 1px solid #FEE2E2;
-  color: #991B1B;
+  background: #fef2f2;
+  border: 1px solid #fee2e2;
+  color: #991b1b;
   padding: 10px 14px;
   border-radius: 10px;
   font-size: 13px;

@@ -14,6 +14,7 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+const CORPORATE_PORTAL_HEADERS = { 'X-Upay-Portal': 'corporate' };
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
@@ -21,17 +22,29 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const logout = useCallback(() => {
     setUser(null);
-    void fetch(`${API_BASE_URL}/auth/logout`, { method: 'POST', credentials: 'include' })
-      .catch(() => undefined);
+    void fetch(`${API_BASE_URL}/auth/logout`, {
+      method: 'POST',
+      credentials: 'include',
+      headers: CORPORATE_PORTAL_HEADERS,
+    }).catch(() => undefined);
   }, []);
 
   useEffect(() => {
     let active = true;
-    void fetch(`${API_BASE_URL}/auth/session`, { credentials: 'include' })
-      .then(async (response) => response.ok ? response.json() : null)
-      .then((payload) => { if (active) setUser(payload?.user ?? null); })
-      .catch(() => { if (active) setUser(null); })
-      .finally(() => { if (active) setIsLoading(false); });
+    void fetch(`${API_BASE_URL}/auth/session`, {
+      credentials: 'include',
+      headers: CORPORATE_PORTAL_HEADERS,
+    })
+      .then(async (response) => (response.ok ? response.json() : null))
+      .then((payload) => {
+        if (active) setUser(payload?.user ?? null);
+      })
+      .catch(() => {
+        if (active) setUser(null);
+      })
+      .finally(() => {
+        if (active) setIsLoading(false);
+      });
 
     const handleAuthExpired = () => {
       logout();
@@ -47,7 +60,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const login = async (email: string, password: string) => {
     const res = await fetch(`${API_BASE_URL}/auth/login`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', ...CORPORATE_PORTAL_HEADERS },
       credentials: 'include',
       body: JSON.stringify({ email, password }),
     });
